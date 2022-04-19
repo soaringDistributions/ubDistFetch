@@ -4,11 +4,31 @@ _compile_bash_deps_prog() {
 
 #Default is to include all, or run a specified configuration. For this reason, it will be more typical to override this entire function, rather than append any additional code.
 # WARNING Find current version of this function at "build/bash/compile_bash.sh"
-# _compile_bash_deps() {
-# 	[[ "$1" == "lean" ]] && return 0
-# 	
-# 	false
-# }
+ _compile_bash_deps() {
+	if [[ "$1" == "ubDistFetch" ]]
+	then
+		_deps_notLean
+		
+		_deps_git
+		_deps_bup
+		
+		_deps_repo
+		
+		_deps_stopwatch
+		
+		
+		_deps_distro
+		_deps_getMinimal
+		_deps_linux
+		
+		_deps_python
+		_deps_haskell
+		
+		return 0
+	fi
+	
+	#false
+}
 
 _vars_compile_bash_prog() {
 	#export configDir="$scriptAbsoluteFolder"/_config

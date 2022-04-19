@@ -32,7 +32,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='1891409836'
-export ub_setScriptChecksum_contents='628186479'
+export ub_setScriptChecksum_contents='2985518290'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -6438,10 +6438,12 @@ _generate_compile_bash_prog() {
 	
 	rm "$scriptAbsoluteFolder"/ubiquitous_bash.sh
 	
+	"$scriptAbsoluteLocation" _compile_bash ubDistFetch ubiquitous_bash.sh
+	
 	#"$scriptAbsoluteLocation" _compile_bash cautossh cautossh
 	#"$scriptAbsoluteLocation" _compile_bash lean lean.sh
 	
-	"$scriptAbsoluteLocation" _compile_bash core ubiquitous_bash.sh
+	#"$scriptAbsoluteLocation" _compile_bash core ubiquitous_bash.sh
 	
 	#"$scriptAbsoluteLocation" _compile_bash "" ""
 	#"$scriptAbsoluteLocation" _compile_bash ubiquitous_bash ubiquitous_bash.sh
@@ -7708,11 +7710,31 @@ _compile_bash_deps_prog() {
 
 #Default is to include all, or run a specified configuration. For this reason, it will be more typical to override this entire function, rather than append any additional code.
 # WARNING Find current version of this function at "build/bash/compile_bash.sh"
-# _compile_bash_deps() {
-# 	[[ "$1" == "lean" ]] && return 0
-# 	
-# 	false
-# }
+ _compile_bash_deps() {
+	if [[ "$1" == "ubDistFetch" ]]
+	then
+		_deps_notLean
+		
+		_deps_git
+		_deps_bup
+		
+		_deps_repo
+		
+		_deps_stopwatch
+		
+		
+		_deps_distro
+		_deps_getMinimal
+		_deps_linux
+		
+		_deps_python
+		_deps_haskell
+		
+		return 0
+	fi
+	
+	#false
+}
 
 _vars_compile_bash_prog() {
 	#export configDir="$scriptAbsoluteFolder"/_config
