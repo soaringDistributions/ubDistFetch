@@ -37,12 +37,12 @@ _ubDistFetch_gitBestFetch() {
 	! _messagePlain_probe_cmd git checkout "$currentCheckout" && _messageFAIL
 	if [[ "$4" == "" ]] || [[ "$4" == "HEAD" ]] || [[ "$4" == "main" ]] || [[ "$4" == "master" ]]
 	then
-		! _messagePlain_probe_cmd git pull && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest pull && _messageFAIL
 	elif [[ $(_safeEcho_newline "$4" | wc -c | tr -dc '0-9') -ge 40 ]]
 	then
-		_messagePlain_probe_cmd git pull
+		_messagePlain_probe_cmd _gitBest pull
 	fi
-	! _messagePlain_probe_cmd git submodule update --init --depth 1 --recursive && _messageFAIL
+	! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _messageFAIL
 	
 	cd "$functionEntryPWD"
 }
@@ -208,12 +208,12 @@ _ubDistFetch() {
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous
 		
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/
-		! _messagePlain_probe_cmd git submodule update --init --depth 1 ./_lib/openocd-static && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 ./_lib/openocd-static && _messageFAIL
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/_lib/openocd-static
-		! _messagePlain_probe_cmd git submodule update --init --depth 9000000 --recursive ./_lib/openocd-build-script-static && _messageFAIL
-		! _messagePlain_probe_cmd git submodule update --init --depth 9000000 --recursive ./_lib/openocd-code && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-build-script-static && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-code && _messageFAIL
 		
-		! _messagePlain_probe_cmd git submodule update --init --depth 1 --recursive && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _messageFAIL
 	fi
 	
 	
