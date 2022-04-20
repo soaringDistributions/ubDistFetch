@@ -2,7 +2,13 @@
 
 
 _wget_distLLC() {
-	wget --user u298813-sub7 --password wnEtWtT9UDyJiCGw "$@"
+	[[ "$distLLC_user" == "" ]] && export distLLC_user='u298813-sub7'
+	[[ "$distLLC_password" == "" ]] && export distLLC_password='wnEtWtT9UDyJiCGw'
+	if ! wget --user "$distLLC_user" --password "$distLLC_password" "$@"
+	then
+		_messageFAIL
+	fi
+	return 0
 }
 
 
