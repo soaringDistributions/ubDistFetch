@@ -1,3 +1,6 @@
+<!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q 
+#exit # scriptedIllustrator_markup_uk4uPhB663kVcygT0q 
+# <html style="size: letter;"> <!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 #!/usr/bin/env bash
 
 # Dependencies.
@@ -55,56 +58,164 @@ _document_main() {
 #b
 # NOTICE: DOCUMENT
 #__HEADER_uk4uPhB663kVcygT0q_HEADER__
-_t 'Copyright (C) 2022 Soaring Distributions LLC
+_t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
+Copyright (C) 2022 Soaring Distributions LLC
 See the end of the file for license conditions.
 See license.txt for ubDistFetch license conditions.
 
 
-Fetch important software. Some may be products of Soaring Distributions LLC, created on behalf of Soaring Distributions LLC by the the manager &#39;mirage335&#39;, etc .'
-_t '
-
-
+Fetch important software. Some may be products of Soaring Distributions 
+LLC, created on behalf of Soaring Distributions LLC by the the manager 
+&#39;mirage335&#39;, etc .
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_heading1 'Usage'
-_paragraph_begin
-_ _o _messagePlain_probe './ubiquitous_bash.sh'
-_paragraph_end
-_paragraph_begin
 _t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
 
 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_page
-_heading1 'Design'
-_paragraph_begin
-_t ' '
-_paragraph_end
+ '_heading1' 'Usage'
+if false; then true; # -->
+<!-- # --><h1>Usage</h1>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
+ '_o' '_messagePlain_probe' './ubiquitous_bash.sh'
+if false; then true; # -->
+<!-- # --><pre style="-webkit-print-color-adjust: exact;background-color:#848484;margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
+<!-- # --><span style="color:#1818b2;background-color:#848484;"> ./ubiquitous_bash.sh</span>
+<!-- # --></pre>
+<!--
+fi
+ '_paragraph_end'
+if false; then true; # -->
+<!-- # --></p>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
 _t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
 
 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_page
-_heading1 'Safety'
-_paragraph_begin
-_t ' '
-_paragraph_end
+ '_page'
+if false; then true; # -->
+<!-- # --><div style="page-break-before: always;margin: 0;padding: 0; border-width: 0px;"> </div>
+<!--
+fi
+ '_heading1' 'Design'
+if false; then true; # -->
+<!-- # --><h1>Design</h1>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
 _t '
-
-
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;"> 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_page
-_heading1 'Reference'
-_paragraph_begin
-_t ' '
-_paragraph_end
+ '_paragraph_end'
+if false; then true; # -->
+<!-- # --></p>
+<!--
+fi
 _t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
 
 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_page
-_heading1 'Copyright'
-_paragraph_begin
+ '_page'
+if false; then true; # -->
+<!-- # --><div style="page-break-before: always;margin: 0;padding: 0; border-width: 0px;"> </div>
+<!--
+fi
+ '_heading1' 'Safety'
+if false; then true; # -->
+<!-- # --><h1>Safety</h1>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
 _t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;"> 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
+'
+ '_paragraph_end'
+if false; then true; # -->
+<!-- # --></p>
+<!--
+fi
+_t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
+
+
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
+'
+ '_page'
+if false; then true; # -->
+<!-- # --><div style="page-break-before: always;margin: 0;padding: 0; border-width: 0px;"> </div>
+<!--
+fi
+ '_heading1' 'Reference'
+if false; then true; # -->
+<!-- # --><h1>Reference</h1>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
+_t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;"> 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
+'
+ '_paragraph_end'
+if false; then true; # -->
+<!-- # --></p>
+<!--
+fi
+_t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
+
+
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
+'
+ '_page'
+if false; then true; # -->
+<!-- # --><div style="page-break-before: always;margin: 0;padding: 0; border-width: 0px;"> </div>
+<!--
+fi
+ '_heading1' 'Copyright'
+if false; then true; # -->
+<!-- # --><h1>Copyright</h1>
+<!--
+fi
+ '_paragraph_begin'
+if false; then true; # -->
+<!-- # --><p>
+<!--
+fi
+_t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
 This file is part of ubDistFetch.
 
 ubDistFetch is free software: you can redistribute it and/or modify
@@ -119,12 +230,22 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with ubDistFetch.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
-_paragraph_end
+ '_paragraph_end'
+if false; then true; # -->
+<!-- # --></p>
+<!--
+fi
 _t '
+scriptedIllustrator_markup_uk4uPhB663kVcygT0q --><!-- # --><pre style="margin-top: 0px;margin-bottom: 0px;white-space: pre-wrap;">
 
 
+<!-- # --></pre><!-- scriptedIllustrator_markup_uk4uPhB663kVcygT0q
 '
+
+
+
 #__FOOTER_uk4uPhB663kVcygT0q_FOOTER__
 # NOTICE: DOCUMENT
 #y
@@ -327,3 +448,4 @@ exit 0
 __ATTACHMENT_uk4uPhB663kVcygT0q_ATTACHMENT__
 
 
+filename.html # scriptedIllustrator_markup_uk4uPhB663kVcygT0q --> </html>
