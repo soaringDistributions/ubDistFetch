@@ -104,24 +104,24 @@ _ubDistFetch() {
 	
 	
 	_messageNormal '########## installations: 'linux-lts
-	mkdir -p "$scriptLib"/core/installations/linux-lts
-	if [[ ! -e "$scriptLib"/core/installations/linux-lts/linux-lts-amd64-debian.tar.gz ]]
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-lts-amd64-debian.tar.gz -O linux-lts-amd64-debian.tar.gz
 		mv -f linux-lts-amd64-debian.tar.gz linux-lts/linux-lts-amd64-debian.tar.gz
-		cd "$scriptLib"/core/installations/linux-lts
+		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-lts-amd64-debian.tar.gz
 	fi
 	
 	_messageNormal '########## installations: 'linux-mainline
-	mkdir -p "$scriptLib"/core/installations/linux-mainline
-	if [[ ! -e "$scriptLib"/core/installations/linux-mainline/linux-mainline-amd64-debian.tar.gz ]]
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-mainline-amd64-debian.tar.gz -O linux-mainline-amd64-debian.tar.gz
 		mv -f linux-mainline-amd64-debian.tar.gz linux-mainline/linux-mainline-amd64-debian.tar.gz
-		cd "$scriptLib"/core/installations/linux-mainline
+		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-mainline-amd64-debian.tar.gz
 	fi
 	

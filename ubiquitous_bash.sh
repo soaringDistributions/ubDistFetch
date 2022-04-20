@@ -32,7 +32,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='1891409836'
-export ub_setScriptChecksum_contents='2192125156'
+export ub_setScriptChecksum_contents='2514185154'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -11903,24 +11903,24 @@ _ubDistFetch() {
 	
 	
 	_messageNormal '########## installations: 'linux-lts
-	mkdir -p "$scriptLib"/core/installations/linux-lts
-	if [[ ! -e "$scriptLib"/core/installations/linux-lts/linux-lts-amd64-debian.tar.gz ]]
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-lts-amd64-debian.tar.gz -O linux-lts-amd64-debian.tar.gz
 		mv -f linux-lts-amd64-debian.tar.gz linux-lts/linux-lts-amd64-debian.tar.gz
-		cd "$scriptLib"/core/installations/linux-lts
+		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-lts-amd64-debian.tar.gz
 	fi
 	
 	_messageNormal '########## installations: 'linux-mainline
-	mkdir -p "$scriptLib"/core/installations/linux-mainline
-	if [[ ! -e "$scriptLib"/core/installations/linux-mainline/linux-mainline-amd64-debian.tar.gz ]]
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-mainline-amd64-debian.tar.gz -O linux-mainline-amd64-debian.tar.gz
 		mv -f linux-mainline-amd64-debian.tar.gz linux-mainline/linux-mainline-amd64-debian.tar.gz
-		cd "$scriptLib"/core/installations/linux-mainline
+		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-mainline-amd64-debian.tar.gz
 	fi
 	
