@@ -109,7 +109,7 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-lts-amd64-debian.tar.gz -O linux-lts-amd64-debian.tar.gz
-		mv -f linux-lts-amd64-debian.tar.gz linux-lts/linux-lts-amd64-debian.tar.gz
+		mv -f linux-lts-amd64-debian.tar.gz kernel_linux/linux-lts-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-lts-amd64-debian.tar.gz
 	fi
@@ -120,7 +120,7 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/installations/
 		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-mainline-amd64-debian.tar.gz -O linux-mainline-amd64-debian.tar.gz
-		mv -f linux-mainline-amd64-debian.tar.gz linux-mainline/linux-mainline-amd64-debian.tar.gz
+		mv -f linux-mainline-amd64-debian.tar.gz kernel_linux/linux-mainline-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-mainline-amd64-debian.tar.gz
 	fi
