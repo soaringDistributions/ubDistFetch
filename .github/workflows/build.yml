@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           ./ubiquitous_bash.sh _getMinimal_cloud
-        timeout-minutes: 90
+        timeout-minutes: 355
       - name: _ubDistFetch
         shell: bash
         run: |
@@ -59,10 +59,10 @@ jobs:
         shell: bash
         run: |
           ./_ubDistFetch_package.bat | sudo -n tee /_ubDistFetch_package.log
-        timeout-minutes: 90
+        timeout-minutes: 355
       - name: rclone
         shell: bash
-        timeout-minutes: 90
+        timeout-minutes: 355
         run: |
           rclone --progress --config /rclone.conf copy ./_lib/core.tar.xz distLLC_build_ubDistFetch:
           rclone --progress --config /rclone.conf copy /_ubDistFetch_package.log distLLC_build_ubDistFetch:
