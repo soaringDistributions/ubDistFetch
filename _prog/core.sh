@@ -219,6 +219,7 @@ _ubDistFetch() {
 		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-build-script-static && _messageFAIL
 		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-code && _messageFAIL
 		
+		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/
 		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _messageFAIL
 	fi
 	
