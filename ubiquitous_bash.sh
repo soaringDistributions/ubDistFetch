@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='901399856'
+export ub_setScriptChecksum_contents='2879220422'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -4527,6 +4527,2761 @@ _getDep() {
 	_mustGetDep "$@"
 }
 
+_apt-file_sequence() {
+	_start
+	
+	_mustGetSudo
+	#_mustGetDep su
+	
+	! _wantDep apt-file && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-file
+	_checkDep apt-file
+	
+	sudo -n apt-file "$@" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
+	sudo -n apt-file search bash > "$safeTmp"/checkOut 2> "$safeTmp"/checkErr
+	
+	while ! [[ -s "$safeTmp"/checkOut ]] || cat "$safeTmp"/pkgsErr | grep 'cache is empty' > /dev/null 2>&1
+	do
+		sudo -n apt-file update > "$safeTmp"/updateOut 2> "$safeTmp"/updateErr
+		sudo -n apt-file "$@" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
+		sudo -n apt-file search bash > "$safeTmp"/checkOut 2> "$safeTmp"/checkErr
+	done
+	
+	cat "$safeTmp"/pkgsOut
+	#cat "$safeTmp"/pkgsErr >&2
+	_stop
+}
+
+_apt-file() {
+	_timeout 750 "$scriptAbsoluteLocation" _apt-file_sequence "$@"
+}
+
+
+
+
+
+
+
+
+
+
+_fetchDep_debianBullseye_special() {
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+	
+# 	if [[ "$1" == *"java"* ]]
+# 	then
+# 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y default-jdk default-jre
+# 		return 0
+# 	fi
+	
+	if [[ "$1" == *"wine"* ]] && ! dpkg --print-foreign-architectures | grep i386 > /dev/null 2>&1
+	then
+		sudo -n dpkg --add-architecture i386
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y wine wine32 wine64 libwine libwine:i386 fonts-wine
+		return 0
+	fi
+	
+	if [[ "$1" == "realpath" ]] || [[ "$1" == "readlink" ]] || [[ "$1" == "dirname" ]] || [[ "$1" == "basename" ]] || [[ "$1" == "sha512sum" ]] || [[ "$1" == "sha256sum" ]] || [[ "$1" == "head" ]] || [[ "$1" == "tail" ]] || [[ "$1" == "sleep" ]] || [[ "$1" == "env" ]] || [[ "$1" == "cat" ]] || [[ "$1" == "mkdir" ]] || [[ "$1" == "dd" ]] || [[ "$1" == "rm" ]] || [[ "$1" == "ln" ]] || [[ "$1" == "ls" ]] || [[ "$1" == "test" ]] || [[ "$1" == "true" ]] || [[ "$1" == "false" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y coreutils
+		return 0
+	fi
+	
+	if [[ "$1" == "mount" ]] || [[ "$1" == "umount" ]] || [[ "$1" == "losetup" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mount
+		return 0
+	fi
+	
+	if [[ "$1" == "mountpoint" ]] || [[ "$1" == "mkfs" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y util-linux
+		return 0
+	fi
+	
+	if [[ "$1" == "mkfs.ext4" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y e2fsprogs
+		return 0
+	fi
+	
+	if [[ "$1" == "parted" ]] || [[ "$1" == "partprobe" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y parted
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-arm-static" ]] || [[ "$1" == "qemu-armeb-static" ]] || [[ "$1" == "update-binfmts" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu qemu-user-static binfmt-support
+		#update-binfmts --display
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-system-x86_64" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-system-x86
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-img" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-utils
+		return 0
+	fi
+	
+	if [[ "$1" == "VirtualBox" ]] || [[ "$1" == "VBoxSDL" ]] || [[ "$1" == "VBoxManage" ]] || [[ "$1" == "VBoxHeadless" ]]
+	then
+		sudo -n mkdir -p /etc/apt/sources.list.d
+		echo 'deb http://download.virtualbox.org/virtualbox/debian bullseye contrib' | sudo -n tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+		
+		"$scriptAbsoluteLocation" _getDep wget
+		! _wantDep wget && return 1
+		
+		# TODO Check key fingerprints match "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF" and "7B0F AB3A 13B9 0743 5925  D9C9 5442 2A4B 98AB 5139" respectively.
+		wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo -n apt-key add -
+		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
+		
+		echo "WARNING: Recommend manual system configuration after install. See https://www.virtualbox.org/wiki/Downloads ."
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "gpg" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y gnupg
+		return 0
+	fi
+	
+	#Unlikely scenario for hosts.
+	if [[ "$1" == "grub-install" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub2
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub-legacy
+		return 0
+	fi
+	
+	if [[ "$1" == "MAKEDEV" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y makedev
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "awk" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mawk
+		return 0
+	fi
+	
+	if [[ "$1" == "kill" ]] || [[ "$1" == "ps" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y procps
+		return 0
+	fi
+	
+	if [[ "$1" == "find" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y findutils
+		return 0
+	fi
+	
+	if [[ "$1" == "docker" ]]
+	then
+		sudo -n update-alternatives --set iptables /usr/sbin/iptables-legacy
+		sudo -n update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+		#sudo -n systemctl restart docker
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+		
+		"$scriptAbsoluteLocation" _getDep curl
+		! _wantDep curl && return 1
+		
+		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo -n apt-key add -
+		local aptKeyFingerprint
+		aptKeyFingerprint=$(sudo -n apt-key fingerprint 0EBFCD88 2> /dev/null)
+		[[ "$aptKeyFingerprint" == "" ]] && return 1
+		
+		sudo -n add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y docker docker-engine docker.io docker-ce docker
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y docker-ce
+		
+		sudo -n usermod -a -G docker "$USER"
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "smbd" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y samba
+		return 0
+	fi
+	
+	if [[ "$1" == "atom" ]]
+	then
+		curl -L https://packagecloud.io/AtomEditor/atom/gpgkey | sudo -n apt-key add -
+		sudo -n sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/ub_atom.list'
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y atom
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "GL/gl.h" ]] || [[ "$1" == "GL/glext.h" ]] || [[ "$1" == "GL/glx.h" ]] || [[ "$1" == "GL/glxext.h" ]] || [[ "$1" == "GL/dri_interface.h" ]] || [[ "$1" == "x86_64-linux-gnu/pkgconfig/dri.pc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mesa-common-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "go" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y golang-go
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "php" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y php
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "cura-lulzbot" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See https://www.lulzbot.com/learn/tutorials/cura-lulzbot-edition-installation-debian ."
+cat << 'CZXWXcRMTo8EmM8i4d'
+wget -qO - https://download.alephobjects.com/ao/aodeb/aokey.pub | sudo -n apt-key add -
+sudo -n cp /etc/apt/sources.list /etc/apt/sources.list.bak && sudo -n sed -i '$a deb http://download.alephobjects.com/ao/aodeb jessie main' /etc/apt/sources.list && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install cura-lulzbot
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" =~ "FlashPrint" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See http://www.flashforge.com/support-center/flashprint-support/ ."
+		_stop 1
+	fi
+	
+	if [[ "$1" == "cargo" ]] || [[ "$1" == "rustc" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation."
+cat << 'CZXWXcRMTo8EmM8i4d'
+curl https://sh.rustup.rs -sSf | sh
+echo '[[ -e "$HOME"/.cargo/bin ]] && export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" == "firejail" ]]
+	then
+		echo "WARNING: Recommend manual system configuration after install. See https://firejail.wordpress.com/download-2/ ."
+		echo "WARNING: Desktop override symlinks may cause problems, especially preventing proxy host jumping by CoreAutoSSH!"
+		return 1
+	fi
+	
+	
+	if [[ "$1" == "nix-env" ]]
+	then
+		_tryExec '_test_nix-env_upstream'
+		#_tryExec '_test_nix-env_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "croc" ]]
+	then
+		_tryExec '_test_croc_upstream'
+		#_tryExec '_test_croc_upstream_beta'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "rclone" ]]
+	then
+		_tryExec '_test_rclone_upstream'
+		#_tryExec '_test_rclone_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "terraform" ]]
+	then
+		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y terraform
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "vagrant" ]]
+	then
+		#curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		#sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant-libvirt
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "digimend-debug" ]] || [[ "$1" == 'udev/rules.d/90-digimend.rules' ]] || [[ "$1" == 'X11/xorg.conf.d/50-digimend.conf' ]]
+	then
+		if ! _wantDep digimend-debug && [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian' > /dev/null 2>&1
+		then
+			if [[ -e "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb ]]
+			then
+				yes | sudo -n dpkg -i "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb
+			fi
+			
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
+			
+			curl -L "https://github.com/DIGImend/digimend-kernel-drivers/releases/download/v10/digimend-dkms_10_all.deb" -o "$safeTmp"/"digimend-dkms_10_all.deb"
+			yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_10_all.deb"
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
+			sudo rm -f "$safeTmp"/"digimend-dkms_10_all.deb"
+		fi
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "openssl/ssl.h" ]] || [[ "$1" == "include/openssl/ssl.h" ]] || [[ "$1" == "/usr/include/openssl/ssl.h" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libssl-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "sqlite3.h" ]] || [[ "$1" == "sqlite3ext.h" ]] || [[ "$1" == "pkgconfig/sqlite3.pc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libsqlite3-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "qalculate-gtk" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qalculate-gtk
+		
+		! _wantDep 'qalculate-gtk' && echo 'warn: missing: qalculate-gtk'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "nc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y netcat-openbsd
+		
+		! _wantDep 'nc' && echo 'warn: missing: nc'
+		
+		return 0
+	fi
+	
+	
+	return 1
+}
+
+_fetchDep_debianBullseye_sequence() {
+	_start
+	
+	_mustGetSudo
+	
+	_wantDep "$1" && _stop 0
+	
+	_fetchDep_debianBullseye_special "$@" && _wantDep "$1" && _stop 0
+	
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$1" && _wantDep "$1" && _stop 0
+	
+	_apt-file search "$1" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
+	
+	local sysPathAll
+	sysPathAll=$(sudo -n bash -c "echo \$PATH")
+	sysPathAll="$PATH":"$sysPathAll"
+	local sysPathArray
+	IFS=':' read -r -a sysPathArray <<< "$sysPathAll"
+	
+	local currentSysPath
+	local matchingPackageFile
+	local matchingPackagePattern
+	local matchingPackage
+	for currentSysPath in "${sysPathArray[@]}"
+	do
+		matchingPackageFile=""
+		matchingPackagePath=""
+		matchingPackage=""
+		matchingPackagePattern="$currentSysPath"/"$1"
+		matchingPackageFile=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f2- -d' ')
+		matchingPackage=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f1 -d':')
+		if [[ "$matchingPackage" != "" ]]
+		then
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+			_wantDep "$1" && _stop 0
+		fi
+	done
+	matchingPackage=""
+	matchingPackage=$(head -n 1 "$safeTmp"/pkgsOut | cut -f1 -d':')
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+	_wantDep "$1" && _stop 0
+	
+	_stop 1
+}
+
+_fetchDep_debianBullseye() {
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	export DEBIAN_FRONTEND=noninteractive
+	
+	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
+	"$scriptAbsoluteLocation" _fetchDep_debianBullseye_sequence "$@"
+	"$scriptAbsoluteLocation" _fetchDep_debianBullseye_sequence "$@"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_fetchDep_debianBuster_special() {
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+	
+# 	if [[ "$1" == *"java"* ]]
+# 	then
+# 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y default-jdk default-jre
+# 		return 0
+# 	fi
+	
+	if [[ "$1" == *"wine"* ]] && ! dpkg --print-foreign-architectures | grep i386 > /dev/null 2>&1
+	then
+		sudo -n dpkg --add-architecture i386
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y wine wine32 wine64 libwine libwine:i386 fonts-wine
+		return 0
+	fi
+	
+	if [[ "$1" == "realpath" ]] || [[ "$1" == "readlink" ]] || [[ "$1" == "dirname" ]] || [[ "$1" == "basename" ]] || [[ "$1" == "sha512sum" ]] || [[ "$1" == "sha256sum" ]] || [[ "$1" == "head" ]] || [[ "$1" == "tail" ]] || [[ "$1" == "sleep" ]] || [[ "$1" == "env" ]] || [[ "$1" == "cat" ]] || [[ "$1" == "mkdir" ]] || [[ "$1" == "dd" ]] || [[ "$1" == "rm" ]] || [[ "$1" == "ln" ]] || [[ "$1" == "ls" ]] || [[ "$1" == "test" ]] || [[ "$1" == "true" ]] || [[ "$1" == "false" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y coreutils
+		return 0
+	fi
+	
+	if [[ "$1" == "mount" ]] || [[ "$1" == "umount" ]] || [[ "$1" == "losetup" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mount
+		return 0
+	fi
+	
+	if [[ "$1" == "mountpoint" ]] || [[ "$1" == "mkfs" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y util-linux
+		return 0
+	fi
+	
+	if [[ "$1" == "mkfs.ext4" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y e2fsprogs
+		return 0
+	fi
+	
+	if [[ "$1" == "parted" ]] || [[ "$1" == "partprobe" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y parted
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-arm-static" ]] || [[ "$1" == "qemu-armeb-static" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu qemu-user-static binfmt-support
+		#update-binfmts --display
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-system-x86_64" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-system-x86
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-img" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-utils
+		return 0
+	fi
+	
+	if [[ "$1" == "VirtualBox" ]] || [[ "$1" == "VBoxSDL" ]] || [[ "$1" == "VBoxManage" ]] || [[ "$1" == "VBoxHeadless" ]]
+	then
+		sudo -n mkdir -p /etc/apt/sources.list.d
+		echo 'deb http://download.virtualbox.org/virtualbox/debian buster contrib' | sudo -n tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+		
+		"$scriptAbsoluteLocation" _getDep wget
+		! _wantDep wget && return 1
+		
+		# TODO Check key fingerprints match "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF" and "7B0F AB3A 13B9 0743 5925  D9C9 5442 2A4B 98AB 5139" respectively.
+		wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo -n apt-key add -
+		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
+		
+		echo "WARNING: Recommend manual system configuration after install. See https://www.virtualbox.org/wiki/Downloads ."
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "gpg" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y gnupg
+		return 0
+	fi
+	
+	#Unlikely scenario for hosts.
+	if [[ "$1" == "grub-install" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub2
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub-legacy
+		return 0
+	fi
+	
+	if [[ "$1" == "MAKEDEV" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y makedev
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "awk" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mawk
+		return 0
+	fi
+	
+	if [[ "$1" == "kill" ]] || [[ "$1" == "ps" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y procps
+		return 0
+	fi
+	
+	if [[ "$1" == "find" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y findutils
+		return 0
+	fi
+	
+	if [[ "$1" == "docker" ]]
+	then
+		sudo -n update-alternatives --set iptables /usr/sbin/iptables-legacy
+		sudo -n update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+		#sudo -n systemctl restart docker
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+		
+		"$scriptAbsoluteLocation" _getDep curl
+		! _wantDep curl && return 1
+		
+		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo -n apt-key add -
+		local aptKeyFingerprint
+		aptKeyFingerprint=$(sudo -n apt-key fingerprint 0EBFCD88 2> /dev/null)
+		[[ "$aptKeyFingerprint" == "" ]] && return 1
+		
+		sudo -n add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y docker docker-engine docker.io docker-ce docker
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y docker-ce
+		
+		sudo -n usermod -a -G docker "$USER"
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "smbd" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y samba
+		return 0
+	fi
+	
+	if [[ "$1" == "atom" ]]
+	then
+		curl -L https://packagecloud.io/AtomEditor/atom/gpgkey | sudo -n apt-key add -
+		sudo -n sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/ub_atom.list'
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y atom
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "GL/gl.h" ]] || [[ "$1" == "GL/glext.h" ]] || [[ "$1" == "GL/glx.h" ]] || [[ "$1" == "GL/glxext.h" ]] || [[ "$1" == "GL/dri_interface.h" ]] || [[ "$1" == "x86_64-linux-gnu/pkgconfig/dri.pc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mesa-common-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "go" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y golang-go
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "php" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y php
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "cura-lulzbot" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See https://www.lulzbot.com/learn/tutorials/cura-lulzbot-edition-installation-debian ."
+cat << 'CZXWXcRMTo8EmM8i4d'
+wget -qO - https://download.alephobjects.com/ao/aodeb/aokey.pub | sudo -n apt-key add -
+sudo -n cp /etc/apt/sources.list /etc/apt/sources.list.bak && sudo -n sed -i '$a deb http://download.alephobjects.com/ao/aodeb jessie main' /etc/apt/sources.list && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install cura-lulzbot
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" =~ "FlashPrint" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See http://www.flashforge.com/support-center/flashprint-support/ ."
+		_stop 1
+	fi
+	
+	if [[ "$1" == "cargo" ]] || [[ "$1" == "rustc" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation."
+cat << 'CZXWXcRMTo8EmM8i4d'
+curl https://sh.rustup.rs -sSf | sh
+echo '[[ -e "$HOME"/.cargo/bin ]] && export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" == "firejail" ]]
+	then
+		echo "WARNING: Recommend manual system configuration after install. See https://firejail.wordpress.com/download-2/ ."
+		echo "WARNING: Desktop override symlinks may cause problems, especially preventing proxy host jumping by CoreAutoSSH!"
+		return 1
+	fi
+	
+	
+	if [[ "$1" == "nix-env" ]]
+	then
+		_tryExec '_test_nix-env_upstream'
+		#_tryExec '_test_nix-env_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "croc" ]]
+	then
+		_tryExec '_test_croc_upstream'
+		#_tryExec '_test_croc_upstream_beta'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "rclone" ]]
+	then
+		_tryExec '_test_rclone_upstream'
+		#_tryExec '_test_rclone_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "terraform" ]]
+	then
+		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y terraform
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "vagrant" ]]
+	then
+		#curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		#sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant-libvirt
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "digimend-debug" ]] || [[ "$1" == 'udev/rules.d/90-digimend.rules' ]] || [[ "$1" == 'X11/xorg.conf.d/50-digimend.conf' ]]
+	then
+		if ! _wantDep digimend-debug && [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian' > /dev/null 2>&1
+		then
+			if [[ -e "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb ]]
+			then
+				yes | sudo -n dpkg -i "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb
+			fi
+			
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
+			
+			curl -L "https://github.com/DIGImend/digimend-kernel-drivers/releases/download/v10/digimend-dkms_10_all.deb" -o "$safeTmp"/"digimend-dkms_10_all.deb"
+			yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_10_all.deb"
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
+			sudo rm -f "$safeTmp"/"digimend-dkms_10_all.deb"
+		fi
+		
+		return 0
+	fi
+	
+	
+	return 1
+}
+
+_fetchDep_debianBuster_sequence() {
+	_start
+	
+	_mustGetSudo
+	
+	_wantDep "$1" && _stop 0
+	
+	_fetchDep_debianBuster_special "$@" && _wantDep "$1" && _stop 0
+	
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$1" && _wantDep "$1" && _stop 0
+	
+	_apt-file search "$1" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
+	
+	local sysPathAll
+	sysPathAll=$(sudo -n bash -c "echo \$PATH")
+	sysPathAll="$PATH":"$sysPathAll"
+	local sysPathArray
+	IFS=':' read -r -a sysPathArray <<< "$sysPathAll"
+	
+	local currentSysPath
+	local matchingPackageFile
+	local matchingPackagePattern
+	local matchingPackage
+	for currentSysPath in "${sysPathArray[@]}"
+	do
+		matchingPackageFile=""
+		matchingPackagePath=""
+		matchingPackage=""
+		matchingPackagePattern="$currentSysPath"/"$1"
+		matchingPackageFile=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f2- -d' ')
+		matchingPackage=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f1 -d':')
+		if [[ "$matchingPackage" != "" ]]
+		then
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+			_wantDep "$1" && _stop 0
+		fi
+	done
+	matchingPackage=""
+	matchingPackage=$(head -n 1 "$safeTmp"/pkgsOut | cut -f1 -d':')
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+	_wantDep "$1" && _stop 0
+	
+	_stop 1
+}
+
+_fetchDep_debianBuster() {
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	export DEBIAN_FRONTEND=noninteractive
+	
+	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
+	"$scriptAbsoluteLocation" _fetchDep_debianBuster_sequence "$@"
+	"$scriptAbsoluteLocation" _fetchDep_debianBuster_sequence "$@"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_fetchDep_debian() {
+	
+	# WARNING: Obsolete. Disabled.
+	#if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 1 | grep 9 > /dev/null 2>&1
+	#then
+		#_fetchDep_debianStretch "$@"
+		#return
+	#fi
+	
+	# WARNING: Obsolete. Declining support. Eventual removal expected approximately one year after two Debian stable releases.
+	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 10 > /dev/null 2>&1
+	then
+		_fetchDep_debianBuster "$@"
+		return
+	fi
+	
+	
+	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 11 > /dev/null 2>&1
+	then
+		_fetchDep_debianBullseye "$@"
+		return
+	fi
+	
+	return 1
+}
+
+
+
+_fetchDep_ubuntuFocalFossa_special() {
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+	
+# 	if [[ "$1" == *"java"* ]]
+# 	then
+# 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y default-jdk default-jre
+# 		return 0
+# 	fi
+	
+	if [[ "$1" == *"wine"* ]] && ! dpkg --print-foreign-architectures | grep i386 > /dev/null 2>&1
+	then
+		sudo -n dpkg --add-architecture i386
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y wine wine32 wine64 libwine libwine:i386 fonts-wine
+		return 0
+	fi
+	
+	if [[ "$1" == "realpath" ]] || [[ "$1" == "readlink" ]] || [[ "$1" == "dirname" ]] || [[ "$1" == "basename" ]] || [[ "$1" == "sha512sum" ]] || [[ "$1" == "sha256sum" ]] || [[ "$1" == "head" ]] || [[ "$1" == "tail" ]] || [[ "$1" == "sleep" ]] || [[ "$1" == "env" ]] || [[ "$1" == "cat" ]] || [[ "$1" == "mkdir" ]] || [[ "$1" == "dd" ]] || [[ "$1" == "rm" ]] || [[ "$1" == "ln" ]] || [[ "$1" == "ls" ]] || [[ "$1" == "test" ]] || [[ "$1" == "true" ]] || [[ "$1" == "false" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y coreutils
+		return 0
+	fi
+	
+	if [[ "$1" == "mount" ]] || [[ "$1" == "umount" ]] || [[ "$1" == "losetup" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mount
+		return 0
+	fi
+	
+	if [[ "$1" == "mountpoint" ]] || [[ "$1" == "mkfs" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y util-linux
+		return 0
+	fi
+	
+	if [[ "$1" == "mkfs.ext4" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y e2fsprogs
+		return 0
+	fi
+	
+	if [[ "$1" == "parted" ]] || [[ "$1" == "partprobe" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y parted
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-arm-static" ]] || [[ "$1" == "qemu-armeb-static" ]] || [[ "$1" == "update-binfmts" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu qemu-user-static binfmt-support
+		#update-binfmts --display
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-system-x86_64" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-system-x86
+		return 0
+	fi
+	
+	if [[ "$1" == "qemu-img" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-utils
+		return 0
+	fi
+	
+	if [[ "$1" == "VirtualBox" ]] || [[ "$1" == "VBoxSDL" ]] || [[ "$1" == "VBoxManage" ]] || [[ "$1" == "VBoxHeadless" ]]
+	then
+		sudo -n mkdir -p /etc/apt/sources.list.d
+		echo 'deb http://download.virtualbox.org/virtualbox/debian focal contrib' | sudo -n tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+		
+		"$scriptAbsoluteLocation" _getDep wget
+		! _wantDep wget && return 1
+		
+		# TODO Check key fingerprints match "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF" and "7B0F AB3A 13B9 0743 5925  D9C9 5442 2A4B 98AB 5139" respectively.
+		wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo -n apt-key add -
+		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
+		
+		echo "WARNING: Recommend manual system configuration after install. See https://www.virtualbox.org/wiki/Downloads ."
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "gpg" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y gnupg
+		return 0
+	fi
+	
+	#Unlikely scenario for hosts.
+	if [[ "$1" == "grub-install" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub2
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub-legacy
+		return 0
+	fi
+	
+	if [[ "$1" == "MAKEDEV" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y makedev
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "fgrep" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
+		return 0
+	fi
+	
+	if [[ "$1" == "awk" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mawk
+		return 0
+	fi
+	
+	if [[ "$1" == "kill" ]] || [[ "$1" == "ps" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y procps
+		return 0
+	fi
+	
+	if [[ "$1" == "find" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y findutils
+		return 0
+	fi
+	
+	if [[ "$1" == "docker" ]]
+	then
+		sudo -n update-alternatives --set iptables /usr/sbin/iptables-legacy
+		sudo -n update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+		#sudo -n systemctl restart docker
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+		
+		"$scriptAbsoluteLocation" _getDep curl
+		! _wantDep curl && return 1
+		
+		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo -n apt-key add -
+		local aptKeyFingerprint
+		aptKeyFingerprint=$(sudo -n apt-key fingerprint 0EBFCD88 2> /dev/null)
+		[[ "$aptKeyFingerprint" == "" ]] && return 1
+		
+		sudo -n add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y docker docker-engine docker.io docker-ce docker
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y docker-ce
+		
+		sudo -n usermod -a -G docker "$USER"
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "smbd" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y samba
+		return 0
+	fi
+	
+	if [[ "$1" == "atom" ]]
+	then
+		curl -L https://packagecloud.io/AtomEditor/atom/gpgkey | sudo -n apt-key add -
+		sudo -n sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/ub_atom.list'
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y atom
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "GL/gl.h" ]] || [[ "$1" == "GL/glext.h" ]] || [[ "$1" == "GL/glx.h" ]] || [[ "$1" == "GL/glxext.h" ]] || [[ "$1" == "GL/dri_interface.h" ]] || [[ "$1" == "x86_64-linux-gnu/pkgconfig/dri.pc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mesa-common-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "go" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y golang-go
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "php" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y php
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "cura-lulzbot" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See https://www.lulzbot.com/learn/tutorials/cura-lulzbot-edition-installation-debian ."
+cat << 'CZXWXcRMTo8EmM8i4d'
+wget -qO - https://download.alephobjects.com/ao/aodeb/aokey.pub | sudo -n apt-key add -
+sudo -n cp /etc/apt/sources.list /etc/apt/sources.list.bak && sudo -n sed -i '$a deb http://download.alephobjects.com/ao/aodeb jessie main' /etc/apt/sources.list && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install cura-lulzbot
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" =~ "FlashPrint" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation. See http://www.flashforge.com/support-center/flashprint-support/ ."
+		_stop 1
+	fi
+	
+	if [[ "$1" == "cargo" ]] || [[ "$1" == "rustc" ]]
+	then
+		#Testing/Sid only as of Stretch release cycle.
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
+		
+		echo "Requires manual installation."
+cat << 'CZXWXcRMTo8EmM8i4d'
+curl https://sh.rustup.rs -sSf | sh
+echo '[[ -e "$HOME"/.cargo/bin ]] && export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+CZXWXcRMTo8EmM8i4d
+		echo "(typical)"
+		_stop 1
+	fi
+	
+	if [[ "$1" == "firejail" ]]
+	then
+		echo "WARNING: Recommend manual system configuration after install. See https://firejail.wordpress.com/download-2/ ."
+		echo "WARNING: Desktop override symlinks may cause problems, especially preventing proxy host jumping by CoreAutoSSH!"
+		return 1
+	fi
+	
+	
+	if [[ "$1" == "nix-env" ]]
+	then
+		_tryExec '_test_nix-env_upstream'
+		#_tryExec '_test_nix-env_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "croc" ]]
+	then
+		_tryExec '_test_croc_upstream'
+		#_tryExec '_test_croc_upstream_beta'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "rclone" ]]
+	then
+		_tryExec '_test_rclone_upstream'
+		#_tryExec '_test_rclone_upstream_beta'
+		
+		return 0
+	fi
+	
+	
+	if [[ "$1" == "terraform" ]]
+	then
+		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y terraform
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "vagrant" ]]
+	then
+		#curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
+		#sudo -n apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant-libvirt
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "digimend-debug" ]] || [[ "$1" == 'udev/rules.d/90-digimend.rules' ]] || [[ "$1" == 'X11/xorg.conf.d/50-digimend.conf' ]]
+	then
+		if ! _wantDep digimend-debug && [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' > /dev/null 2>&1
+		then
+			if [[ -e "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb ]]
+			then
+				if ! yes | sudo -n dpkg -i "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb
+				then
+					sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y digimend-dkms
+				fi
+			fi
+			
+			if ! sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
+			then
+				sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y digimend-dkms
+			fi
+			
+			curl -L "https://github.com/DIGImend/digimend-kernel-drivers/releases/download/v10/digimend-dkms_10_all.deb" -o "$safeTmp"/"digimend-dkms_10_all.deb"
+			if ! yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_10_all.deb"
+			then
+				sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y digimend-dkms
+			fi
+			if ! sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
+			then
+				sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y digimend-dkms
+			fi
+			sudo rm -f "$safeTmp"/"digimend-dkms_10_all.deb"
+		fi
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "openssl/ssl.h" ]] || [[ "$1" == "include/openssl/ssl.h" ]] || [[ "$1" == "/usr/include/openssl/ssl.h" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libssl-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "sqlite3.h" ]] || [[ "$1" == "sqlite3ext.h" ]] || [[ "$1" == "pkgconfig/sqlite3.pc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libsqlite3-dev
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "qalculate-gtk" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qalculate-gtk
+		
+		! _wantDep 'qalculate-gtk' && echo 'warn: missing: qalculate-gtk'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "bup" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y bup
+		
+		! _wantDep 'bup' && echo 'warn: missing: bup'
+		
+		return 0
+	fi
+	
+	
+	return 1
+}
+
+
+
+
+
+_fetchDep_ubuntuFocalFossa_sequence() {
+	_start
+	
+	_mustGetSudo
+	
+	_wantDep "$1" && _stop 0
+	
+	_fetchDep_ubuntuFocalFossa_special "$@" && _wantDep "$1" && _stop 0
+	
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$1" && _wantDep "$1" && _stop 0
+	
+	_apt-file search "$1" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
+	
+	local sysPathAll
+	sysPathAll=$(sudo -n bash -c "echo \$PATH")
+	sysPathAll="$PATH":"$sysPathAll"
+	local sysPathArray
+	IFS=':' read -r -a sysPathArray <<< "$sysPathAll"
+	
+	local currentSysPath
+	local matchingPackageFile
+	local matchingPackagePattern
+	local matchingPackage
+	for currentSysPath in "${sysPathArray[@]}"
+	do
+		matchingPackageFile=""
+		matchingPackagePath=""
+		matchingPackage=""
+		matchingPackagePattern="$currentSysPath"/"$1"
+		matchingPackageFile=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f2- -d' ')
+		matchingPackage=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f1 -d':')
+		if [[ "$matchingPackage" != "" ]]
+		then
+			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+			_wantDep "$1" && _stop 0
+		fi
+	done
+	matchingPackage=""
+	matchingPackage=$(head -n 1 "$safeTmp"/pkgsOut | cut -f1 -d':')
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
+	_wantDep "$1" && _stop 0
+	
+	_stop 1
+}
+
+_fetchDep_ubuntuFocalFossa() {
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	export DEBIAN_FRONTEND=noninteractive
+	
+	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
+	"$scriptAbsoluteLocation" _fetchDep_ubuntuFocalFossa_sequence "$@"
+	"$scriptAbsoluteLocation" _fetchDep_ubuntuFocalFossa_sequence "$@"
+}
+
+_fetchDep_ubuntu() {
+	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '20.04' > /dev/null 2>&1
+	then
+		_fetchDep_ubuntuFocalFossa "$@"
+		return
+	fi
+	
+	return 1
+}
+
+
+
+# WARNING: Untested!
+# Especially needed, testing with chroot and ssh backends.
+
+# ATTENTION: Expected use case is to attempt installation of dependencies and user software, once, before using '_test'. Not every command is expected to succeed.
+
+
+
+# ATTENTION: Examples. Copy relevant files to automatically enable such installations (file existence will be detected).
+	#[[ "$getMost_backend" == "chroot" ]]
+		#sudo -n cp "$scriptLib"/debian/packages/bup_0.29-3_amd64.deb "$globalVirtFS"/
+	#[[ "$getMost_backend" == "ssh" ]]
+		#_rsync -axvz --rsync-path='mkdir -p '"'"$currentDestinationDirPath"'"' ; rsync' --delete "$1" "$2"
+
+
+
+
+
+
+
+_install_debian11() {
+	! "$scriptAbsoluteLocation" _mustGetSudo && _messageError 'FAIL: _mustGetSudo' && return 1
+	_mustGetSudo
+	
+	"$scriptAbsoluteLocation" _setupUbiquitous
+	"$scriptAbsoluteLocation" _getMost_debian11
+	type _get_veracrypt > /dev/null 2>&1 && "$scriptAbsoluteLocation" _get_veracrypt
+	"$scriptAbsoluteLocation" _test
+	
+	#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get --install-recommends -y upgrade
+	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --install-recommends -y upgrade
+}
+
+
+
+
+
+# Workaround to prevent 'tasksel' from going to 'background' locking subsequent other 'apt-get' and similar commands.
+# Nevertheless, using any 'tasksel' commands only at the end of any script is preferable.
+_wait_debianInstall() {
+	# Loop expected much slower than 0.1s/iteration, expect reasonable CPU and such ~0.3s/iteration.
+	# If CPU and such are faster, than both this loop and any debian install program to detect, are both expected to change timing comparably, so adjustments are expected NOT necessary.
+	
+	# https://blog.sinjakli.co.uk/2021/10/25/waiting-for-apt-locks-without-the-hacky-bash-scripts/
+	local currentIteration
+	local currentIteration_continuing
+	currentIteration=0
+	currentIteration_continuing=99999
+	while [[ "$currentIteration" -lt 900 ]] && [[ "$currentIteration_continuing" == 99999 ]] ; do
+		_messagePlain_probe 'wait: install: debian'
+		
+		currentIteration_continuing=0
+		while [[ "$currentIteration_continuing" -lt 300 ]] ; do
+			sleep 0.1
+			echo 'busy: '"$currentIteration_continuing"
+			let currentIteration_continuing="$currentIteration_continuing"+1
+			if pgrep "^tasksel$" || pgrep "^apt-get$" || pgrep "^dpkg$" || ( fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || ( type -p sudo > /dev/null 2>&1 && sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 ) )
+			then
+				currentIteration_continuing=99999
+			fi
+			let currentIteration="$currentIteration"+1
+		done
+		echo 'wait: '"$currentIteration"
+	done
+	sleep 1
+}
+
+
+_getMost_debian11_aptSources() {
+	# May be an image copied while dpkg was locked. Especially if 'chroot'.
+	_getMost_backend rm -f /var/lib/apt/lists/lock
+	_getMost_backend rm -f /var/lib/dpkg/lock
+	
+	
+	_getMost_backend_aptGetInstall wget
+	_getMost_backend_aptGetInstall gpg
+	
+	
+	_getMost_backend mkdir -p /etc/apt/sources.list.d
+	
+	echo 'deb http://deb.debian.org/debian bullseye-backports main contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_backports.list > /dev/null 2>&1
+	echo 'deb http://download.virtualbox.org/virtualbox/debian bullseye contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+	echo 'deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+	
+	#if false && !  [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' > /dev/null 2>&1
+	#then
+		#echo 'deb http://deb.debian.org/debian bullseye-backports main contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_backports.list > /dev/null 2>&1
+		#echo 'deb http://download.virtualbox.org/virtualbox/debian bullseye contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+		#echo 'deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+	#elif [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '20.04' > /dev/null 2>&1
+	#then
+		#true
+		##echo 'deb http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+		##sudo -n add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
+	#fi
+	
+	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
+	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
+}
+
+_getMost_debian11_special_early() {
+	true
+}
+
+_getMost_debian11_special_late() {
+	_getMost_backend_aptGetInstall curl
+	
+	_messagePlain_probe 'install: rclone'
+	#_getMost_backend curl https://rclone.org/install.sh | _getMost_backend bash -s beta
+	_getMost_backend curl https://rclone.org/install.sh | _getMost_backend bash
+}
+
+_getMost_debian11_install() {
+	_messagePlain_probe 'apt-get update'
+	_getMost_backend apt-get update
+	
+	
+	_getMost_debian11_special_early
+	
+	
+	
+	
+	_getMost_backend_aptGetInstall sudo
+	_getMost_backend_aptGetInstall gpg
+	_getMost_backend_aptGetInstall --reinstall wget
+	
+	
+	_messagePlain_probe 'apt-get update'
+	_getMost_backend apt-get update
+	
+	# DANGER: Requires expanded (raspi) image (ie. raspi image is too small by default)!
+	# May be able to resize with some combination of 'dd' and 'gparted' , possibly '_gparted' . May be untested.
+	#_messagePlain_probe 'apt-get upgrade'
+	#_getMost_backend apt-get upgrade
+	
+	
+	if _getMost_backend_fileExists "/bup_0.29-3_amd64.deb"
+	then
+		_getMost_backend dpkg -i "/bup_0.29-3_amd64.deb"
+		_getMost_backend rm -f /bup_0.29-3_amd64.deb
+		_getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get install -y -f
+	fi
+	
+	_getMost_backend_aptGetInstall bup
+	
+	_getMost_backend_aptGetInstall bc autossh nmap socat sockstat rsync net-tools
+	_getMost_backend_aptGetInstall bc nmap autossh socat sshfs tor
+	_getMost_backend_aptGetInstall sockstat
+	_getMost_backend_aptGetInstall x11-xserver-utils
+	
+	_getMost_backend_aptGetInstall uuid-runtime
+	
+	_getMost_backend_aptGetInstall tigervnc-viewer
+	_getMost_backend_aptGetInstall x11vnc
+	_getMost_backend_aptGetInstall tigervnc-standalone-server
+	_getMost_backend_aptGetInstall tigervnc-scraping-server
+	
+	_getMost_backend_aptGetInstall iperf3
+	
+	#_getMost_backend_aptGetInstall synergy quicksynergy
+	
+	_getMost_backend_aptGetInstall vim
+	
+	if _getMost_backend bash -c '! dpkg --print-foreign-architectures | grep i386'
+	then
+		_getMost_backend dpkg --add-architecture i386
+		_getMost_backend apt-get update
+	fi
+	_getMost_backend_aptGetInstall wmctrl xprintidle
+	_getMost_backend_aptGetInstall okular libreoffice firefox-esr xournal kwrite netcat-openbsd iperf axel unionfs-fuse samba
+	_getMost_backend_aptGetInstall qemu
+	_getMost_backend_aptGetInstall qemu-system-x86
+	_getMost_backend_aptGetInstall qemu-system-arm
+	_getMost_backend_aptGetInstall qemu-efi-arm qemu-efi-aarch64 qemu-user-static qemu-utils
+	_getMost_backend_aptGetInstall dosbox
+	_getMost_backend_aptGetInstall wine wine32 wine64 libwine libwine:i386 fonts-wine
+	_getMost_backend_aptGetInstall debootstrap xclip xinput gparted bup emacs xterm mesa-utils
+	_getMost_backend_aptGetInstall kde-standard
+	_getMost_backend_aptGetInstall chromium
+	_getMost_backend_aptGetInstall openjdk-11-jdk openjdk-11-jre
+	
+	# ATTENTION: ONLY uncomment if needed to ensure a kernel is installed AND custom kernel is not in use.
+	_getMost_backend_aptGetInstall linux-image-amd64
+	
+	_getMost_backend_aptGetInstall net-tools wireless-tools rfkill
+	
+	
+	# https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/install-linux-host.html
+	echo 'virtualbox virtualbox/module-compilation-allowed boolean true
+	virtualbox virtualbox/delete-old-modules boolean true' | sudo -n debconf-set-selections
+	
+	if false && !  [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' > /dev/null 2>&1
+	then
+		# WARNING: Untested. May be old version of VirtualBox. May conflict with guest additions.
+		#_getMost_backend_aptGetInstall virtualbox-6.1
+		_getMost_backend apt-get -d install -y virtualbox-6.1
+		
+		
+		# WARNING: Untested. May cause problems.
+		#_getMost_backend_aptGetInstall docker-ce
+		_getMost_backend apt-get -d install -y docker-ce
+	fi
+	
+	
+	# WARNING: Untested. May incorrectly remove supposedly 'old' kernel versions.
+	#_getMost_backend apt-get autoremove -y
+	
+	
+	# WARNING: Strongly discouraged here.
+	#sudo -n rm -f "$globalVirtFS"/ubtest.sh > /dev/null 2>&1
+	#sudo -n cp "$scriptAbsoluteLocation" "$globalVirtFS"/ubtest.sh
+	#_getMost_backend /ubtest.sh _test
+	
+	
+	_getMost_backend_aptGetInstall live-boot
+	_getMost_backend_aptGetInstall pigz
+	
+	_getMost_backend_aptGetInstall falkon
+	_getMost_backend_aptGetInstall konqueror
+	
+	_getMost_backend_aptGetInstall xserver-xorg-video-all
+	
+	_getMost_backend_aptGetInstall qalculate-gtk
+	_getMost_backend_aptGetInstall qalc
+	
+	_getMost_backend_aptGetInstall octave
+	_getMost_backend_aptGetInstall octave-arduino
+	_getMost_backend_aptGetInstall octave-bart
+	_getMost_backend_aptGetInstall octave-bim
+	_getMost_backend_aptGetInstall octave-biosig
+	_getMost_backend_aptGetInstall octave-bsltl
+	_getMost_backend_aptGetInstall octave-cgi
+	_getMost_backend_aptGetInstall octave-communications
+	_getMost_backend_aptGetInstall octave-control
+	_getMost_backend_aptGetInstall octave-data-smoothing
+	_getMost_backend_aptGetInstall octave-dataframe
+	_getMost_backend_aptGetInstall octave-dicom
+	_getMost_backend_aptGetInstall octave-divand
+	_getMost_backend_aptGetInstall octave-econometrics
+	_getMost_backend_aptGetInstall octave-financial
+	_getMost_backend_aptGetInstall octave-fits
+	_getMost_backend_aptGetInstall octave-fuzzy-logic-toolkit
+	_getMost_backend_aptGetInstall octave-ga
+	_getMost_backend_aptGetInstall octave-gdf
+	_getMost_backend_aptGetInstall octave-geometry
+	_getMost_backend_aptGetInstall octave-gsl
+	_getMost_backend_aptGetInstall octave-image
+	_getMost_backend_aptGetInstall octave-image-acquisition
+	_getMost_backend_aptGetInstall octave-instrument-control
+	_getMost_backend_aptGetInstall octave-interval
+	_getMost_backend_aptGetInstall octave-io
+	_getMost_backend_aptGetInstall octave-level-set
+	_getMost_backend_aptGetInstall octave-linear-algebra
+	_getMost_backend_aptGetInstall octave-lssa
+	_getMost_backend_aptGetInstall octave-ltfat
+	_getMost_backend_aptGetInstall octave-mapping
+	_getMost_backend_aptGetInstall octave-miscellaneous
+	_getMost_backend_aptGetInstall octave-missing-functions
+	_getMost_backend_aptGetInstall octave-mpi
+	_getMost_backend_aptGetInstall octave-msh
+	_getMost_backend_aptGetInstall octave-mvn
+	_getMost_backend_aptGetInstall octave-nan
+	_getMost_backend_aptGetInstall octave-ncarry
+	_getMost_backend_aptGetInstall octave-netcdf
+	_getMost_backend_aptGetInstall octave-nlopt
+	_getMost_backend_aptGetInstall octave-nurbs
+	_getMost_backend_aptGetInstall octave-octclip
+	_getMost_backend_aptGetInstall octave-octproj
+	_getMost_backend_aptGetInstall octave-openems
+	_getMost_backend_aptGetInstall octave-optics
+	_getMost_backend_aptGetInstall octave-optim
+	_getMost_backend_aptGetInstall octave-optiminterp
+	_getMost_backend_aptGetInstall octave-parallel
+	_getMost_backend_aptGetInstall octave-pfstools
+	_getMost_backend_aptGetInstall octave-plplot
+	_getMost_backend_aptGetInstall octave-psychtoolbox-3
+	_getMost_backend_aptGetInstall octave-quarternion
+	_getMost_backend_aptGetInstall octave-queueing
+	_getMost_backend_aptGetInstall octave-secs1d
+	_getMost_backend_aptGetInstall octave-secs2d
+	_getMost_backend_aptGetInstall octave-secs3d
+	_getMost_backend_aptGetInstall octave-signal
+	_getMost_backend_aptGetInstall octave-sockets
+	_getMost_backend_aptGetInstall octave-sparsersb
+	_getMost_backend_aptGetInstall octave-specfun
+	_getMost_backend_aptGetInstall octave-splines
+	_getMost_backend_aptGetInstall octave-stk
+	_getMost_backend_aptGetInstall octave-strings
+	_getMost_backend_aptGetInstall octave-struct
+	_getMost_backend_aptGetInstall octave-symbolic
+	_getMost_backend_aptGetInstall octave-tsa
+	_getMost_backend_aptGetInstall octave-vibes
+	_getMost_backend_aptGetInstall octave-vlfeat
+	_getMost_backend_aptGetInstall octave-rml
+	_getMost_backend_aptGetInstall octave-zenity
+	_getMost_backend_aptGetInstall octave-zeromq
+	
+	
+	_getMost_backend_aptGetInstall mktorrent
+	_getMost_backend_aptGetInstall curl
+	_getMost_backend_aptGetInstall gdisk
+	_getMost_backend_aptGetInstall kate
+	_getMost_backend_aptGetInstall kde-config-tablet
+	_getMost_backend_aptGetInstall kwrite
+	_getMost_backend_aptGetInstall lz4
+	_getMost_backend_aptGetInstall mawk
+	_getMost_backend_aptGetInstall nano
+	_getMost_backend_aptGetInstall nilfs-tools
+	
+	_getMost_backend_aptGetInstall build-essential
+	_getMost_backend_aptGetInstall bison
+	_getMost_backend_aptGetInstall libelf-dev
+	_getMost_backend_aptGetInstall elfutils
+	
+	_getMost_backend_aptGetInstall librecode0
+	_getMost_backend_aptGetInstall wkhtmltopdf
+	
+	_getMost_backend_aptGetInstall recoll
+	_getMost_backend_aptGetInstall sed
+	_getMost_backend_aptGetInstall texinfo
+	_getMost_backend_aptGetInstall udftools
+	_getMost_backend_aptGetInstall wondershaper
+	_getMost_backend_aptGetInstall sddm
+	_getMost_backend_aptGetInstall task-kde-desktop
+	
+	
+	_getMost_backend_aptGetInstall kdiff3
+	_getMost_backend_aptGetInstall pstoedit
+	_getMost_backend_aptGetInstall pdftk
+	
+	_getMost_backend_aptGetInstall sysbench
+	
+	_getMost_backend_aptGetInstall libssl-dev
+	
+	
+	_getMost_backend_aptGetInstall cpio
+	
+	
+	_getMost_backend_aptGetInstall pv
+	_getMost_backend_aptGetInstall expect
+	
+	_getMost_backend_aptGetInstall libgtk2.0-0
+	
+	_getMost_backend_aptGetInstall libwxgtk3.0-gtk3-0v5
+	
+	_getMost_backend_aptGetInstall wipe
+	
+	_getMost_backend_aptGetInstall udftools
+	
+	
+	
+	_getMost_backend_aptGetInstall iputils-ping
+	
+	_getMost_backend_aptGetInstall btrfs-tools
+	_getMost_backend_aptGetInstall btrfs-progs
+	_getMost_backend_aptGetInstall btrfs-compsize
+	_getMost_backend_aptGetInstall zstd
+	
+	_getMost_backend_aptGetInstall zlib1g
+	
+	_getMost_backend_aptGetInstall nilfs-tools
+	
+	
+	
+	# md5sum , sha512sum
+	_getMost_backend_aptGetInstall coreutils
+	
+	_getMost_backend_aptGetInstall python3
+	
+	# blkdiscard
+	_getMost_backend_aptGetInstall util-linux
+	
+	# sg_format
+	_getMost_backend_aptGetInstall sg3-utils
+	
+	_getMost_backend_aptGetInstall kpartx
+	
+	_getMost_backend_aptGetInstall openssl
+	
+	_getMost_backend_aptGetInstall growisofs
+	
+	_getMost_backend_aptGetInstall udev
+	
+	_getMost_backend_aptGetInstall gdisk
+	
+	_getMost_backend_aptGetInstall cryptsetup
+	
+	_getMost_backend_aptGetInstall util-linux
+	
+	_getMost_backend_aptGetInstall parted
+	
+	_getMost_backend_aptGetInstall bc
+	
+	_getMost_backend_aptGetInstall e2fsprogs
+	
+	_getMost_backend_aptGetInstall xz-utils
+	
+	_getMost_backend_aptGetInstall libreadline8
+	
+	
+	_getMost_backend_aptGetInstall mkisofs
+	_getMost_backend_aptGetInstall genisoimage
+	
+	
+	
+	_getMost_backend_aptGetInstall synaptic
+	
+	_getMost_backend_aptGetInstall cifs-utils
+	
+	
+	
+	# purge-old-kernels
+	_getMost_backend_aptGetInstall byobu
+	
+	
+	
+	
+	_getMost_backend_aptGetInstall xorriso
+	_getMost_backend_aptGetInstall squashfs-tools
+	_getMost_backend_aptGetInstall grub-pc-bin
+	_getMost_backend_aptGetInstall grub-efi-amd64-bin
+	_getMost_backend_aptGetInstall mtools
+	_getMost_backend_aptGetInstall mksquashfs
+	_getMost_backend_aptGetInstall grub-mkstandalone
+	_getMost_backend_aptGetInstall mkfs.vfat
+	_getMost_backend_aptGetInstall mkswap
+	_getMost_backend_aptGetInstall mmd
+	_getMost_backend_aptGetInstall mcopy
+	_getMost_backend_aptGetInstall fdisk
+	_getMost_backend_aptGetInstall mkswap
+	
+	
+	
+	
+	
+	
+	_messagePlain_probe _getMost_backend curl croc
+	if ! _getMost_backend type croc > /dev/null 2>&1
+	then
+		_getMost_backend curl https://getcroc.schollz.com | _getMost_backend bash
+	fi
+	
+	
+	
+	_getMost_backend_aptGetInstall iotop
+	
+	_getMost_backend_aptGetInstall pavucontrol
+	_getMost_backend_aptGetInstall filelight
+	
+	_getMost_backend_aptGetInstall obs-studio
+	
+	
+	
+	_getMost_backend_aptGetInstall lepton-eda
+	_getMost_backend_aptGetInstall pcb
+	_getMost_backend_aptGetInstall pcb-rnd
+	_getMost_backend_aptGetInstall gerbv
+	_getMost_backend_aptGetInstall electronics-pcb
+	_getMost_backend_aptGetInstall pcb2gcode
+	
+	_getMost_backend_aptGetInstall kicad
+	
+	_getMost_backend_aptGetInstall electric
+	
+	_getMost_backend_aptGetInstall freecad
+	
+	
+	
+	_getMost_backend apt-get remove --autoremove -y plasma-discover
+	
+	
+	_getMost_debian11_special_late
+}
+
+# ATTENTION: End user function.
+_getMost_debian11() {
+	_messagePlain_probe 'begin: _getMost_debian11'
+	
+	_set_getMost_backend "$@"
+	_set_getMost_backend_debian "$@"
+	_test_getMost_backend "$@"
+	
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | _getMost_backend tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | _getMost_backend tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	#https://askubuntu.com/questions/876240/how-to-automate-setting-up-of-keyboard-configuration-package
+	#apt-get install -y debconf-utils
+	export DEBIAN_FRONTEND=noninteractive
+	
+	
+	_getMost_debian11_aptSources "$@"
+	
+	_getMost_debian11_install "$@"
+	
+	
+	_getMost_backend apt-get remove --autoremove -y plasma-discover
+	
+	
+	_messagePlain_probe 'end: _getMost_debian11'
+}
+
+
+
+
+
+_getMost_ubuntu20_aptSources() {
+	# May be an image copied while dpkg was locked. Especially if 'chroot'.
+	_getMost_backend rm -f /var/lib/apt/lists/lock
+	_getMost_backend rm -f /var/lib/dpkg/lock
+	
+	
+	_getMost_backend_aptGetInstall wget
+	_getMost_backend_aptGetInstall gpg
+	
+	
+	_getMost_backend mkdir -p /etc/apt/sources.list.d
+	echo 'deb http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
+	echo 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+	
+	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
+	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
+}
+_getMost_ubuntu20_install() {
+	_getMost_debian11_install "$@"
+	
+	# WARNING: Untested. May be old version of VirtualBox. May conflict with guest additions.
+	#_getMost_backend_aptGetInstall virtualbox-6.1
+	_getMost_backend apt-get -d install -y virtualbox-6.1
+	
+	
+	# WARNING: Untested. May cause problems.
+	#_getMost_backend_aptGetInstall docker-ce
+	_getMost_backend apt-get -d install -y docker-ce
+	
+	_getMost_backend_aptGetInstall tasksel
+	_getMost_backend_aptGetInstall kde-plasma-desktop
+	
+	#_getMost_backend tasksel --new-install install "ubuntu-desktop"
+	#_wait_debianInstall
+	_getMost_backend_aptGetInstall ubuntu-desktop
+}
+
+# ATTENTION: End user function.
+_getMost_ubuntu20() {
+	_messagePlain_probe 'begin: _getMost_ubuntu20'
+	
+	_set_getMost_backend "$@"
+	_set_getMost_backend_debian "$@"
+	_test_getMost_backend "$@"
+	
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | _getMost_backend tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | _getMost_backend tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	#https://askubuntu.com/questions/876240/how-to-automate-setting-up-of-keyboard-configuration-package
+	#apt-get install -y debconf-utils
+	export DEBIAN_FRONTEND=noninteractive
+	
+	
+	_getMost_ubuntu20_aptSources "$@"
+	
+	_getMost_ubuntu20_install "$@"
+	
+	
+	_getMost_backend apt-get remove --autoremove -y plasma-discover
+	
+	
+	_messagePlain_probe 'end: _getMost_ubuntu20'
+}
+
+
+
+
+
+# ATTENTION: Override with 'ops.sh' or similar .
+# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+_set_getMost_backend_debian() {
+	_getMost_backend_aptGetInstall() {
+		# --no-upgrade
+		_messagePlain_probe _getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install --install-recommends -y "$@"
+		_getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install --install-recommends -y "$@"
+	}
+	
+	#if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' > /dev/null 2>&1
+	#then
+		#_getMost_backend_aptGetInstall() {
+		## --no-upgrade
+			#_messagePlain_probe _getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install --install-recommends -y "$@"
+			#_getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install --install-recommends -y "$@"
+		#}
+	#fi
+	
+	export -f _getMost_backend_aptGetInstall
+}
+_set_getMost_backend_command() {
+	[[ "$getMost_backend" == "" ]] && export getMost_backend="direct"
+	#[[ "$getMost_backend" == "" ]] && export getMost_backend="chroot"
+	#[[ "$getMost_backend" == "" ]] && export getMost_backend="ssh"
+	
+	
+	
+	if [[ "$getMost_backend" == "direct" ]] && [[ $(id -u) == 0 ]]
+	then
+		! _mustBeRoot && exit 1
+		_getMost_backend() {
+			"$@"
+		}
+		export -f _getMost_backend
+		return 0
+	fi
+	if [[ "$getMost_backend" == "direct" ]]
+	then
+		! _mustGetSudo && exit 1
+		_getMost_backend() {
+			sudo -n "$@"
+		}
+		export -f _getMost_backend
+		return 0
+	fi
+	[[ "$getMost_backend" == "direct" ]] && return 1
+	
+	
+	
+	if [[ "$getMost_backend" == "chroot" ]]
+	then
+		_getMost_backend() {
+			_chroot "$@"
+		}
+		export -f _getMost_backend
+	fi
+	
+	if [[ "$getMost_backend" == "ssh" ]]
+	then
+		_getMost_backend() {
+			local currentExitStatus
+			
+			#export custom_user="user"
+			#export custom_hostname='hostname'
+			#export custom_netName="$netName"
+			#export SSHuserAndMachine="$custom_user""@""$custom_hostname"-"$custom_netName"
+			#export SSHuserAndMachine="$1"
+			_ssh_internal_command "$SSHuserAndMachine" "$@"
+			currentExitStatus="$?"
+			
+			#Preventative workaround, not normally necessary.
+			stty echo > /dev/null 2>&1
+			return "$currentExitStatus"
+		}
+		export -f _getMost_backend
+	fi
+	
+	return 0
+}
+_set_getMost_backend_fileExists() {
+	_getMost_backend_fileExists() {
+		# Any modern GNU/Linux, Cygwin/MSW, etc, OS distribution, is expected to have '/bin/bash'.
+		# Override to '/bin/dash' may very slightly improve performance, the compatibility tradeoff is NOT expected worthwhile.
+		_getMost_backend /bin/bash -c '[ -e "'"$1"'" ]'
+	}
+	export -f _getMost_backend_fileExists
+}
+_set_getMost_backend() {
+	_set_getMost_backend_command "$@"
+	_set_getMost_backend_fileExists "$@"
+	
+	_set_getMost_backend_debian "$@"
+}
+
+# WARNING: Do NOT call from '_test' or similar.
+_test_getMost_backend() {
+	_getMost_backend false && _messagePlain_bad 'fail: incorrect: _getMost_backend false' && _messageFAIL && _stop 1
+	! _getMost_backend true && _messagePlain_bad 'fail: incorrect: _getMost_backend true' && _messageFAIL && _stop 1
+}
+
+
+# WARNING: No production use. Installation commands may be called through 'chroot' or 'ssh' , expected as such not reasonably able to detect the OS distribution . User is expected to instead call the correct function with the correct configuration.
+_getMost() {
+	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian\|Raspbian' > /dev/null 2>&1
+	then
+		_tryExecFull _getMost_debian11 "$@"
+		return
+	fi
+	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' > /dev/null 2>&1
+	then
+		_tryExecFull _getMost_ubuntu20 "$@"
+		return
+	fi
+	return 1
+}
+
+
+
+
+
+
+
+
+
+
+# ATTENTION: Override with 'ops.sh' or similar.
+#./ubiquitous_bash.sh _getMost_backend true
+#./ubiquitous_bash.sh _getMost_backend false
+if [[ "$1" == "_getMost"* ]] && [[ "$ub_import" != "true" ]] && [[ "$objectName" == "ubiquitous_bash" ]] && ( ! type -f _getMost_backend > /dev/null 2>&1 || ! type -f _getMost_backend_fileExists > /dev/null 2>&1 || ! type -f _getMost_backend_aptGetInstall > /dev/null 2>&1 )
+then
+	_set_getMost_backend
+fi
+
+
+# ATTENTION: NOTICE: Unusual. Installs only dependencies necessary for some purposes (eg. kernel compiling). May be useful for cloud build (aka. 'Continious Integration' services which (eg. due to slow mirrors configured for Ubuntu) are unable to quickly install all of more normal 'desktop' packages.
+# ATTENTION: Override with 'core.sh' or similar.
+
+
+# Unusual. Strongly discouraged. Building Linux Kernel with fewer resources is helpful for compatibility and performance with some constrained and repetitive cloud services.
+_getMinimal_cloud() {
+	"$scriptAbsoluteLocation" _setupUbiquitous
+	
+	
+	
+	#https://askubuntu.com/questions/876240/how-to-automate-setting-up-of-keyboard-configuration-package
+	#apt-get install -y debconf-utils
+	export DEBIAN_FRONTEND=noninteractive
+	
+	_set_getMost_backend "$@"
+	_test_getMost_backend "$@"
+	#_getMost_debian11_aptSources "$@"
+	
+	
+	
+	_getMost_backend apt-get update
+	_getMost_backend_aptGetInstall sudo
+	_getMost_backend_aptGetInstall gpg
+	_getMost_backend_aptGetInstall --reinstall wget
+	
+	_getMost_backend_aptGetInstall vim
+	
+	_getMost_backend_aptGetInstall linux-image-amd64
+	
+	_getMost_backend_aptGetInstall pigz
+	
+	_getMost_backend_aptGetInstall qalc
+	
+	_getMost_backend_aptGetInstall octave
+	
+	_getMost_backend_aptGetInstall curl
+	_getMost_backend_aptGetInstall gdisk
+	_getMost_backend_aptGetInstall lz4
+	_getMost_backend_aptGetInstall mawk
+	_getMost_backend_aptGetInstall nano
+	
+	_getMost_backend_aptGetInstall build-essential
+	_getMost_backend_aptGetInstall bison
+	_getMost_backend_aptGetInstall libelf-dev
+	_getMost_backend_aptGetInstall elfutils
+	
+	_getMost_backend_aptGetInstall patch
+	
+	_getMost_backend_aptGetInstall tar
+	_getMost_backend_aptGetInstall xz
+	_getMost_backend_aptGetInstall gzip
+	_getMost_backend_aptGetInstall bzip2
+	
+	_getMost_backend_aptGetInstall flex
+	
+	_getMost_backend_aptGetInstall librecode0
+	_getMost_backend_aptGetInstall wkhtmltopdf
+	
+	_getMost_backend_aptGetInstall sed
+	
+	
+	_getMost_backend_aptGetInstall curl
+	
+	_messagePlain_probe 'install: rclone'
+	#_getMost_backend curl https://rclone.org/install.sh | _getMost_backend bash -s beta
+	_getMost_backend curl https://rclone.org/install.sh | _getMost_backend bash
+	
+	# Apparently Github Actions does not have IPv6.
+	# https://github.com/actions/virtual-environments/issues/668#issuecomment-624080758
+	[[ "$CI" != "" ]] && _getMost_backend curl -4 https://rclone.org/install.sh | _getMost_backend bash
+	
+	if ! _getMost_backend type rclone > /dev/null 2>&1
+	then
+		_getMost_backend_aptGetInstall rclone
+	fi
+	
+	
+	_getMost_backend_aptGetInstall sockstat
+	_getMost_backend_aptGetInstall liblinear4 liblua5.3-0 lua-lpeg nmap nmap-common
+	
+	_getMost_backend_aptGetInstall socat
+	
+	#_getMost_backend_aptGetInstall octave
+	#_getMost_backend_aptGetInstall octave-arduino
+	#_getMost_backend_aptGetInstall octave-bart
+	#_getMost_backend_aptGetInstall octave-bim
+	#_getMost_backend_aptGetInstall octave-biosig
+	#_getMost_backend_aptGetInstall octave-bsltl
+	#_getMost_backend_aptGetInstall octave-cgi
+	#_getMost_backend_aptGetInstall octave-communications
+	#_getMost_backend_aptGetInstall octave-control
+	#_getMost_backend_aptGetInstall octave-data-smoothing
+	#_getMost_backend_aptGetInstall octave-dataframe
+	#_getMost_backend_aptGetInstall octave-dicom
+	#_getMost_backend_aptGetInstall octave-divand
+	#_getMost_backend_aptGetInstall octave-econometrics
+	#_getMost_backend_aptGetInstall octave-financial
+	#_getMost_backend_aptGetInstall octave-fits
+	#_getMost_backend_aptGetInstall octave-fuzzy-logic-toolkit
+	#_getMost_backend_aptGetInstall octave-ga
+	#_getMost_backend_aptGetInstall octave-gdf
+	#_getMost_backend_aptGetInstall octave-geometry
+	#_getMost_backend_aptGetInstall octave-gsl
+	#_getMost_backend_aptGetInstall octave-image
+	#_getMost_backend_aptGetInstall octave-image-acquisition
+	#_getMost_backend_aptGetInstall octave-instrument-control
+	#_getMost_backend_aptGetInstall octave-interval
+	#_getMost_backend_aptGetInstall octave-io
+	#_getMost_backend_aptGetInstall octave-level-set
+	#_getMost_backend_aptGetInstall octave-linear-algebra
+	#_getMost_backend_aptGetInstall octave-lssa
+	#_getMost_backend_aptGetInstall octave-ltfat
+	#_getMost_backend_aptGetInstall octave-mapping
+	#_getMost_backend_aptGetInstall octave-miscellaneous
+	#_getMost_backend_aptGetInstall octave-missing-functions
+	#_getMost_backend_aptGetInstall octave-mpi
+	#_getMost_backend_aptGetInstall octave-msh
+	#_getMost_backend_aptGetInstall octave-mvn
+	#_getMost_backend_aptGetInstall octave-nan
+	#_getMost_backend_aptGetInstall octave-ncarry
+	#_getMost_backend_aptGetInstall octave-netcdf
+	#_getMost_backend_aptGetInstall octave-nlopt
+	#_getMost_backend_aptGetInstall octave-nurbs
+	#_getMost_backend_aptGetInstall octave-octclip
+	#_getMost_backend_aptGetInstall octave-octproj
+	#_getMost_backend_aptGetInstall octave-openems
+	#_getMost_backend_aptGetInstall octave-optics
+	#_getMost_backend_aptGetInstall octave-optim
+	#_getMost_backend_aptGetInstall octave-optiminterp
+	#_getMost_backend_aptGetInstall octave-parallel
+	#_getMost_backend_aptGetInstall octave-pfstools
+	#_getMost_backend_aptGetInstall octave-plplot
+	#_getMost_backend_aptGetInstall octave-psychtoolbox-3
+	#_getMost_backend_aptGetInstall octave-quarternion
+	#_getMost_backend_aptGetInstall octave-queueing
+	#_getMost_backend_aptGetInstall octave-secs1d
+	#_getMost_backend_aptGetInstall octave-secs2d
+	#_getMost_backend_aptGetInstall octave-secs3d
+	#_getMost_backend_aptGetInstall octave-signal
+	#_getMost_backend_aptGetInstall octave-sockets
+	#_getMost_backend_aptGetInstall octave-sparsersb
+	#_getMost_backend_aptGetInstall octave-specfun
+	#_getMost_backend_aptGetInstall octave-splines
+	#_getMost_backend_aptGetInstall octave-stk
+	#_getMost_backend_aptGetInstall octave-strings
+	#_getMost_backend_aptGetInstall octave-struct
+	#_getMost_backend_aptGetInstall octave-symbolic
+	#_getMost_backend_aptGetInstall octave-tsa
+	#_getMost_backend_aptGetInstall octave-vibes
+	#_getMost_backend_aptGetInstall octave-vlfeat
+	#_getMost_backend_aptGetInstall octave-rml
+	#_getMost_backend_aptGetInstall octave-zenity
+	#_getMost_backend_aptGetInstall octave-zeromq
+	#_getMost_backend_aptGetInstall gnuplot-qt libdouble-conversion3 libegl-mesa0 libegl1 libevdev2 libinput-bin libinput10 libmtdev1 libqt5core5a libqt5dbus5 libqt5gui5 libqt5network5 libqt5printsupport5 libqt5svg5 libqt5widgets5 libwacom-bin libwacom-common libwacom2 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xinput0 libxcb-xkb1 libxkbcommon-x11-0 qt5-gtk-platformtheme qttranslations5-l10n
+	#_getMost_backend_aptGetInstall hdf5-helpers libaec-dev libegl-dev libfftw3-bin libfftw3-dev libfftw3-long3 libfftw3-quad3 libgl-dev libgl1-mesa-dev libgles-dev libgles1 libgles libglvnd-dev libglx-dev libhdf5-cpp-103 libhdf5-dev liboctave-dev libopengl-dev libopengl0
+	
+	
+	_getMost_backend_aptGetInstall axel
+	
+	_getMost_backend_aptGetInstall dwarves
+	
+	
+	_getMost_backend_aptGetInstall rsync
+	
+	
+	_getMost_backend_aptGetInstall libssl-dev
+	
+	
+	_getMost_backend_aptGetInstall cpio
+	
+	
+	_getMost_backend_aptGetInstall pv
+	_getMost_backend_aptGetInstall expect
+	
+	_getMost_backend_aptGetInstall libgtk2.0-0
+	
+	_getMost_backend_aptGetInstall libwxgtk3.0-gtk3-0v5
+	
+	_getMost_backend_aptGetInstall wipe
+	
+	_getMost_backend_aptGetInstall udftools
+	
+	
+	_getMost_backend_aptGetInstall debootstrap
+	
+	_getMost_backend_aptGetInstall qemu-system-x86
+	
+	_getMost_backend_aptGetInstall cifs-utils
+	
+	
+	
+	_getMost_backend_aptGetInstall iputils-ping
+	
+	_getMost_backend_aptGetInstall btrfs-tools
+	_getMost_backend_aptGetInstall btrfs-progs
+	_getMost_backend_aptGetInstall btrfs-compsize
+	_getMost_backend_aptGetInstall zstd
+	
+	_getMost_backend_aptGetInstall zlib1g
+	
+	_getMost_backend_aptGetInstall nilfs-tools
+	
+	
+	
+	# md5sum , sha512sum
+	_getMost_backend_aptGetInstall coreutils
+	
+	_getMost_backend_aptGetInstall python3
+	
+	# blkdiscard
+	_getMost_backend_aptGetInstall util-linux
+	
+	# sg_format
+	_getMost_backend_aptGetInstall sg3-utils
+	
+	_getMost_backend_aptGetInstall kpartx
+	
+	_getMost_backend_aptGetInstall openssl
+	
+	_getMost_backend_aptGetInstall growisofs
+	
+	_getMost_backend_aptGetInstall udev
+	
+	_getMost_backend_aptGetInstall gdisk
+	
+	_getMost_backend_aptGetInstall cryptsetup
+	
+	_getMost_backend_aptGetInstall util-linux
+	
+	_getMost_backend_aptGetInstall parted
+	
+	_getMost_backend_aptGetInstall bc
+	
+	_getMost_backend_aptGetInstall e2fsprogs
+	
+	_getMost_backend_aptGetInstall xz-utils
+	
+	_getMost_backend_aptGetInstall libreadline8
+	
+	
+	_getMost_backend_aptGetInstall mkisofs
+	_getMost_backend_aptGetInstall genisoimage
+	
+	
+	# purge-old-kernels
+	_getMost_backend_aptGetInstall byobu
+	
+	
+	
+	
+	
+	_getMost_backend_aptGetInstall xorriso
+	_getMost_backend_aptGetInstall squashfs-tools
+	_getMost_backend_aptGetInstall grub-pc-bin
+	_getMost_backend_aptGetInstall grub-efi-amd64-bin
+	_getMost_backend_aptGetInstall mtools
+	_getMost_backend_aptGetInstall mksquashfs
+	_getMost_backend_aptGetInstall grub-mkstandalone
+	_getMost_backend_aptGetInstall mkfs.vfat
+	_getMost_backend_aptGetInstall mkswap
+	_getMost_backend_aptGetInstall mmd
+	_getMost_backend_aptGetInstall mcopy
+	_getMost_backend_aptGetInstall fdisk
+	_getMost_backend_aptGetInstall mkswap
+	
+	
+	
+	
+	
+	
+	_messagePlain_probe _getMost_backend curl croc
+	if ! _getMost_backend type croc > /dev/null 2>&1
+	then
+		_getMost_backend curl https://getcroc.schollz.com | _getMost_backend bash
+		[[ "$CI" != "" ]] && _getMost_backend curl -4 | _getMost_backend bash
+	fi
+	
+	
+	
+	_getMost_backend_aptGetInstall iotop
+	
+	
+	
+	# May not be useful for anything, may cause delay or fail .
+	#_getMost_backend apt-get upgrade
+	
+	
+	
+	
+	type _get_veracrypt > /dev/null 2>&1 && "$scriptAbsoluteLocation" _get_veracrypt
+	
+	
+	
+	_getMost_backend apt-get remove --autoremove -y plasma-discover
+	
+	_getMost_backend apt-get -y clean
+	
+	
+	# ATTENTION: Enable. Disabled by default to avoid testing for all dependencies of *complete* 'ubiquitous_bash' .
+	#export devfast="true"
+	#"$scriptAbsoluteLocation" _test
+	#export devfast=
+	#unset devfast
+	
+	
+	
+}
+
+
+
+
+
+# NOTICE: getMost_special.sh will be included if either getMost.sh or gitMinimal.sh are included
+
+
+
+_get_veracrypt() {
+	_messagePlain_nominal 'init: _get_veracrypt'
+	if type veracrypt > /dev/null 2>&1
+	then
+		_messagePlain_good 'good: found: veracrypt'
+	fi
+	
+	if _if_cygwin && type "choco"
+	then
+		choco install veracrypt -y
+		return
+	fi
+	
+	
+	_start
+	local functionEntryPWD
+	functionEntryPWD="$PWD"
+	
+	cd "$safeTmp"
+	
+	
+	
+	# https://launchpad.net/veracrypt/trunk/1.25.9/+download/veracrypt-1.25.9-setup.tar.bz2
+	export currentVeracryptURL=$(wget -q -O - 'https://www.veracrypt.fr/en/Downloads.html' | grep https | grep 'tar\.bz2' | head -n1 | sed 's/^.*https/https/' | sed 's/.tar.bz2.*$/\.tar\.bz2/' | sed 's/&#43;/+/g' | tr -dc 'a-zA-Z0-9.:\=\_\-/%+')
+	export currentVeracryptName=$(_safeEcho_newline "$currentVeracryptURL" | sed 's/^.*\///' | sed 's/\.tar\.bz2$//')
+	
+	wget "$currentVeracryptURL"
+	
+	tar xf "$currentVeracryptName".tar.bz2
+	
+	
+	#./veracrypt-1.25.9-setup-gui-x64 --nox11 --quiet
+	
+	
+	_getDep expect
+	
+	
+	
+	# https://stackoverflow.com/questions/58239247/veracript-install-script-fails-if-run-from-script
+	# -console-x64
+	# -gui-x64
+	echo '#!/usr/bin/expect -f
+
+set timeout -1
+spawn '"$safeTmp"/"$currentVeracryptName"-console-x64'
+expect "To select, enter 1 or 2:"
+send -- "1\r"
+expect "Press Enter to display the license terms..."
+send -- "\r"
+expect ":"
+send -- "q\r"
+expect "Do you accept and agree to be bound by the license terms?"
+send -- "yes\r"
+expect "Press Enter to exit..."
+send -- "\r"
+expect eof' > "$safeTmp"/veracrypt.exp
+	
+	expect -f "$safeTmp"/veracrypt.exp
+	
+	cd "$functionEntryPWD"
+	
+	
+	if ! type veracrypt > /dev/null 2>&1
+	then
+		_messagePlain_bad 'bad: missing: veracrypt'
+		_messageFAIL
+	fi
+	_stop
+}
+
+
+
+
+
+
+# WARNING: Infinite loop risk, do not call '_wantGetDep nix-env' within this function.
+_test_nix-env_upstream() {
+	# WARNING: May be untested. Do NOT attempt upstream install for NixOS distribution.
+	[[ -e /etc/issue ]] && ! cat /etc/issue | grep 'Debian\|Raspbian\|Ubuntu' > /dev/null 2>&1 && type nix-env && return 0
+	
+	! _wantSudo && return 1
+	
+	# https://ariya.io/2020/05/nix-package-manager-on-ubuntu-or-debian
+	#  'Note that if you use WSL 1'
+	#   'sandbox = false'
+	#     WSL is NOT expected fully compatible with Ubiquitous Bash . MS commitment to WSL end-user usability, or so much as WSL having any better functionality than Cygwin, Qemu, VirtualBox, etc, is not obvious.
+	# https://github.com/microsoft/WSL/issues/6301
+	
+	
+	# Prefer to develop software not to expect multi-user features from nix. Expected not normally necessary.
+	# https://nixos.org/download.html
+	#  'Harder to uninstall'
+	# https://nixos.org/manual/nix/stable/installation/multi-user.html
+	#  'unprivileged users' ... 'pre-built binaries'
+	# https://nixos.wiki/wiki/Nix
+	#  'remove further hidden dependencies' ... 'access to the network' ... 'inter process communication is isolated on Linux'
+	# https://ariya.io/2020/05/nix-package-manager-on-ubuntu-or-debian
+	echo
+	sh <(curl -L https://nixos.org/nix/install) --no-daemon
+	echo
+}
+
+
+
+
+# ATTENTION: Override with 'core.sh', 'ops', or similar!
+# Software which specifically may rely upon a recent feature of cloud services software (eg. aws, gcloud) should force this to instead always return 'true' .
+_test_nixenv_updateInterval() {
+	! find "$HOME"/.ubcore/.retest-"$1" -type f -mtime -9 2>/dev/null | grep '.retest-' > /dev/null 2>&1
+	
+	#return 0
+	return
+}
+
+_test_nix-env_sequence() {
+	local functionEntryPWD
+	functionEntryPWD="$PWD"
+	_start
+	
+	_mustHave_nixos
+	
+	cd "$safeTmp"
+	
+	# https://ariya.io/2016/06/isolated-development-environment-using-nix
+	cat << 'CZXWXcRMTo8EmM8i4d' > ./default.nix
+with import <nixpkgs> {};
+stdenv.mkDerivation rec {
+  name = "env";
+  env = buildEnv { name = name; paths = buildInputs; };
+  buildInputs = [
+    hello
+  ];
+}
+CZXWXcRMTo8EmM8i4d
+	
+	! nix-shell --run hello | grep -i 'hello' > /dev/null && echo 'fail: nix-shell: hello' && _stop 1
+	! nix-shell --run true && echo 'fail: nix-shell: true' && _stop 1
+	nix-shell --run false && echo 'fail: nix-shell: false' && _stop 1
+	[[ $(nix-shell --run 'type hello' | tr -dc 'a-zA-Z0-9/ ') == $(type hello 2>/dev/null | tr -dc 'a-zA-Z0-9/ ') ]] && echo 'fail: nix-shell: type: hello' && _stop 1
+	[[ $(nix-shell --run 'type -P true' | tr -dc 'a-zA-Z0-9/ ') == $(type -P true | tr -dc 'a-zA-Z0-9/ ') ]] && echo 'fail: nix-shell: type: true' && _stop 1
+	[[ $(nix-shell --run 'type -P false' | tr -dc 'a-zA-Z0-9/ ') == $(type -P false | tr -dc 'a-zA-Z0-9/ ') ]] && echo 'fail: nix-shell: type: false' && _stop 1
+	
+	cd "$functionEntryPWD"
+	_stop
+}
+
+
+_test_nix-env_enter() {
+	cd "$HOME"
+	_test_nix-env "$@"
+}
+_test_nix-env() {
+	# Cygwin implies other package managers (ie. 'chocolatey'), NOT nix .
+	_if_cygwin && return 0
+	
+	# Root installation of nixenv is not expected either necessary or possible.
+	if [[ $(id -u 2> /dev/null) == "0" ]]
+	then
+		local sudoAvailable
+		sudoAvailable=false
+		sudoAvailable=$(sudo -n echo true 2> /dev/null)
+		
+		local currentUser
+		currentUser="$custom_user"
+		[[ "$currentUser" == "" ]] && currentUser="user"
+		
+		local currentScript
+		currentScript="$scriptAbsoluteLocation"
+		[[ -e /home/"$currentUser"/ubiquitous_bash.sh ]] && currentScript=/home/"$currentUser"/ubiquitous_bash.sh
+		
+		[[ -e /home/"$currentUser" ]] && [[ "$sudoAvailable" == "true" ]] && [[ $(sudo -n -u "$currentUser" id -u | tr -dc '0-9') != "0" ]] && sudo -n -u "$currentUser" "$currentScript" _test_nix-env_enter
+		return
+	fi
+	
+	! _test_nixenv_updateInterval 'nixenv' && return 0
+	rm -f "$HOME"/.ubcore/.retest-'nixenv' > /dev/null 2>&1
+	
+	if [[ "$nonet" != "true" ]] && ! _if_cygwin
+	then
+		_messagePlain_request 'ignore: upstream progress ->'
+		
+		_test_nix-env_upstream "$@"
+		#_test_nix-env_upstream_beta "$@"
+		
+		_messagePlain_request 'ignore: <- upstream progress'
+	fi
+	
+	_mustHave_nixos
+	
+	_wantSudo && _wantGetDep nix-env
+	
+	
+	! _typeDep nix-env && echo 'fail: missing: nix-env' && _messageFAIL
+	
+	! _typeDep nix-shell && echo 'fail: missing: nix-shell' && _messageFAIL
+	
+	
+	if ! "$scriptAbsoluteLocation" _test_nix-env_sequence "$@"
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	#! nix-shell true && echo 'fail: nix-shell: true' && _messageFAIL
+	#! nix-shell false && echo 'fail: nix-shell: false' && _messageFAIL
+	
+	
+	
+	touch "$HOME"/.ubcore/.retest-'nixenv'
+	date +%s > "$HOME"/.ubcore/.retest-'nixenv'
+	
+	return 0
+}
+
+_mustHave_nixos() {
+	#_setupUbiquitous_accessories_here-nixenv-bashrc
+	[[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
+	
+	if ! type nix-env > /dev/null 2>&1
+	then
+		_test_nix-env_upstream > /dev/null 2>&1
+	fi
+	
+	! type nix-env > /dev/null 2>&1 && _stop 1
+	
+	return 0
+}
+
+# WARNING: No production use. Prefer '_mustHave_nixos' .
+_nix-env() {
+	_mustHave_nixos
+	
+	nix-env "$@"
+}
+
+
+_nix-shell() {
+	_mustHave_nixos
+	
+	# https://forum.holochain.org/t/how-to-load-your-bash-profile-into-nix-shell/2070
+	nix-shell --command '. ~/.bashrc; return' "$@"
+}
+_nix() {
+	_nix-shell "$@"
+}
+_nixShell() {
+	_nix-shell "$@"
+}
+_ns() {
+	_nix-shell "$@"
+}
+nixshell() {
+	_nix-shell "$@"
+}
+nixShell() {
+	_nix-shell "$@"
+}
+ns() {
+	_nix-shell "$@"
+}
+
+
+
+
+
+#https://unix.stackexchange.com/questions/39226/how-to-run-a-script-with-systemd-right-before-shutdown
+# In theory, 'sleep 1892160000' should create a process that will run for at least 60 years, with 'sleep' binaries that support 'floating point' numbers of seconds, which should be tested for by timetest. This should not be depended upon unless necessary however.
+
+_here_systemd_shutdown_action() {
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+[Unit]
+CZXWXcRMTo8EmM8i4d
+
+
+echo Description=$sessionid
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+
+[Service]
+ExecStart=/bin/true
+CZXWXcRMTo8EmM8i4d
+
+echo ExecStop=\""$scriptAbsoluteLocation"\" "$@"
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+Type=oneshot
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+
+CZXWXcRMTo8EmM8i4d
+
+}
+
+_here_systemd_shutdown() {
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+[Unit]
+CZXWXcRMTo8EmM8i4d
+
+
+echo Description=$sessionid
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+
+[Service]
+ExecStart=/bin/true
+CZXWXcRMTo8EmM8i4d
+
+echo ExecStop=\""$scriptAbsoluteLocation"\" "$@"
+
+cat << 'CZXWXcRMTo8EmM8i4d'
+Type=oneshot
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+
+CZXWXcRMTo8EmM8i4d
+
+}
+
+_hook_systemd_shutdown() {
+	[[ -e /etc/systemd/system/"$sessionid""$sessionid""$sessionid""$sessionid".service ]] && return 0
+	
+	! _wantSudo && return 1
+	
+	! [[ -e /etc/systemd/system ]] && return 0
+	
+	_here_systemd_shutdown | sudo -n tee /etc/systemd/system/"$sessionid""$sessionid""$sessionid""$sessionid".service > /dev/null
+	sudo -n systemctl enable "$sessionid""$sessionid""$sessionid""$sessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+	sudo -n systemctl start "$sessionid""$sessionid""$sessionid""$sessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+}
+
+_hook_systemd_shutdown_action() {
+	[[ -e /etc/systemd/system/"$sessionid""$sessionid""$sessionid""$sessionid".service ]] && return 0
+	
+	! _wantSudo && return 1
+	
+	! [[ -e /etc/systemd/system ]] && return 0
+	
+	_here_systemd_shutdown_action "$@" | sudo -n tee /etc/systemd/system/"$sessionid""$sessionid""$sessionid""$sessionid".service > /dev/null
+	sudo -n systemctl enable "$sessionid""$sessionid""$sessionid""$sessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+	sudo -n systemctl start "$sessionid""$sessionid""$sessionid""$sessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+	
+}
+
+#"$1" == sessionid (optional override for cleaning up stale systemd files)
+_unhook_systemd_shutdown() {
+	local hookSessionid
+	hookSessionid="$sessionid"
+	[[ "$1" != "" ]] && hookSessionid="$1"
+	
+	[[ ! -e /etc/systemd/system/"$hookSessionid""$hookSessionid""$hookSessionid""$hookSessionid".service ]] && return 0
+	
+	! _wantSudo && return 1
+	
+	! [[ -e /etc/systemd/system ]] && return 0
+	
+	[[ "$SYSTEMCTLDISABLE" == "true" ]] && echo SYSTEMCTLDISABLE | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1 && return 0
+	export SYSTEMCTLDISABLE=true
+	
+	sudo -n systemctl disable "$hookSessionid""$hookSessionid""$hookSessionid""$hookSessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+	sudo -n rm -f /etc/systemd/system/"$hookSessionid""$hookSessionid""$hookSessionid""$hookSessionid".service 2>&1 | sudo -n tee -a "$permaLog"/gsysd.log > /dev/null 2>&1
+}
+
+_stopwatch() {
+	local measureDateA
+	local measureDateB
+	
+	measureDateA=$(date +%s%N | cut -b1-13)
+
+	"$@"
+
+	measureDateB=$(date +%s%N | cut -b1-13)
+
+	bc <<< "$measureDateB - $measureDateA"
+}
+
+
+_test_python() {
+	_getDep python
+}
+
+
+
+_test_haskell() {
+	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian' > /dev/null 2>&1
+	then
+		_wantGetDep '/usr/share/doc/haskell-platform/README.Debian'
+	fi
+
+	_wantGetDep alex
+	_wantGetDep cabal
+	_wantGetDep happy
+	_wantGetDep HsColour
+	_wantGetDep hscolour
+
+	_wantGetDep ghc
+	_wantGetDep ghci
+	! type -p 'ghc' > /dev/null 2>&1 && echo 'warn: missing: ghc'
+	! type -p 'ghci' > /dev/null 2>&1 && echo 'warn: missing: ghci'
+}
+
 _resetFakeHomeEnv_extra() {
 	true
 }
@@ -4760,6 +7515,281 @@ _query() {
 	( cd "$qc" ; _queryClient _bin cat | _log_query "$queryTmp"/tx.log | ( cd "$qs" ; _queryServer _bin cat | _log_query "$queryTmp"/xc.log | ( cd "$qc" ; _queryClient _bin cat | _log_query "$queryTmp"/rx.log ; return "${PIPESTATUS[0]}" )))
 }
 
+_testGit() {
+	_wantGetDep git
+}
+
+#Ignores file modes, suitable for use with possibly broken filesystems like NTFS.
+_gitCompatible() {
+	git -c core.fileMode=false "$@"
+}
+
+_gitInfo() {
+	#Git Repository Information
+	export repoDir="$PWD"
+
+	export repoName=$(basename "$repoDir")
+	export bareRepoDir=../."$repoName".git
+	export bareRepoAbsoluteDir=$(_getAbsoluteLocation "$bareRepoDir")
+
+	#Set $repoHostName in user ".bashrc" or similar. May also set $repoPort including colon prefix.
+	[[ "$repoHostname" == "" ]] && export repoHostname=$(hostname -f)
+	
+	true
+}
+
+_gitRemote() {
+	_gitInfo
+	
+	if [[ -e "$bareRepoDir" ]]
+	then
+		_showGitRepoURI
+		return 0
+	fi
+	
+	if ! [[ -e "$repoDir"/.git ]]
+	then
+		return 1
+	fi
+	
+	if git config --get remote.origin.url > /dev/null 2>&1
+	then
+		echo -n "git clone --recursive "
+		git config --get remote.origin.url
+		return 0
+	fi
+	_gitBare
+}
+
+_gitNew() {
+	git init
+	git add .
+	git commit -a -m "first commit"
+	git branch -M main
+}
+
+_gitImport() {
+	cd "$scriptFolder"
+	
+	mkdir -p "$1"
+	cd "$1"
+	shift
+	git clone "$@"
+	
+	cd "$scriptFolder"
+}
+
+_findGit_procedure() {
+	cd "$1"
+	shift
+	
+	if [[ -e "./.git" ]]
+	then
+		"$@"
+		return 0
+	fi
+	
+	find -L . -mindepth 1 -maxdepth 1 -not \( -path \*_arc\* -prune \) -not \( -path \*/_local/ubcp/\* -prune \) -type d -exec "$scriptAbsoluteLocation" _findGit_procedure '{}' "$@" \;
+}
+
+#Recursively searches for directories containing ".git".
+_findGit() {
+	if [[ -e "./.git" ]]
+	then
+		"$@"
+		return 0
+	fi
+	
+	find -L . -mindepth 1 -maxdepth 1 -not \( -path \*_arc\* -prune \) -not \( -path \*/_local/ubcp/\* -prune \) -type d -exec "$scriptAbsoluteLocation" _findGit_procedure '{}' "$@" \;
+}
+
+_gitPull() {
+	git pull
+	git submodule update --recursive
+}
+
+_gitCheck_sequence() {
+	echo '-----'
+	
+	local checkRealpath
+	checkRealpath=$(realpath .)
+	local checkBasename
+	checkBasename=$(basename "$checkRealpath")
+	
+	echo "$checkBasename"
+	
+	git status
+}
+
+_gitCheck() {
+	_findGit "$scriptAbsoluteLocation" _gitCheck_sequence
+}
+
+_gitPullRecursive_sequence() {
+	echo '-----'
+	
+	local checkRealpath
+	checkRealpath=$(realpath .)
+	local checkBasename
+	checkBasename=$(basename "$checkRealpath")
+	
+	echo "$checkBasename"
+	
+	"$scriptAbsoluteLocation" _gitPull
+}
+
+# DANGER
+#Updates all git repositories recursively.
+_gitPullRecursive() {
+	_findGit "$scriptAbsoluteLocation" _gitPullRecursive_sequence
+}
+
+# DANGER
+# Pushes all changes as a commit described as "Upstream."
+_gitUpstream() {
+	git add -A . ; git commit -a -m "Upstream." ; git push
+}
+_gitUp() {
+	_gitUpstream
+}
+
+# DANGER
+#Removes all but the .git folder from the working directory.
+#_gitFresh() {
+#	find . -not -path '\.\/\.git*' -delete
+#}
+
+
+
+
+
+
+
+
+# DANGER: CAUTION: WARNING: Calls '_git_shallow'.
+_git_shallow-ubiquitous() {
+	[[ "$1" != "true" ]] && exit 1
+	
+	_git_shallow 'git@github.com:mirage335/ubiquitous_bash.git' '_lib/ubiquitous_bash'
+}
+
+# DANGER: Not robust. May damage repository and/or submodules, as well as any history not remotely available, causing *severe* data loss.
+# CAUTION: Intended only for developers to correct a rare mistake of adding a non-shallow git submodule. No production use.
+# WARNING: Submodule path must NOT have trailing or preceeding slash!
+# "$1" == uri (eg. git@github.com:mirage335/ubiquitous_bash.git)
+# "$2" == path/to/submodule (eg. '_lib/ubiquitous_bash')
+_git_shallow() {
+	[[ "$1" == "" ]] && exit 1
+	[[ "$2" == "" ]] && exit 1
+	! [[ -e "$2" ]] && exit 1
+	! [[ -e "$scriptAbsoluteFolder"/"$2" ]] && exit 1
+	cd "$scriptAbsoluteFolder"
+	! [[ -e "$2" ]] && exit 1
+	! [[ -e "$scriptAbsoluteFolder"/"$2" ]] && exit 1
+	
+	
+	! [[ -e "$scriptAbsoluteFolder"/.gitmodules ]] && exit 1
+	! [[ -e "$scriptAbsoluteFolder"/.git/config ]] && exit 1
+	
+	_start
+	
+	# https://gist.github.com/myusuf3/7f645819ded92bda6677
+	
+	# Remove the submodule entry from .git/config
+	git submodule deinit -f "$2"
+
+	# Remove the submodule directory from the superproject's .git/modules directory
+	#rm -rf .git/modules/"$2"
+	export safeToDeleteGit="true"
+	_safeRMR "$scriptAbsoluteFolder"/.git/modules/"$2"
+
+	# Remove the entry in .gitmodules and remove the submodule directory located at path/to/submodule
+	git rm -f "$2"
+	
+	git commit -m "WIP."
+	
+	
+	# https://stackoverflow.com/questions/2144406/how-to-make-shallow-git-submodules
+	
+	git submodule add --depth 1 "$1" "$2"
+	
+	git config -f .gitmodules submodule."$2".shallow true
+	
+	_messagePlain_request git commit -a -m "Draft."
+	_messagePlain_request git push
+	
+	_stop
+}
+
+#####Program
+
+_createBareGitRepo() {
+	mkdir -p "$bareRepoDir"
+	cd $bareRepoDir
+	
+	git --bare init
+	git branch -M main
+	
+	echo "-----"
+}
+
+
+_setBareGitRepo() {
+	cd "$repoDir"
+	
+	git remote rm origin
+	git remote add origin "$bareRepoDir"
+	git push --set-upstream origin master
+	
+	# WARNING: TODO: Experimental, requires further testing. Use branch 'main' if extant.
+	git push --set-upstream origin main
+	
+	echo "-----"
+}
+
+_showGitRepoURI() {
+	echo git clone --recursive "$bareRepoAbsoluteDir" "$repoName"
+	echo git clone --recursive ssh://"$USER"@"$repoHostname""$repoPort""$bareRepoAbsoluteDir" "$repoName"
+	
+	
+	#if [[ "$repoHostname" != "" ]]
+	#then
+	#	clear
+	#	echo ssh://"$USER"@"$repoHostname""$repoPort""$bareRepoAbsoluteDir"
+	#	sleep 15
+	#fi
+}
+
+_gitBareSequence() {
+	_gitInfo
+	
+	if [[ -e "$bareRepoDir" ]]
+	then
+		_showGitRepoURI
+		return 2
+	fi
+	
+	if ! [[ -e "$repoDir"/.git ]]
+	then
+		return 1
+	fi
+	
+	_createBareGitRepo
+	
+	_setBareGitRepo
+	
+	_showGitRepoURI
+	
+}
+
+_gitBare() {
+	
+	"$scriptAbsoluteLocation" _gitBareSequence
+	
+}
+
+
+
 
 _gitBest_detect_github_procedure() {
 	[[ "$current_gitBest_source_GitHub" == "FAIL" ]] && export current_gitBest_source_GitHub=""
@@ -4950,6 +7980,161 @@ _test_gitBest() {
 
 
 
+_test_bup() {
+	# Forced removal of 'python2' caused some apparent disruption.
+	#! _wantDep bup && echo 'warn: no bup'
+	#! _wantGetDep bup && echo 'warn: no bup'
+	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '20.04' > /dev/null 2>&1
+	then
+		! _typeDep bup && sudo -n apt-get install --install-recommends -y bup
+	else
+		_wantGetDep bup
+		#_wantGetDep qalculate
+	fi
+	
+	! man tar | grep '\-\-one-file-system' > /dev/null 2>&1 && echo 'warn: tar does not support one-file-system' && return 1
+	! man tar | grep '\-\-xattrs' > /dev/null 2>&1 && echo 'warn: tar does not support xattrs'
+	! man tar | grep '\-\-acls' > /dev/null 2>&1 && echo 'warn: tar does not support acls'
+}
+
+_bupNew() {
+	export BUP_DIR="./.bup"
+	
+	[[ -e "$BUP_DIR" ]] && return 1
+	
+	bup init
+}
+
+_bupLog() {
+	export BUP_DIR="./.bup"
+	
+	[[ ! -e "$BUP_DIR" ]] && return 1
+	
+	git --git-dir=./.bup log
+}
+
+_bupList() {
+	export BUP_DIR="./.bup"
+	
+	[[ ! -e "$BUP_DIR" ]] && return 1
+	
+	if [[ "$1" == "" ]]
+	then
+		bup ls "HEAD"
+		return
+	fi
+	[[ "$1" != "" ]] && bup ls "$@"
+}
+
+_bupStore() {
+	export BUP_DIR="./.bup"
+	
+	[[ ! -e "$BUP_DIR" ]] && return 1
+	
+	! man tar | grep '\-\-one-file-system' > /dev/null 2>&1 && return 1
+	! man tar | grep '\-\-xattrs' > /dev/null 2>&1 && return 1
+	! man tar | grep '\-\-acls' > /dev/null 2>&1 && return 1
+	
+	if [[ "$1" == "" ]]
+	then
+		tar --one-file-system --xattrs --acls --exclude "$BUP_DIR" -cvf - . | bup split -n "HEAD" -vv
+		return
+	fi
+	[[ "$1" != "" ]] && tar --one-file-system --xattrs --acls --exclude "$BUP_DIR" -cvf - . | bup split -n "$@" -vv
+}
+
+_bupRetrieve() {
+	export BUP_DIR="./.bup"
+	
+	[[ ! -e "$BUP_DIR" ]] && return 1
+	
+	! man tar | grep '\-\-one-file-system' > /dev/null 2>&1 && return 1
+	! man tar | grep '\-\-xattrs' > /dev/null 2>&1 && return 1
+	! man tar | grep '\-\-acls' > /dev/null 2>&1 && return 1
+	
+	if [[ "$1" == "" ]]
+	then
+		bup join "HEAD" | tar --one-file-system --xattrs --acls -xf -
+		return
+	fi
+	[[ "$1" != "" ]] && bup join "$@" | tar --one-file-system --xattrs --acls -xf -
+}
+
+
+#"$1" == src (file/dir)
+#"$2" == dst (torrentName).torrent
+#"$3" == CSV Tracker URL List (full announce URL list comma delimited) (' <url>[,<url>]* ')
+#"$4" == CSV Web Seed URL List
+# ./ubiquitous_bash.sh _mktorrent ./ubiquitous_bash.sh torrentName 'https://example.com/tracker,https://example1.com/tracker' 'https://example.com/ubiquitous_bash.sh,https://example1.com/ubiquitous_bash.sh'
+_mktorrent_webseed() {
+	if [[ "$1" == "" ]]
+	then
+		_messagePlain_request '"$1" == src (file/dir)'
+		_messagePlain_request '"$2" == dst (torrentName).torrent'
+		_messagePlain_request '"$3" == CSV Tracker URL List (full announce URL list comma delimited) ('\'' <url>[,<url>]* '\'')'
+		_messagePlain_request '"$4" == CSV Web Seed URL List'
+		return 1
+	fi
+	
+	local currentSrc
+	currentSrc="$1"
+	local currentDst
+	currentDst="$2"
+	local currentTrackerCSV
+	currentTrackerCSV="$3"
+	local currentWebSeedCSV
+	currentWebSeedCSV="$4"
+	shift ; shift ; shift ; shift
+	
+	mktorrent -w "$currentWebSeedCSV" -a "$currentTrackerCSV" -d "$currentSrc" -n "$currentDst" "$@"
+}
+_mktorrent() {
+	_mktorrent_webseed "$@"
+}
+
+
+
+
+
+
+
+_test_mktorrent() {
+	# If not Debian, then simply accept these pacakges may not be available.
+	[[ -e /etc/issue ]] && ! cat /etc/issue | grep 'Debian' > /dev/null 2>&1 && return 0
+	
+	_wantGetDep mktorrent
+	
+	#_getDep mktorrent
+}
+
+
+
+
+
+
+
+# DANGER: Of course the 'dd' command can cause severe data loss. Be careful. Maybe use 'type -p' to see function code for reference instead of calling directly.
+
+
+_dd_user() {
+	dd "$@" oflag=direct conv=fdatasync status=progress
+}
+_dd() {
+	sudo -n "$scriptAbsoluteLocation" _dd_user "$@"
+}
+
+_dropCache() {
+	echo 3 | sudo -n tee /proc/sys/vm/drop_caches
+	sync ; echo 3 | sudo -n tee /proc/sys/vm/drop_caches
+}
+
+
+
+
+
+
+
+
 
 # May transfer large files out of cloud CI services, or may copy files into cloud or CI services for installation.
 
@@ -5010,6 +8195,911 @@ _test_rclone_limited() {
 	! _wantGetDep 'rclone' && echo 'missing: rclone'
 	return 0
 }
+
+
+
+_testDistro() {
+	_wantGetDep sha256sum
+	_wantGetDep sha512sum
+	_wantGetDep axel
+}
+
+_kernelConfig_list_here() {
+	cat << CZXWXcRMTo8EmM8i4d
+
+
+
+CZXWXcRMTo8EmM8i4d
+}
+
+
+
+
+
+_kernelConfig_reject-comments() {
+	grep -v '^\#\|\#'
+}
+
+_kernelConfig_request() {
+	local current_kernelConfig_statement
+	current_kernelConfig_statement=$(cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=' | tr -dc 'a-zA-Z0-9\=\_')
+	
+	_messagePlain_request 'hazard: '"$1"': '"$current_kernelConfig_statement"
+}
+
+
+_kernelConfig_require-yes() {
+	cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=y' > /dev/null 2>&1 && return 0
+	return 1
+}
+
+_kernelConfig_require-module-or-yes() {
+	cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=m' > /dev/null 2>&1 && return 0
+	cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=y' > /dev/null 2>&1 && return 0
+	return 1
+}
+
+# DANGER: Currently assuming lack of an entry is equivalent to option set as '=n' with make menuconfig or similar.
+_kernelConfig_require-no() {
+	cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=m' > /dev/null 2>&1 && return 1
+	cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "$1"'\=y' > /dev/null 2>&1 && return 1
+	return 0
+}
+
+
+_kernelConfig_warn-y__() {
+	_kernelConfig_require-yes "$1" && return 0
+	_messagePlain_warn 'warn: not:    Y: '"$1"
+	export kernelConfig_warn='true'
+	return 1
+}
+
+_kernelConfig_warn-y_m() {
+	_kernelConfig_require-module-or-yes "$1" && return 0
+	_messagePlain_warn 'warn: not:  M/Y: '"$1"
+	export kernelConfig_warn='true'
+	return 1
+}
+
+_kernelConfig_warn-n__() {
+	_kernelConfig_require-no "$1" && return 0
+	_messagePlain_warn 'warn: not:    N: '"$1"
+	export kernelConfig_warn='true'
+	return 1
+}
+
+_kernelConfig_warn-any() {
+	_kernelConfig_warn-y_m "$1"
+	_kernelConfig_warn-n__ "$1"
+}
+
+_kernelConfig__bad-y__() {
+	_kernelConfig_require-yes "$1" && return 0
+	_messagePlain_bad 'bad: not:     Y: '"$1"
+	export kernelConfig_bad='true'
+	return 1
+}
+
+_kernelConfig__bad-y_m() {
+	_kernelConfig_require-module-or-yes "$1" && return 0
+	_messagePlain_bad 'bad: not:   M/Y: '"$1"
+	export kernelConfig_bad='true'
+	return 1
+}
+
+_kernelConfig__bad-n__() {
+	_kernelConfig_require-no "$1" && return 0
+	_messagePlain_bad 'bad: not:     N: '"$1"
+	export kernelConfig_bad='true'
+	return 1
+}
+
+_kernelConfig_require-tradeoff-legacy() {
+	_messagePlain_nominal 'kernelConfig: tradeoff-legacy'
+	_messagePlain_request 'Carefully evaluate '\''tradeoff-legacy'\'' for specific use cases.'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-n__ LEGACY_VSYSCALL_EMULATE
+}
+
+# WARNING: Risk must be evaluated for specific use cases.
+# WARNING: Insecure.
+# Standalone simulators (eg. flight sim):
+# * May have hard real-time frame latency limits within 10% of the fastest avaialble from a commercially avaialble CPU.
+# * May be severely single-thread CPU constrained.
+# * May have real-time workloads exactly matching those suffering half performance due to security mitigations.
+# * May not require real-time security mitigations.
+# Disabling hardening may as much as double performance for some workloads.
+# https://www.phoronix.com/scan.php?page=article&item=linux-retpoline-benchmarks&num=2
+# https://www.phoronix.com/scan.php?page=article&item=linux-416early-spectremelt&num=4
+_kernelConfig_require-tradeoff-perform() {
+	_messagePlain_nominal 'kernelConfig: tradeoff-perform'
+	_messagePlain_request 'Carefully evaluate '\''tradeoff-perform'\'' for specific use cases.'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-n__ CONFIG_RETPOLINE
+	_kernelConfig__bad-n__ CONFIG_PAGE_TABLE_ISOLATION
+	_kernelConfig__bad-n__ CONFIG_X86_SMAP
+	
+	_kernelConfig_warn-n__ AMD_MEM_ENCRYPT
+	
+	_kernelConfig_warn-y__ CONFIG_X86_INTEL_TSX_MODE_ON
+	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	
+	
+	_kernelConfig__bad-n__ CONFIG_SLAB_FREELIST_HARDENED
+}
+
+# WARNING: Risk must be evaluated for specific use cases.
+# WARNING: BREAKS some high-performance real-time applicatons (eg. flight sim, VR, AR).
+# Standalone simulators (eg. flight sim):
+# * May have hard real-time frame latency limits within 10% of the fastest avaialble from a commercially avaialble CPU.
+# * May be severely single-thread CPU constrained.
+# * May have real-time workloads exactly matching those suffering half performance due to security mitigations.
+# * May not require real-time security mitigations.
+# Disabling hardening may as much as double performance for some workloads.
+# https://www.phoronix.com/scan.php?page=article&item=linux-retpoline-benchmarks&num=2
+# https://www.phoronix.com/scan.php?page=article&item=linux-416early-spectremelt&num=4
+_kernelConfig_require-tradeoff-harden() {
+	_messagePlain_nominal 'kernelConfig: tradeoff-harden'
+	_messagePlain_request 'Carefully evaluate '\''tradeoff-harden'\'' for specific use cases.'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y__ CONFIG_RETPOLINE
+	_kernelConfig__bad-y__ CONFIG_PAGE_TABLE_ISOLATION
+	_kernelConfig__bad-y__ CONFIG_X86_SMAP
+	
+	# Uncertain.
+	#_kernelConfig_warn-y__ AMD_MEM_ENCRYPT
+	
+	_kernelConfig_warn-y__ CONFIG_X86_INTEL_TSX_MODE_OFF
+	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	
+	
+	_kernelConfig_warn-y__ CONFIG_SLAB_FREELIST_HARDENED
+}
+
+# ATTENTION: Override with 'ops.sh' or similar.
+_kernelConfig_require-tradeoff() {
+	_kernelConfig_require-tradeoff-legacy "$@"
+	
+	
+	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	
+	if [[ "$kernelConfig_tradeoff_perform" == 'true' ]]
+	then
+		_kernelConfig_require-tradeoff-perform "$@"
+		return
+	fi
+	
+	_kernelConfig_require-tradeoff-harden "$@"
+	return
+}
+
+# Based on kernel config documentation and Debian default config.
+_kernelConfig_require-virtualization-accessory() {
+	_messagePlain_nominal 'kernelConfig: virtualization-accessory'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig_warn-y_m CONFIG_KVM
+	_kernelConfig_warn-y_m CONFIG_KVM_INTEL
+	_kernelConfig_warn-y_m CONFIG_KVM_AMD
+	
+	_kernelConfig_warn-y__ CONFIG_KVM_AMD_SEV
+	
+	_kernelConfig_warn-y_m CONFIG_VHOST_NET
+	_kernelConfig_warn-y_m CONFIG_VHOST_SCSI
+	_kernelConfig_warn-y_m CONFIG_VHOST_VSOCK
+	
+	_kernelConfig__bad-y_m DRM_VMWGFX
+	
+	_kernelConfig__bad-n__ CONFIG_VBOXGUEST
+	_kernelConfig__bad-n__ CONFIG_DRM_VBOXVIDEO
+	
+	_kernelConfig_warn-y__ VIRTIO_MENU
+	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI
+	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI_LEGACY
+	_kernelConfig__bad-y_m CONFIG_VIRTIO_BALLOON
+	_kernelConfig__bad-y_m CONFIG_VIRTIO_INPUT
+	_kernelConfig__bad-y_m CONFIG_VIRTIO_MMIO
+	_kernelConfig_warn-y__ CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES
+	
+	_kernelConfig_warn-y_m CONFIG_DRM_VIRTIO_GPU
+	
+	# Uncertain. Apparently new feature.
+	_kernelConfig_warn-y_m CONFIG_VIRTIO_FS
+	
+	_kernelConfig_warn-y_m CONFIG_HYPERV
+	_kernelConfig_warn-y_m CONFIG_HYPERV_UTILS
+	_kernelConfig_warn-y_m CONFIG_HYPERV_BALLOON
+	
+	_kernelConfig_warn-y__ CONFIG_XEN_BALLOON
+	_kernelConfig_warn-y__ CONFIG_XEN_BALLOON_MEMORY_HOTPLUG
+	_kernelConfig_warn-y__ CONFIG_XEN_SCRUB_PAGES_DEFAULT
+	_kernelConfig__bad-y_m CONFIG_XEN_DEV_EVTCHN
+	_kernelConfig_warn-y__ CONFIG_XEN_BACKEND
+	_kernelConfig__bad-y_m CONFIG_XENFS
+	_kernelConfig_warn-y__ CONFIG_XEN_COMPAT_XENFS
+	_kernelConfig_warn-y__ CONFIG_XEN_SYS_HYPERVISOR
+	_kernelConfig__bad-y_m CONFIG_XEN_SYS_HYPERVISOR
+	_kernelConfig__bad-y_m CONFIG_XEN_GRANT_DEV_ALLOC
+	_kernelConfig__bad-y_m CONFIG_XEN_PCIDEV_BACKEND
+	_kernelConfig__bad-y_m CONFIG_XEN_SCSI_BACKEND
+	_kernelConfig__bad-y_m CONFIG_XEN_ACPI_PROCESSOR
+	_kernelConfig_warn-y__ CONFIG_XEN_MCE_LOG
+	_kernelConfig_warn-y__ CONFIG_XEN_SYMS
+	
+	_kernelConfig_warn-y__ CONFIG_DRM_XEN
+	
+	# Uncertain.
+	#_kernelConfig_warn-n__ CONFIG_XEN_SELFBALLOONING
+	#_kernelConfig_warn-n__ CONFIG_IOMMU_DEFAULT_PASSTHROUGH
+	#_kernelConfig_warn-n__ CONFIG_INTEL_IOMMU_DEFAULT_ON
+}
+
+# https://wiki.gentoo.org/wiki/VirtualBox
+_kernelConfig_require-virtualbox() {
+	_messagePlain_nominal 'kernelConfig: virtualbox'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y__ CONFIG_X86_SYSFB
+	
+	_kernelConfig__bad-y__ CONFIG_ATA
+	_kernelConfig__bad-y__ CONFIG_SATA_AHCI
+	_kernelConfig__bad-y__ CONFIG_ATA_SFF
+	_kernelConfig__bad-y__ CONFIG_ATA_BMDMA
+	_kernelConfig__bad-y__ CONFIG_ATA_PIIX
+	
+	_kernelConfig__bad-y__ CONFIG_NETDEVICES
+	_kernelConfig__bad-y__ CONFIG_ETHERNET
+	_kernelConfig__bad-y__ CONFIG_NET_VENDOR_INTEL
+	_kernelConfig__bad-y__ CONFIG_E1000
+	
+	_kernelConfig__bad-y__ CONFIG_INPUT_KEYBOARD
+	_kernelConfig__bad-y__ CONFIG_KEYBOARD_ATKBD
+	_kernelConfig__bad-y__ CONFIG_INPUT_MOUSE
+	_kernelConfig__bad-y__ CONFIG_MOUSE_PS2
+	
+	_kernelConfig__bad-y__ CONFIG_DRM
+	_kernelConfig__bad-y__ CONFIG_DRM_FBDEV_EMULATION
+	_kernelConfig__bad-y__ CONFIG_DRM_VIRTIO_GPU
+	
+	_kernelConfig__bad-y__ CONFIG_FB
+	_kernelConfig__bad-y__ CONFIG_FIRMWARE_EDID
+	_kernelConfig__bad-y__ CONFIG_FB_SIMPLE
+	
+	_kernelConfig__bad-y__ CONFIG_FRAMEBUFFER_CONSOLE
+	_kernelConfig__bad-y__ CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+	
+	_kernelConfig__bad-y__ CONFIG_SOUND
+	_kernelConfig__bad-y__ CONFIG_SND
+	_kernelConfig__bad-y__ CONFIG_SND_PCI
+	_kernelConfig__bad-y__ CONFIG_SND_INTEL8X0
+	
+	_kernelConfig__bad-y__ CONFIG_USB_SUPPORT
+	_kernelConfig__bad-y__ CONFIG_USB_XHCI_HCD
+	_kernelConfig__bad-y__ CONFIG_USB_EHCI_HCD
+}
+
+
+# https://wiki.gentoo.org/wiki/Handbook:AMD64/Full/Installation#Activating_required_options
+_kernelConfig_require-boot() {
+	_messagePlain_nominal 'kernelConfig: boot'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y__ CONFIG_FW_LOADER
+	#_kernelConfig__bad-y__ CONFIG_FIRMWARE_IN_KERNEL
+	
+	_kernelConfig__bad-y__ CONFIG_DEVTMPFS
+	_kernelConfig__bad-y__ CONFIG_DEVTMPFS_MOUNT
+	_kernelConfig__bad-y__ CONFIG_BLK_DEV_SD
+	
+	
+	_kernelConfig__bad-y__ CONFIG_EXT4_FS
+	_kernelConfig__bad-y__ CONFIG_EXT4_FS_POSIX_ACL
+	_kernelConfig__bad-y__ CONFIG_EXT4_FS_SECURITY
+	#_kernelConfig__bad-y__ CONFIG_EXT4_ENCRYPTION
+	
+	if ! _kernelConfig_warn-y__ CONFIG_EXT4_USE_FOR_EXT2 > /dev/null 2>&1
+	then
+		_kernelConfig__bad-y__ CONFIG_EXT2_FS
+		_kernelConfig__bad-y__ CONFIG_EXT3_FS
+		_kernelConfig__bad-y__ CONFIG_EXT3_FS_POSIX_ACL
+		_kernelConfig__bad-y__ CONFIG_EXT3_FS_SECURITY
+	else
+		_kernelConfig_warn-y__ CONFIG_EXT4_USE_FOR_EXT2
+	fi
+	
+	_kernelConfig__bad-y__ CONFIG_BTRFS_FS
+	
+	_kernelConfig__bad-y__ CONFIG_MSDOS_FS
+	_kernelConfig__bad-y__ CONFIG_VFAT_FS
+	
+	# Precautionary to assure reasonable behavior with any LiveCD/LiveUSB filesystem arrangements that may be used in the future.
+	# Module has probably been entirely adequate in the past for LiveCD/LiveUSB as well as mounting such filesystems later.
+	_kernelConfig__bad-y__ CONFIG_OVERLAY_FS
+	_kernelConfig__bad-y__ CONFIG_ISO9660_FS
+	_kernelConfig__bad-y__ CONFIG_UDF_FS
+	
+	# https://www.kernel.org/doc/html/latest/cdrom/packet-writing.html
+	# 'packet support in the block device section'
+	# 'pktcdvd driver makes the disc appear as a regular block device with a 2KB block size'
+	# Although the module is apparently 'deprecated', it is available with Linux kernel 5.10 , and thus should remain usable at least through ~2026 .
+	# https://wiki.archlinux.org/title/Optical_disc_drive
+	# Many 'optical discs' apparently can be used directly as block devices by such programs as 'gparted' and 'dd'.
+	_kernelConfig__bad-y_m CONFIG_CDROM_PKTCDVD
+	
+	_kernelConfig__bad-y__ CONFIG_PROC_FS
+	_kernelConfig__bad-y__ CONFIG_TMPFS
+	
+	_kernelConfig__bad-y__ CONFIG_PPP
+	_kernelConfig__bad-y__ CONFIG_PPP_ASYNC
+	_kernelConfig__bad-y__ CONFIG_PPP_SYNC_TTY
+	
+	_kernelConfig__bad-y__ CONFIG_SMP
+	
+	# https://wiki.gentoo.org/wiki/Kernel/Gentoo_Kernel_Configuration_Guide
+	# 'Support for Host-side USB'
+	_kernelConfig__bad-y__ CONFIG_USB_SUPPORT
+	_kernelConfig__bad-y__ CONFIG_USB_XHCI_HCD
+	_kernelConfig__bad-y__ CONFIG_USB_EHCI_HCD
+	_kernelConfig__bad-y__ CONFIG_USB_OHCI_HCD
+	
+	_kernelConfig__bad-y__ USB_OHCI_HCD_PCI
+	
+	_kernelConfig__bad-y__ CONFIG_HID
+	_kernelConfig__bad-y__ CONFIG_HID_GENERIC
+	_kernelConfig__bad-y__ CONFIG_HID_BATTERY_STRENGTH
+	_kernelConfig__bad-y__ CONFIG_USB_HID
+	
+	_kernelConfig__bad-y__ CONFIG_PARTITION_ADVANCED
+	_kernelConfig__bad-y__ CONFIG_EFI_PARTITION
+	
+	_kernelConfig__bad-y__ CONFIG_EFI
+	_kernelConfig__bad-y__ CONFIG_EFI_STUB
+	_kernelConfig__bad-y__ CONFIG_EFI_MIXED
+	
+	_kernelConfig__bad-y__ CONFIG_EFI_VARS
+}
+
+
+_kernelConfig_require-arch-x64() {
+	_messagePlain_nominal 'kernelConfig: arch-x64'
+	export kernelConfig_file="$1"
+	
+	# CRITICAL! Expected to accommodate modern CPUs.
+	_messagePlain_request 'request: -march=sandybridge -mtune=skylake'
+	_messagePlain_request 'export KCFLAGS="-O2 -march=sandybridge -mtune=skylake -pipe"'
+	_messagePlain_request 'export KCPPFLAGS="-O2 -march=sandybridge -mtune=skylake -pipe"'
+	
+	_kernelConfig_warn-n__ CONFIG_GENERIC_CPU
+# 	
+	_kernelConfig_request MCORE2
+	
+	_kernelConfig_warn-y__ CONFIG_X86_MCE
+	_kernelConfig_warn-y__ CONFIG_X86_MCE_INTEL
+	_kernelConfig_warn-y__ CONFIG_X86_MCE_AMD
+	
+	# Uncertain. May or may not improve performance.
+	# Seems missing in newer kernel 'menuconfig' .
+	#_kernelConfig_warn-y__ CONFIG_INTEL_RDT
+	
+	# Maintenance may be easier with this enabled.
+	_kernelConfig_warn-y_m CONFIG_EFIVAR_FS
+	
+	# Presumably mixing entropy may be preferable.
+	_kernelConfig__bad-n__ CONFIG_RANDOM_TRUST_CPU
+	
+	
+	# If possible, it may be desirable to check clocksource defaults.
+	
+	_kernelConfig__bad-y__ X86_TSC
+	
+	_kernelConfig_warn-y__ HPET
+	_kernelConfig_warn-y__ HPET_EMULATE_RTC
+	_kernelConfig_warn-y__ HPET_MMAP
+	_kernelConfig_warn-y__ HPET_MMAP_DEFAULT
+	_kernelConfig_warn-y__ HPET_TIMER
+	
+	
+	_kernelConfig__bad-y__ CONFIG_IA32_EMULATION
+	_kernelConfig_warn-n__ IA32_AOUT
+	_kernelConfig__bad-y__ CONFIG_X86_X32
+	
+	_kernelConfig__bad-y__ CONFIG_BINFMT_ELF
+	_kernelConfig__bad-y_m CONFIG_BINFMT_MISC
+	
+	# May not have been optional under older kernel configurations.
+	_kernelConfig__bad-y__ CONFIG_BINFMT_SCRIPT
+}
+
+_kernelConfig_require-accessory() {
+	_messagePlain_nominal 'kernelConfig: accessory'
+	export kernelConfig_file="$1"
+	
+	# May be critical to 'ss' tool functionality typically expected by Ubiquitous Bash.
+	_kernelConfig_warn-y_m CONFIG_PACKET_DIAG
+	_kernelConfig_warn-y_m CONFIG_UNIX_DIAG
+	_kernelConfig_warn-y_m CONFIG_INET_DIAG
+	_kernelConfig_warn-y_m CONFIG_NETLINK_DIAG
+	
+	# Essential for a wide variety of platforms.
+	_kernelConfig_warn-y_m CONFIG_MOUSE_PS2_TRACKPOINT
+	
+	# Common and useful GPU features.
+	_kernelConfig_warn-y_m CONFIG_DRM_RADEON
+	_kernelConfig_warn-y_m CONFIG_DRM_AMDGPU
+	_kernelConfig_warn-y_m CONFIG_DRM_I915
+	_kernelConfig_warn-y_m CONFIG_DRM_NOUVEAU
+	
+	# Rarely appropriate and reportedly 'dangerous'.
+	#_kernelConfig_warn-y_m CONFIG_DRM_VIA
+	
+	# Uncertain.
+	#_kernelConfig_warn-y__ CONFIG_IRQ_REMAP
+	
+	# TODO: Accessory features which may become interesting.
+	#ACPI_HMAT
+	#PCIE_BW
+	#ACRN_GUEST
+	#XILINX SDFEC
+}
+
+_kernelConfig_require-build() {
+	_messagePlain_nominal 'kernelConfig: build'
+	export kernelConfig_file="$1"
+	
+	# May cause failure if set incorrectly.
+	if ! cat "$kernelConfig_file" | grep 'CONFIG_SYSTEM_TRUSTED_KEYS\=\"\"' > /dev/null 2>&1 && ! cat "$kernelConfig_file" | grep -v 'CONFIG_SYSTEM_TRUSTED_KEYS' > /dev/null 2>&1
+	then
+		#_messagePlain_bad 'bad: not:    Y: '"$1"
+		 _messagePlain_bad 'bad: not:    _: 'CONFIG_SYSTEM_TRUSTED_KEYS
+	fi
+	
+	# May cause failure if set incorrectly.
+	#! _kernelConfig__bad-n__ CONFIG_SYSTEM_TRUSTED_KEYRING
+	#! _kernelConfig__bad-n__ CONFIG_SYSTEM_TRUSTED_KEYRING && _messagePlain_request ' request: ''scripts/config --set-str SYSTEM_TRUSTED_KEYS ""'
+	
+	
+	# May require a version of 'pahole' not available from Debian Stable.
+	_kernelConfig__bad-n__ CONFIG_DEBUG_INFO_BTF
+	
+	#_messagePlain_request ' request: ''scripts/config --set-str SYSTEM_TRUSTED_KEYS ""'
+}
+
+# ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
+# ATTENTION: Dependency of '_kernelConfig_require-latency' .
+_kernelConfig_require-latency_frequency() {
+	# High HZ rate (ie. HZ 1000) may be preferable for machines directly rendering simulator/VR graphics.
+	# Theoretically graphics VSYNC might prefer HZ 300 or similar, as a multiple of common graphics refresh rates.
+	# 25,~29.97,30,60=300 60,72=360 60,75=300 60,80=240 32,36,64,72=576
+	# Theoretically, a setting of 250 may be beneficial for virtualization where the host kernel may be 1000 .
+	# Typically values: 250,300,1000 .
+	# https://passthroughpo.st/config_hz-how-does-it-affect-kvm/
+	# https://github.com/vmprof/vmprof-python/issues/163
+	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=300
+	
+	
+	if ! cat "$kernelConfig_file" | grep 'HZ='"$kernelConfig_frequency" > /dev/null 2>&1
+	then
+		#_messagePlain_bad  'bad: not:     Y: '"$1"
+		#_messagePlain_warn 'warn: not:    Y: '"$1"
+		 _messagePlain_bad 'bad: not:   '"$kernelConfig_frequency"': 'HZ
+	fi
+	_kernelConfig__bad-y__ HZ_"$kernelConfig_frequency"
+}
+
+_kernelConfig_require-latency() {
+	_messagePlain_nominal 'kernelConfig: latency'
+	export kernelConfig_file="$1"
+	
+	# Uncertain. Default off per Debian config.
+	_kernelConfig_warn-n__ CONFIG_X86_GENERIC
+	
+	# CRITICAL!
+	# https://www.reddit.com/r/linux_gaming/comments/mp2eqv/if_you_dont_like_schedutil_and_what_its_doing/
+	#  'Ondemand is similar'
+	_kernelConfig_warn-y__ CPU_FREQ_DEFAULT_GOV_ONDEMAND
+	_kernelConfig__bad-y__ CONFIG_CPU_FREQ_GOV_ONDEMAND
+	_kernelConfig__bad-y__ CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
+	_kernelConfig__bad-y__ CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+	
+	# CRITICAL!
+	# CONFIG_PREEMPT is significantly more stable and compatible with third party (eg. VirtualBox) modules.
+	# CONFIG_PREEMPT_RT is significantly less likely to incurr noticeable worst-case latency.
+	# Lack of both CONFIG_PREEMPT and CONFIG_PREEMPT_RT may incurr noticeable worst-case latency.
+	_kernelConfig_request CONFIG_PREEMPT
+	_kernelConfig_request CONFIG_PREEMPT_RT
+	if ! _kernelConfig__bad-y__ CONFIG_PREEMPT_RT > /dev/null 2>&1 && ! _kernelConfig__bad-y__ CONFIG_PREEMPT > /dev/null 2>&1 
+	then
+		_kernelConfig__bad-y__ CONFIG_PREEMPT
+		_kernelConfig__bad-y__ CONFIG_PREEMPT_RT
+	fi
+	
+	_kernelConfig_require-latency_frequency "$@"
+	
+	# Dynamic/Tickless kernel *might* be the cause of irregular display updates on some platforms.
+	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='false'
+	if [[ "$kernelConfig_tickless" == 'true' ]]
+	then
+		#_kernelConfig__bad-n__ CONFIG_HZ_PERIODIC
+		#_kernelConfig__bad-y__ CONFIG_NO_HZ
+		#_kernelConfig__bad-y__ CONFIG_NO_HZ_COMMON
+		#_kernelConfig__bad-y__ CONFIG_NO_HZ_FULL
+		_kernelConfig__bad-y__ CONFIG_NO_HZ_IDLE
+		#_kernelConfig__bad-y__ CONFIG_RCU_FAST_NO_HZ
+	else
+		_kernelConfig__bad-y__ CONFIG_HZ_PERIODIC
+		_kernelConfig__bad-n__ CONFIG_NO_HZ
+		_kernelConfig__bad-n__ CONFIG_NO_HZ_COMMON
+		_kernelConfig__bad-n__ CONFIG_NO_HZ_FULL
+		_kernelConfig__bad-n__ CONFIG_NO_HZ_IDLE
+		_kernelConfig__bad-n__ CONFIG_RCU_FAST_NO_HZ
+		
+		_kernelConfig__bad-y__ CPU_IDLE_GOV_MENU
+	fi
+	
+	# Essential.
+	_kernelConfig__bad-y__ CONFIG_LATENCYTOP
+	
+	
+	# CRITICAL!
+	_kernelConfig__bad-y__ CONFIG_CGROUP_SCHED
+	_kernelConfig__bad-y__ FAIR_GROUP_SCHED
+	_kernelConfig__bad-y__ CONFIG_CFS_BANDWIDTH
+	
+	# CRITICAL!
+	# Expected to protect single-thread interactive applications from competing multi-thread workloads.
+	_kernelConfig__bad-y__ CONFIG_SCHED_AUTOGROUP
+	
+	
+	# CRITICAL!
+	# Default cannot be set currently.
+	_messagePlain_request 'request: Set '\''bfq'\'' as default IO scheduler (strongly recommended).'
+	#_kernelConfig__bad-y__ DEFAULT_IOSCHED
+	#_kernelConfig__bad-y__ DEFAULT_BFQ
+	
+	# CRITICAL!
+	# Expected to protect interactive applications from background IO.
+	# https://www.youtube.com/watch?v=ANfqNiJVoVE
+	_kernelConfig__bad-y__ CONFIG_IOSCHED_BFQ
+	_kernelConfig__bad-y__ CONFIG_BFQ_GROUP_IOSCHED
+	
+	
+	# Uncertain.
+	# https://forum.manjaro.org/t/please-enable-writeback-throttling-by-default-linux-4-10/18135/22
+	#_kernelConfig__bad-y__ BLK_WBT
+	#_kernelConfig__bad-y__ BLK_WBT_MQ
+	#_kernelConfig__bad-y__ BLK_WBT_SQ
+	
+	
+	# https://lwn.net/Articles/789304/
+	_kernelConfig__bad-y__ CONFIG_SPARSEMEM
+	
+	
+	_kernelConfig__bad-n__ CONFIG_REFCOUNT_FULL
+	_kernelConfig__bad-n__ CONFIG_DEBUG_NOTIFIERS
+	_kernelConfig_warn-n__ CONFIG_FTRACE
+	
+	_kernelConfig__bad-y__ CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
+	
+	# CRITICAL!
+	# Lightweight kernel compression theoretically may significantly accelerate startup from slow disks.
+	_kernelConfig__bad-y__ CONFIG_KERNEL_LZ4
+	
+}
+
+_kernelConfig_require-memory() {
+	_messagePlain_nominal 'kernelConfig: memory'
+	export kernelConfig_file="$1"
+	
+	# Uncertain.
+	# https://fa.linux.kernel.narkive.com/CNnVwDlb/hack-bench-regression-with-config-slub-cpu-partial-disabled-info-only
+	_kernelConfig_warn-y__ CONFIG_SLUB_CPU_PARTIAL
+	
+	# Uncertain.
+	_kernelConfig_warn-y__ CONFIG_TRANSPARENT_HUGEPAGE
+	_kernelConfig_warn-y__ CONFIG_CLEANCACHE
+	_kernelConfig_warn-y__ CONFIG_FRONTSWAP
+	_kernelConfig_warn-y__ CONFIG_ZSWAP
+	
+	
+	_kernelConfig__bad-y__ CONFIG_COMPACTION
+	_kernelConfig_warn-y__ CONFIG_BALLOON_COMPACTION
+	
+	# Uncertain.
+	_kernelConfig_warn-y__ CONFIG_MEMORY_FAILURE
+	
+	# CRITICAL!
+	_kernelConfig_warn-y__ CONFIG_KSM
+}
+
+_kernelConfig_require-integration() {
+	_messagePlain_nominal 'kernelConfig: integration'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y_m CONFIG_FUSE_FS
+	_kernelConfig__bad-y_m CONFIG_CUSE
+	_kernelConfig__bad-y__ CONFIG_OVERLAY_FS
+	_kernelConfig__bad-y__ CONFIG_ISO9660_FS
+	_kernelConfig__bad-y__ CONFIG_UDF_FS
+	_kernelConfig__bad-y_m CONFIG_NTFS_FS
+	_kernelConfig_request CONFIG_NTFS_RW
+	_kernelConfig__bad-y__ CONFIG_MSDOS_FS
+	_kernelConfig__bad-y__ CONFIG_VFAT_FS
+	_kernelConfig__bad-y__ CONFIG_MSDOS_PARTITION
+	
+	
+	_kernelConfig__bad-y__ CONFIG_BTRFS_FS
+	_kernelConfig__bad-y_m CONFIG_NILFS2_FS
+	
+	# TODO: LiveCD UnionFS or similar boot requirements.
+	
+	# Gentoo specific. Start with "gentoo-sources" if possible.
+	_kernelConfig_warn-y__ CONFIG_GENTOO_LINUX
+	_kernelConfig_warn-y__ CONFIG_GENTOO_LINUX_UDEV
+	_kernelConfig_warn-y__ CONFIG_GENTOO_LINUX_PORTAGE
+	_kernelConfig_warn-y__ CONFIG_GENTOO_LINUX_INIT_SCRIPT
+	_kernelConfig_warn-y__ CONFIG_GENTOO_LINUX_INIT_SYSTEMD
+}
+
+# Recommended by docker ebuild during installation under Gentoo.
+_kernelConfig_require-investigation_docker() {
+	_messagePlain_nominal 'kernelConfig: investigation: docker'
+	export kernelConfig_file="$1"
+	
+	# Apparently, 'CONFIG_MEMCG_SWAP_ENABLED' missing from recent 'menuconfig' .
+	#_kernelConfig_warn-y__ CONFIG_MEMCG_SWAP_ENABLED
+	_kernelConfig_warn-y__ CONFIG_MEMCG_SWAP
+	
+	_kernelConfig_warn-y__ CONFIG_CGROUP_HUGETLB
+	_kernelConfig_warn-y__ CONFIG_RT_GROUP_SCHED
+	
+	true
+}
+
+
+# ATTENTION: Insufficiently investigated stuff to think about. Unknown consequences.
+_kernelConfig_require-investigation() {
+	_messagePlain_nominal 'kernelConfig: investigation'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig_warn-any ACPI_HMAT
+	
+	# Apparently, 'PCIE_BW' missing from recent 'menuconfig' .
+	#_kernelConfig_warn-any PCIE_BW
+	
+	_kernelConfig_warn-any CONFIG_UCLAMP_TASK
+	
+	_kernelConfig_warn-any CPU_IDLE_GOV_TEO
+	
+	_kernelConfig_warn-any LOCK_EVENT_COUNTS
+	
+	
+	_kernelConfig_require-investigation_docker "$@"
+	_kernelConfig_require-investigation_prog "$@"
+	true
+}
+
+
+_kernelConfig_require-investigation_prog() {
+	_messagePlain_nominal 'kernelConfig: investigation: prog'
+	export kernelConfig_file="$1"
+	
+	true
+}
+
+
+
+_kernelConfig_require-convenience() {
+	_messagePlain_nominal 'kernelConfig: convenience'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y__ CONFIG_IKCONFIG
+	_kernelConfig__bad-y__ CONFIG_IKCONFIG_PROC
+	
+	true
+}
+
+_kernelConfig_require-special() {
+	_messagePlain_nominal 'kernelConfig: special'
+	export kernelConfig_file="$1"
+	
+	_kernelConfig__bad-y__ CONFIG_CRYPTO_JITTERENTROPY
+	
+	#/dev/hwrng
+	_kernelConfig__bad-y__ CONFIG_HW_RANDOM
+	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_INTEL
+	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_AMD
+	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_VIA
+	_kernelConfig__bad-y_m HW_RANDOM_VIRTIO
+	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_TPM
+	
+	
+	true
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_test_kernelConfig() {
+	#_getDep pahole
+	_wantGetDep pahole
+	
+	_getDep lz4
+	_getDep lz4c
+}
+
+
+_kernelConfig_request_build() {
+	_messagePlain_request 'request: make menuconfig'
+	
+	_messagePlain_request 'request: make -j $(nproc)'
+	
+	# WARNING: Building debian kernel packages from Gentoo may be complex.
+	#https://forums.gentoo.org/viewtopic-t-1096872-start-0.html
+	#_messagePlain_request 'emerge dpkg fakeroot bc kmod cpio ; touch /var/lib/dpkg/status'
+	
+	_messagePlain_request 'request: make deb-pkg -j $(nproc)'
+}
+
+
+# ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
+_kernelConfig_panel() {
+	_messageNormal 'kernelConfig: panel'
+	
+	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=300
+	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='false'
+	
+	_kernelConfig_require-tradeoff "$@"
+	
+	_kernelConfig_require-virtualization-accessory "$@"
+	
+	_kernelConfig_require-virtualbox "$@"
+	
+	_kernelConfig_require-boot "$@"
+	
+	_kernelConfig_require-arch-x64 "$@"
+	
+	_kernelConfig_require-accessory "$@"
+	
+	_kernelConfig_require-build "$@"
+	
+	_kernelConfig_require-latency "$@"
+	
+	_kernelConfig_require-memory "$@"
+	
+	_kernelConfig_require-integration "$@"
+	
+	_kernelConfig_require-investigation "$@"
+	
+	_kernelConfig_require-convenience "$@"
+	
+	_kernelConfig_require-special "$@"
+	
+	
+	_kernelConfig_request_build
+}
+
+# ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
+_kernelConfig_mobile() {
+	_messageNormal 'kernelConfig: mobile'
+	
+	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=300
+	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='true'
+	
+	_kernelConfig_require-tradeoff "$@"
+	
+	_kernelConfig_require-virtualization-accessory "$@"
+	
+	_kernelConfig_require-virtualbox "$@"
+	
+	_kernelConfig_require-boot "$@"
+	
+	_kernelConfig_require-arch-x64 "$@"
+	
+	_kernelConfig_require-accessory "$@"
+	
+	_kernelConfig_require-build "$@"
+	
+	_kernelConfig_require-latency "$@"
+	
+	_kernelConfig_require-memory "$@"
+	
+	_kernelConfig_require-integration "$@"
+	
+	_kernelConfig_require-investigation "$@"
+	
+	_kernelConfig_require-convenience "$@"
+	
+	_kernelConfig_require-special "$@"
+	
+	
+	_kernelConfig_request_build
+}
+
+# ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
+_kernelConfig_desktop() {
+	_messageNormal 'kernelConfig: desktop'
+	
+	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=1000
+	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='false'
+	
+	_kernelConfig_require-tradeoff "$@"
+	
+	_kernelConfig_require-virtualization-accessory "$@"
+	
+	_kernelConfig_require-virtualbox "$@"
+	
+	_kernelConfig_require-boot "$@"
+	
+	_kernelConfig_require-arch-x64 "$@"
+	
+	_kernelConfig_require-accessory "$@"
+	
+	_kernelConfig_require-build "$@"
+	
+	_kernelConfig_require-latency "$@"
+	
+	_kernelConfig_require-memory "$@"
+	
+	_kernelConfig_require-integration "$@"
+	
+	_kernelConfig_require-investigation "$@"
+	
+	_kernelConfig_require-convenience "$@"
+	
+	_kernelConfig_require-special "$@"
+	
+	
+	_kernelConfig_request_build
+}
+
+
+# "$1" == alternateRootPrefix
+_write_bfq() {
+	_messagePlain_nominal 'write_bfq: init'
+	
+	_mustGetSudo
+	
+	
+	_messagePlain_nominal 'write_bfq: write'
+	
+	sudo -n cat << 'CZXWXcRMTo8EmM8i4d' | sudo tee "$1"'/etc/modules-load.d/bfq-'"$ubiquitousBashIDshort"'.conf' > /dev/null
+bfq
+
+CZXWXcRMTo8EmM8i4d
+
+
+	cat << 'CZXWXcRMTo8EmM8i4d' | sudo tee "$1"'/etc/udev/rules.d/60-scheduler-'"$ubiquitousBashIDshort"'.rules' > /dev/null
+ACTION=="add|change", KERNEL=="sd*[!0-9]|sr*", ATTR{queue/scheduler}="bfq"
+ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="bfq"
+
+CZXWXcRMTo8EmM8i4d
+
+	_messagePlain_good 'write_bfq: success'
+
+}
+
+
 
 
 
