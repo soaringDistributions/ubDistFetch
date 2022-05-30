@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4047106056'
+export ub_setScriptChecksum_contents='1275466469'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -6121,10 +6121,20 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall chromium
 	_getMost_backend_aptGetInstall openjdk-11-jdk openjdk-11-jre
 	
+	
+	_getMost_backend_aptGetInstall build-essential
+	
 	# ATTENTION: ONLY change (eg. to 'remove') if needed to ensure a kernel is installed AND custom kernel is not in use.
 	_getMost_backend_aptGetInstall linux-image-amd64
 	
+	if [[ "$chrootName" == "" ]] && [[ "$getMost_backend" != "chroot" ]] && [[ "$CI" == "" ]]
+	then
+		_getMost_backend_aptGetInstall linux-headers-$(uname -r)
+	fi
+	
 	_getMost_backend_aptGetInstall net-tools wireless-tools rfkill
+	
+	_getMost_backend_aptGetInstall dmidecode
 	
 	
 	_getMost_backend_aptGetInstall p7zip
@@ -6137,13 +6147,30 @@ _getMost_debian11_install() {
 	#_getMost_backend_aptGetInstall virtualbox-guest-utils
 	#_getMost_backend_aptGetInstall virtualbox-guest-x11
 	
+	
+	
+	
 	_getMost_backend wget -qO- 'https://download.virtualbox.org/virtualbox/6.1.34/VBoxGuestAdditions_6.1.34.iso' | _getMost_backend tee /VBoxGuestAdditions.iso > /dev/null
 	_getMost_backend 7z x /VBoxGuestAdditions.iso -o/VBoxGuestAdditions -aoa -y
 	_getMost_backend rm -f /VBoxGuestAdditions.iso
 	_getMost_backend chmod u+x /VBoxGuestAdditions/VBoxLinuxAdditions.run
+	
+	
+	# From '/var/log/vboxadd-*' , 'shared folder support module' 'modprobe vboxguest failed'
+	# Due to 'rcvboxadd setup' and/or 'rcvboxadd quicksetup all' apparently ceasing to build subsequent modules (ie. 'vboxsf') after any error (ie. due to 'modprobe' failing unless VirtualBox virtual hardware is present).
+	_getMost_backend mv -n /sbin/modprobe /sbin/modprobe.real
+	_getMost_backend ln -s /bin/true /sbin/modprobe
+	
 	_getMost_backend /VBoxGuestAdditions/VBoxLinuxAdditions.run
 	_getMost_backend /sbin/rcvboxadd quicksetup all
 	_getMost_backend /sbin/rcvboxadd setup
+	_getMost_backend /sbin/rcvboxadd quicksetup all
+	#_getMost_backend /sbin/rcvboxadd setup
+	
+	_getMost_backend rm -f /sbin/modprobe
+	_getMost_backend mv -f /sbin/modprobe.real /sbin/modprobe
+	
+	
 	
 	
 	# https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/install-linux-host.html
