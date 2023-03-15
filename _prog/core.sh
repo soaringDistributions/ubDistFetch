@@ -63,6 +63,15 @@ _ubDistFetch_gitBestFetch_github_mirage335() {
 	return 0
 }
 
+_ubDistFetch_gitBestFetch_github_distllc() {
+	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
+	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:soaringDistributions/"$2".git "$2"
+	then
+		_messageFAIL
+	fi
+	return 0
+}
+
 
 _ubDistFetch() {
 	local functionEntryPWD
@@ -99,7 +108,8 @@ _ubDistFetch() {
 	
 	
 	
-	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335KernelBuild
+	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335KernelBuild
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations mirage335KernelBuild
 	
 	
 	
