@@ -85,7 +85,7 @@ _ubDistFetch() {
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
 	
-	
+	rm -f "$scriptLib"/FAIL > /dev/null 2>&1
 	
 	
 	cd "$scriptLib"/core/installations
@@ -305,6 +305,7 @@ _ubDistFetch() {
 
 
 _ubDistFetch_package() {
+	[[ -e "$scriptLib"/FAIL ]] && _messagePlain_bad 'flag: "$scriptLib"/FAIL' && _messageFAIL
 	cd "$scriptLib"
 	rm -f "$scriptLib"/core.tar.xz > /dev/null 2>&1
 	env XZ_OPT=-5 tar -cJvf "$scriptLib"/core.tar.xz ./core
