@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='180664734'
+export ub_setScriptChecksum_contents='3403571675'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -16458,6 +16458,10 @@ _package() {
 
 _test_prog() {
 	_getDep unzip
+
+	_getDep jq
+
+	_getDep curl
 }
 
 
@@ -16466,19 +16470,16 @@ _test_prog() {
 
 ##### Core
 
-
-_wget_distLLC() {
-	[[ "$distLLC_user" == "" ]] && export distLLC_user='u298813-sub7'
-	[[ "$distLLC_password" == "" ]] && export distLLC_password='wnEtWtT9UDyJiCGw'
-	if ! wget --user "$distLLC_user" --password "$distLLC_password" "$@"
-	then
-		_messageFAIL
-	fi
-	return 0
+_core_FAIL() {
+	_safeEcho_newline "$@" > "$scriptLib"/FAIL
+	_messagePlain_bad 'fail: '"$@"
+	_messageFAIL
 }
 
-
-
+_wget_githubRelease_internal() {
+	curl -L -o "$2" $(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url")
+	[[ ! -e "$1" ]] && _core_FAIL 'missing: '"$1"
+}
 
 # "$1" ~= "$scriptLib"/core/infrastructure
 # "$2" ~= git@github.com:mirage335/ubiquitous_bash.git
@@ -16494,8 +16495,8 @@ _ubDistFetch_gitBestFetch() {
 	currentCheckout="$4"
 	[[ "$currentCheckout" == "" ]] && currentCheckout=HEAD
 	
-	! _messagePlain_probe_cmd mkdir -p "$1"  && _messageFAIL
-	! _messagePlain_probe_cmd cd "$1" && _messageFAIL
+	! _messagePlain_probe_cmd mkdir -p "$1"  && _core_FAIL
+	! _messagePlain_probe_cmd cd "$1" && _core_FAIL
 	#_gitBest clone --depth 1 --recursive "$2"
 	if [[ "$4" == "" ]] || [[ "$4" == "HEAD" ]] || [[ "$4" == "main" ]] || [[ "$4" == "master" ]]
 	then
@@ -16504,17 +16505,17 @@ _ubDistFetch_gitBestFetch() {
 	then
 		_gitBest clone "$2"
 	fi
-	#[[ ! -e "$1"/"$3" ]] && _messageFAIL
-	! _messagePlain_probe_cmd cd "$1"/"$3" && _messageFAIL
-	! _messagePlain_probe_cmd git checkout "$currentCheckout" && _messageFAIL
+	#[[ ! -e "$1"/"$3" ]] && _core_FAIL
+	! _messagePlain_probe_cmd cd "$1"/"$3" && _core_FAIL
+	! _messagePlain_probe_cmd git checkout "$currentCheckout" && _core_FAIL
 	if [[ "$4" == "" ]] || [[ "$4" == "HEAD" ]] || [[ "$4" == "main" ]] || [[ "$4" == "master" ]]
 	then
-		! _messagePlain_probe_cmd _gitBest pull && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest pull && _core_FAIL
 	elif [[ $(_safeEcho_newline "$4" | wc -c | tr -dc '0-9') -ge 40 ]]
 	then
 		_messagePlain_probe_cmd _gitBest pull
 	fi
-	! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _messageFAIL
+	! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _core_FAIL
 	
 	cd "$functionEntryPWD"
 }
@@ -16524,6 +16525,7 @@ _ubDistFetch_gitBestFetch_github_mirage335() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
 	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335/"$2".git "$2"
 	then
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335 '"$@"
 		_messageFAIL
 	fi
 	return 0
@@ -16533,6 +16535,7 @@ _ubDistFetch_gitBestFetch_github_distllc() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
 	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:soaringDistributions/"$2".git "$2"
 	then
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335 '"$@"
 		_messageFAIL
 	fi
 	return 0
@@ -16567,10 +16570,10 @@ _ubDistFetch() {
 		cd "$scriptLib"/core/installations
 		#wget 'https://phoenixnap.dl.sourceforge.net/project/pstoedit/pstoedit/3.75/pstoedit-3.75.tar.gz' -O pstoedit-3.75.tar.gz
 		wget 'https://sourceforge.net/projects/pstoedit/files/pstoedit/3.75/pstoedit-3.75.tar.gz/download' -O pstoedit-3.75.tar.gz
-		! _messagePlain_probe_cmd tar xf pstoedit-3.75.tar.gz && _messageFAIL
+		! _messagePlain_probe_cmd tar xf pstoedit-3.75.tar.gz && _core_FAIL
 		rm -f pstoedit-3.75.tar.gz
 	fi
-	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _messageFAIL
+	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
 	
 	
 	
@@ -16584,7 +16587,9 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-lts-amd64-debian.tar.gz -O linux-lts-amd64-debian.tar.gz
+		
+		_wget_githubRelease_internal soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz
+		
 		mv -f linux-lts-amd64-debian.tar.gz kernel_linux/linux-lts-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-lts-amd64-debian.tar.gz
@@ -16595,7 +16600,9 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335KernelBuild/linux-mainline-amd64-debian.tar.gz -O linux-mainline-amd64-debian.tar.gz
+
+		_wget_githubRelease_internal soaringDistributions/mirage335KernelBuild linux-mainline-amd64-debian.tar.gz
+
 		mv -f linux-mainline-amd64-debian.tar.gz kernel_linux/linux-mainline-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-mainline-amd64-debian.tar.gz
@@ -16607,25 +16614,25 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubiquitous_bash-msw.7z -O package_ubiquitous_bash-msw.7z
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubiquitous_bash-msw.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
 		
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/ubcp-cygwin-portable-installer.log
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/_mitigate-ubcp.log
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/_setupUbiquitous.log
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/_test-lean.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash ubcp-cygwin-portable-installer.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash _mitigate-ubcp.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash _setupUbiquitous.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash _test-lean.log
 	fi
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubiquitous_bash-msw-rotten.7z -O package_ubiquitous_bash-msw-rotten.7z
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubiquitous_bash-msw-rotten.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
 	fi
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubcp-core.7z -O package_ubcp-core.7z
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/ubcp/package_ubcp-core.log
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubcp-core.7z
+		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubcp-core.log
 	fi
 	
 	
@@ -16634,8 +16641,9 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/mirage335TechArchive_discImages/m335TechArc_mCD.iso ]]
 	then
 		cd "$scriptLib"/core/installations/
-		_wget_distLLC https://u298813-sub7.your-storagebox.de/mirage335TechArchive_discImages/m335TechArc_mCD.iso -O m335TechArc_mCD.iso
-		mv -f m335TechArc_mCD.iso mirage335TechArchive_discImages/m335TechArc_mCD.iso
+		# ATTENTION: TODO: Temporarily unavailable.
+		#_wget mirage335TechArchive_discImages/m335TechArc_mCD.iso -O m335TechArc_mCD.iso
+		#mv -f m335TechArc_mCD.iso mirage335TechArchive_discImages/m335TechArc_mCD.iso
 	fi
 	
 	
@@ -16666,7 +16674,9 @@ _ubDistFetch() {
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure mirage335_documents
 	
-	
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure mirage335GizmoScience
 	
 	
 	
@@ -16685,18 +16695,18 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/infrastructure
 		_gitBest clone --depth 1 git@github.com:mirage335/arduinoUbiquitous.git
-		[[ ! -e "$scriptLib"/core/infrastructure/arduinoUbiquitous ]] && _messageFAIL
+		[[ ! -e "$scriptLib"/core/infrastructure/arduinoUbiquitous ]] && _core_FAIL 'missing: arduinoUbiquitous'
 		
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous
 		
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/
-		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 ./_lib/openocd-static && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 ./_lib/openocd-static && _core_FAIL
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/_lib/openocd-static
-		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-build-script-static && _messageFAIL
-		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-code && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-build-script-static && _core_FAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 9000000 --recursive ./_lib/openocd-code && _core_FAIL
 		
 		cd "$scriptLib"/core/infrastructure/arduinoUbiquitous/
-		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _messageFAIL
+		! _messagePlain_probe_cmd _gitBest submodule update --init --depth 1 --recursive && _core_FAIL
 	fi
 	
 	
