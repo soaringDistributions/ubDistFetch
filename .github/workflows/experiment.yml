@@ -1,7 +1,7 @@
 
 # WARNING: May be untested .
 
-name: build
+name: experiment
 on:
   push:
   workflow_dispatch:
