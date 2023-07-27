@@ -8,7 +8,7 @@ _core_FAIL() {
 
 _wget_githubRelease_internal() {
 	curl -L -o "$2" $(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url")
-	[[ ! -e "$1" ]] && _core_FAIL 'missing: '"$1"
+	[[ ! -e "$2" ]] && _core_FAIL 'missing: '"$1"' '"$2"
 }
 
 # "$1" ~= "$scriptLib"/core/infrastructure
@@ -79,8 +79,8 @@ _ubDistFetch() {
 	
 	# If directory exists, pull updates instead of deleting and recreating.
 	export safeToDeleteGit="true"
-	#_safeRMR "$scriptLib"/core/infrastructure
-	#_safeRMR "$scriptLib"/core/installations
+	_safeRMR "$scriptLib"/core/infrastructure
+	_safeRMR "$scriptLib"/core/installations
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
@@ -309,6 +309,19 @@ _ubDistFetch_package() {
 	cd "$scriptLib"
 	rm -f "$scriptLib"/core.tar.xz > /dev/null 2>&1
 	env XZ_OPT=-5 tar -cJvf "$scriptLib"/core.tar.xz ./core
+}
+
+
+_ubDistFetch_split() {
+	local functionEntryPWD
+	functionEntryPWD="$PWD"
+
+
+	cd "$scriptLib"
+	split -b 1856000000 -d core.tar.xz core.tar.xz.part
+
+
+	cd "$functionEntryPWD"
 }
 
 

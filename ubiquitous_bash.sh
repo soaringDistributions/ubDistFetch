@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='162164532'
+export ub_setScriptChecksum_contents='250501878'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -16729,7 +16729,7 @@ _core_FAIL() {
 
 _wget_githubRelease_internal() {
 	curl -L -o "$2" $(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url")
-	[[ ! -e "$1" ]] && _core_FAIL 'missing: '"$1"
+	[[ ! -e "$2" ]] && _core_FAIL 'missing: '"$1"' '"$2"
 }
 
 # "$1" ~= "$scriptLib"/core/infrastructure
@@ -16800,8 +16800,8 @@ _ubDistFetch() {
 	
 	# If directory exists, pull updates instead of deleting and recreating.
 	export safeToDeleteGit="true"
-	#_safeRMR "$scriptLib"/core/infrastructure
-	#_safeRMR "$scriptLib"/core/installations
+	_safeRMR "$scriptLib"/core/infrastructure
+	_safeRMR "$scriptLib"/core/installations
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
@@ -17030,6 +17030,19 @@ _ubDistFetch_package() {
 	cd "$scriptLib"
 	rm -f "$scriptLib"/core.tar.xz > /dev/null 2>&1
 	env XZ_OPT=-5 tar -cJvf "$scriptLib"/core.tar.xz ./core
+}
+
+
+_ubDistFetch_split() {
+	local functionEntryPWD
+	functionEntryPWD="$PWD"
+
+
+	cd "$scriptLib"
+	split -b 1856000000 -d core.tar.xz core.tar.xz.part
+
+
+	cd "$functionEntryPWD"
 }
 
 
