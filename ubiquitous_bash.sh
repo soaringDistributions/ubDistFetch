@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='3403571675'
+export ub_setScriptChecksum_contents='1571106789'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -272,6 +272,21 @@ then
 fi
 
 
+# ATTENTION: Highly irregular. Workaround due to gsch2pcb installed by nix package manager not searching for installed footprints.
+if [[ "$NIX_PROFILES" != "" ]]
+then
+	if [[ -e "$HOME"/.nix-profile/bin/gsch2pcb ]] && [[ -e /usr/local/share/pcb/newlib ]] && [[ -e /usr/local/lib/pcb_lib ]]
+	then
+		gsch2pcb() {
+			"$HOME"/.nix-profile/bin/gsch2pcb --elements-dir /usr/local/share/pcb/newlib --elements-dir /usr/local/lib/pcb_lib "$@"
+		}
+	elif [[ -e /usr/share/pcb/pcblib-newlib ]]
+	then
+		gsch2pcb() {
+			"$HOME"/.nix-profile/bin/gsch2pcb --elements-dir /usr/share/pcb/pcblib-newlib "$@"
+		}
+	fi
+fi
 
 
 # Only production use is Inter-Process Communication (IPC) loops which may be theoretically impossible to make fully deterministic under Operating Systems which do not have hard-real-time kernels and/or may serve an unlimited number of processes.
@@ -654,12 +669,13 @@ fi
 
 # ATTENTION: Workaround - Cygwin Portable - append MSW PATH if reasonable.
 # NOTICE: Also see '_test-shell-cygwin' .
+# MSWEXTPATH lengths up to 33, 38, are known reasonable values.
 if [[ "$MSWEXTPATH" != "" ]] && ( [[ "$PATH" == *"/cygdrive"* ]] || [[ "$PATH" == "/cygdrive"* ]] ) && [[ "$convertedMSWEXTPATH" == "" ]] && _if_cygwin
 then
-	if [[ $(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9') -le 32 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 32 ]]
+	if [[ $(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9') -le 44 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 44 ]]
 	then
 		export convertedMSWEXTPATH=$(cygpath -p "$MSWEXTPATH")
-		export PATH="$PATH":"$convertedMSWEXTPATH"
+		export PATH=/usr/bin:"$convertedMSWEXTPATH":"$PATH"
 	fi
 fi
 
@@ -1090,6 +1106,11 @@ then
 	then
 		export cygwinOverride_measureDateA=$(date +%s%N | cut -b1-13)
 		export ub_setScriptChecksum_contents_cygwinOverride="$ub_setScriptChecksum_contents"
+		
+		
+		_discoverResource-cygwinNative-ProgramFiles 'ykman' 'Yubico/YubiKey Manager' false
+		
+		
 		
 		_discoverResource-cygwinNative-ProgramFiles 'nmap' 'Nmap' false
 		
@@ -4910,8 +4931,18 @@ CZXWXcRMTo8EmM8i4d
 	if [[ "$1" == "qalculate-gtk" ]]
 	then
 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qalculate-gtk
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -t bullseye-backports qalc
 		
 		! _wantDep 'qalculate-gtk' && echo 'warn: missing: qalculate-gtk'
+		
+		return 0
+	fi
+	
+	if [[ "$1" == "qalc" ]]
+	then
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -t bullseye-backports qalc
+		
+		! _wantDep 'qalc' && echo 'warn: missing: qalc'
 		
 		return 0
 	fi
@@ -5950,7 +5981,7 @@ _wait_debianInstall() {
 			sleep 0.1
 			echo 'busy: '"$currentIteration_continuing"
 			let currentIteration_continuing="$currentIteration_continuing"+1
-			if pgrep "^tasksel$" || pgrep "^apt-get$" || pgrep "^dpkg$" || ( fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || ( type -p sudo > /dev/null 2>&1 && sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 ) )
+			if pgrep ^tasksel$ || pgrep ^apt-get$ || pgrep ^dpkg$ || ( fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || ( type -p sudo > /dev/null 2>&1 && sudo -n fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 ) )
 			then
 				currentIteration_continuing=99999
 			fi
@@ -6110,6 +6141,8 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall unionfs-fuse
 	_getMost_backend_aptGetInstall samba
 	
+	_getMost_backend_aptGetInstall aria2
+	
 	_getMost_backend_aptGetInstall qemu
 	_getMost_backend_aptGetInstall qemu-system-x86
 	_getMost_backend_aptGetInstall qemu-system-arm
@@ -6217,6 +6250,11 @@ _getMost_debian11_install() {
 	
 	_getMost_backend_aptGetInstall qalculate-gtk
 	_getMost_backend_aptGetInstall qalc
+	
+	# CAUTION: Workaround. Debian defaults to an obsolete version of qalc which is unusable.
+	_getMost_backend_aptGetInstall -t bullseye-backports qalc
+	
+	
 	
 	_getMost_backend_aptGetInstall octave
 	_getMost_backend_aptGetInstall octave-arduino
@@ -6334,6 +6372,8 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall pv
 	_getMost_backend_aptGetInstall expect
 	
+	_getMost_backend_aptGetInstall libfuse2
+	
 	_getMost_backend_aptGetInstall libgtk2.0-0
 	
 	_getMost_backend_aptGetInstall libwxgtk3.0-gtk3-0v5
@@ -6450,11 +6490,22 @@ _getMost_debian11_install() {
 	
 	
 	
+	#_getMost_backend_aptGetInstall nvflash
+	
+	_getMost_backend_aptGetInstall usbutils
+	
+	_getMost_backend_aptGetInstall lm-sensors
+	_getMost_backend_aptGetInstall hddtemp
+	_getMost_backend_aptGetInstall aptitude
+	_getMost_backend_aptGetInstall recode
+	_getMost_backend_aptGetInstall asciidoc
+	
+	
+	
 	_getMost_backend_aptGetInstall pavucontrol
 	_getMost_backend_aptGetInstall filelight
 	
 	_getMost_backend_aptGetInstall obs-studio
-	
 	
 	
 	_getMost_backend_aptGetInstall lepton-eda
@@ -6464,9 +6515,25 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall electronics-pcb
 	_getMost_backend_aptGetInstall pcb2gcode
 	
+	_getMost_backend_aptGetInstall inkscape
+	_getMost_backend_aptGetInstall libgdl-3-5
+	_getMost_backend_aptGetInstall libgdl-3-common
+	_getMost_backend_aptGetInstall libgtkspell3-3-0
+	_getMost_backend_aptGetInstall libimage-magick-perl
+	_getMost_backend_aptGetInstall libimage-magick-q16-perl
+	_getMost_backend_aptGetInstall libpotrace0
+	_getMost_backend_aptGetInstall libwmf-bin
+	_getMost_backend_aptGetInstall python3-scour
+	
+	
 	_getMost_backend_aptGetInstall kicad
 	
 	_getMost_backend_aptGetInstall electric
+	
+	
+	
+	_getMost_backend python -m pip install --upgrade pip
+	_getMost_backend sudo -n pip install --upgrade pip
 	
 	_getMost_backend_aptGetInstall freecad
 	
@@ -6756,6 +6823,10 @@ _getMinimal_cloud() {
 	_getMost_backend_aptGetInstall mawk
 	_getMost_backend_aptGetInstall nano
 	
+	_getMost_backend_aptGetInstall jq
+	
+	_getMost_backend_aptGetInstall sloccount
+	
 	_getMost_backend_aptGetInstall build-essential
 	_getMost_backend_aptGetInstall bison
 	_getMost_backend_aptGetInstall libelf-dev
@@ -6889,6 +6960,8 @@ _getMinimal_cloud() {
 	_getMost_backend_aptGetInstall pv
 	_getMost_backend_aptGetInstall expect
 	
+	_getMost_backend_aptGetInstall libfuse2
+	
 	_getMost_backend_aptGetInstall libgtk2.0-0
 	
 	_getMost_backend_aptGetInstall libwxgtk3.0-gtk3-0v5
@@ -6974,6 +7047,7 @@ _getMinimal_cloud() {
 	_getMost_backend_aptGetInstall mksquashfs
 	_getMost_backend_aptGetInstall grub-mkstandalone
 	_getMost_backend_aptGetInstall mkfs.vfat
+	_getMost_backend_aptGetInstall dosfstools
 	_getMost_backend_aptGetInstall mkswap
 	_getMost_backend_aptGetInstall mmd
 	_getMost_backend_aptGetInstall mcopy
@@ -7025,6 +7099,51 @@ _getMinimal_cloud() {
 
 
 
+_get_from_nix-user() {
+	local currentUser
+	currentUser="$1"
+	[[ "$currentUser" == "" ]] && currentUser="user"
+	
+	
+	local current_getMost_backend_wasSet
+	current_getMost_backend_wasSet=true
+	
+	if ! type _getMost_backend > /dev/null 2>&1
+	then
+		_getMost_backend() {
+			"$@"
+		}
+		export -f _getMost_backend
+		
+		current_getMost_backend_wasSet="false"
+	fi
+	
+	
+	#_custom_installDeb /root/core/installations/Wire.deb
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-env -iA nixpkgs.wire-desktop'
+	_getMost_backend sudo -n -u "$currentUser" xdg-desktop-menu install /home/user/.nix-profile/share/applications/wire-desktop.desktop
+	_getMost_backend sudo -n -u "$currentUser" cp -a /home/user/.nix-profile/share/icons /home/user/.local/share/
+	
+	sleep 3
+	
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-env -iA nixpkgs.geda'
+	_getMost_backend sudo -n -u "$currentUser" xdg-desktop-menu install /home/user/.nix-profile/share/applications/geda-gschem.desktop
+	_getMost_backend sudo -n -u "$currentUser" xdg-desktop-menu install /home/user/.nix-profile/share/applications/geda-gattrib.desktop
+	_getMost_backend sudo -n -u "$currentUser" cp -a /home/user/.nix-profile/share/icons /home/user/.local/share/
+	
+	[[ "$current_getMost_backend_wasSet" == "false" ]] && unset _getMost_backend
+	
+	return 0
+}
+
+_get_from_nix() {
+	_get_from_nix-user "$@"
+}
+
+
+
+
+
 
 
 # NOTICE: getMost_special.sh will be included if either getMost.sh or gitMinimal.sh are included
@@ -7050,6 +7169,9 @@ _get_veracrypt() {
 	functionEntryPWD="$PWD"
 	
 	cd "$safeTmp"
+	
+	
+	_getDep libfuse.so.2
 	
 	
 	
@@ -7526,7 +7648,14 @@ _visualPrompt() {
 	
 	#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u\[\033[01;32m\]@\h\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
 	
-	export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	
+	
+	if ! _if_cygwin
+	then
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	else
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	fi
 	
 	#export PS1="$prompt_nixShell""$PS1"
 }
@@ -7956,13 +8085,13 @@ _gitBest_detect_github_procedure() {
 	then
 		_messagePlain_request 'performance: export current_gitBest_source_GitHub=$("'"$scriptAbsoluteLocation"'" _gitBest_detect_github_sequence | tail -n1)'
 		
-		if [[ -e "$HOME"/core ]]
+		if [[ -e "$HOME"/core ]] && [[ "$gitBestNoCore" != "true" ]]
 		then
 			export current_gitBest_source_GitHub="github_core"
 		fi
 		
 		local currentSSHoutput
-		if currentSSHoutput=$(ssh -o StrictHostKeyChecking=no -o Compression=yes -o ConnectionAttempts=3 -o ServerAliveInterval=6 -o ServerAliveCountMax=9 -o ConnectTimeout="$netTimeout" -o PubkeyAuthentication=yes -o PasswordAuthentication=no git@github.com 2>&1 ; true) && _safeEcho_newline "$currentSSHoutput" | grep 'successfully authenticated'
+		if ( [[ -e "$HOME"/.ssh/id_rsa ]] || [[ -e "$HOME"/.ssh/config ]] || ( [[ ! -e "$HOME"/.ssh/id_ed25519_sk ]] && [[ ! -e "$HOME"/.ssh/ecdsa-sk ]] ) ) && currentSSHoutput=$(ssh -o StrictHostKeyChecking=no -o Compression=yes -o ConnectionAttempts=3 -o ServerAliveInterval=6 -o ServerAliveCountMax=9 -o ConnectTimeout="$netTimeout" -o PubkeyAuthentication=yes -o PasswordAuthentication=no git@github.com 2>&1 ; true) && _safeEcho_newline "$currentSSHoutput" | grep 'successfully authenticated'
 		then
 			export current_gitBest_source_GitHub="github_ssh"
 			return
@@ -8036,7 +8165,14 @@ _gitBest_override_github-github_core() {
 	_gitBest_override_config_insteadOf-core zipTiePanel
 }
 _gitBest_override_github-github_https() {
-	git config --global url."https://github.com/".insteadOf git@github.com:
+	# && [[ "$1" == "push" ]]
+	if [[ "$INPUT_GITHUB_TOKEN" == "" ]]
+	then
+		git config --global url."https://github.com/".insteadOf git@github.com:
+	elif [[ "$INPUT_GITHUB_TOKEN" != "" ]]
+	then
+		git config --global url."https://""$INPUT_GITHUB_TOKEN""@github.com/".insteadOf git@github.com:
+	fi
 }
 
 
@@ -8053,7 +8189,7 @@ _gitBest_override_github() {
 	
 	if [[ "$current_gitBest_source_GitHub" == "github_https" ]]
 	then
-		_gitBest_override_github-github_https
+		_gitBest_override_github-github_https "$@"
 	fi
 	
 	if [[ "$current_gitBest_source_GitHub" == "github_ssh" ]]
@@ -8089,7 +8225,7 @@ _gitBest_sequence() {
 	_messagePlain_probe_var HOME
 	
 	
-	_gitBest_override_github
+	_gitBest_override_github "$@"
 	
 	if ! [[ -e "$HOME"/.gitconfig ]]
 	then
@@ -8372,7 +8508,10 @@ CZXWXcRMTo8EmM8i4d
 
 
 _kernelConfig_reject-comments() {
-	grep -v '^\#\|\#'
+	#grep -v '^\#\|\#'
+	
+	# Preferred for Cygwin.
+	grep -v '^#\|#'
 }
 
 _kernelConfig_request() {
@@ -8474,17 +8613,29 @@ _kernelConfig_require-tradeoff-perform() {
 	
 	_kernelConfig__bad-n__ CONFIG_RETPOLINE
 	_kernelConfig__bad-n__ CONFIG_PAGE_TABLE_ISOLATION
-	_kernelConfig__bad-n__ CONFIG_X86_SMAP
 	
-	_kernelConfig_warn-n__ AMD_MEM_ENCRYPT
+	# May have been removed from upstream.
+	#_kernelConfig__bad-n__ CONFIG_X86_SMAP
 	
-	_kernelConfig_warn-y__ CONFIG_X86_INTEL_TSX_MODE_ON
-	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	_kernelConfig_warn-n__ CONFIG_X86_INTEL_TSX_MODE_OFF
+	_kernelConfig_warn-n__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_ON
 	
 	
 	_kernelConfig__bad-n__ CONFIG_SLAB_FREELIST_HARDENED
+	
+	# Uncertain.
+	_kernelConfig__bad-__n CONFIG_X86_SGX
+	_kernelConfig__bad-__n CONFIG_INTEL_TDX_GUEST
+	_kernelConfig__bad-__n CONFIG_X86_SGX_kVM
+	_kernelConfig__bad-__n CONFIG_KVM_AMD_SEV
+	
+	
+	_kernelConfig__bad-__n CONFIG_RANDOMIZE_BASE
+	_kernelConfig__bad-__n CONFIG_RANDOMIZE_MEMORY
 }
 
+# May become increasing tolerable and preferable for the vast majority of use cases.
 # WARNING: Risk must be evaluated for specific use cases.
 # WARNING: BREAKS some high-performance real-time applicatons (eg. flight sim, VR, AR).
 # Standalone simulators (eg. flight sim):
@@ -8502,16 +8653,36 @@ _kernelConfig_require-tradeoff-harden() {
 	
 	_kernelConfig__bad-y__ CONFIG_RETPOLINE
 	_kernelConfig__bad-y__ CONFIG_PAGE_TABLE_ISOLATION
-	_kernelConfig__bad-y__ CONFIG_X86_SMAP
 	
-	# Uncertain.
-	#_kernelConfig_warn-y__ AMD_MEM_ENCRYPT
+	_kernelConfig__bad-y__ CONFIG_RETHUNK
+	_kernelConfig__bad-y__ CONFIG_CPU_UNRET_ENTRY
+	_kernelConfig__bad-y__ CONFIG_CPU_IBPB_ENTRY
+	_kernelConfig__bad-y__ CONFIG_CPU_IBRS_ENTRY
+	_kernelConfig__bad-y__ CONFIG_SLS
 	
-	_kernelConfig_warn-y__ CONFIG_X86_INTEL_TSX_MODE_OFF
-	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	# May have been removed from upstream.
+	#_kernelConfig__bad-y__ CONFIG_X86_SMAP
+	
+	# Uncertain. VM guest should be tested.
+	_kernelConfig_warn-y__ AMD_MEM_ENCRYPT
+	_kernelConfig_warn-y__ CONFIG_AMD_MEM_ENCRYPT_ACTIVE_BY_DEFAULT
+	
+	_kernelConfig_warn-n__ CONFIG_X86_INTEL_TSX_MODE_ON
+	_kernelConfig_warn-n__ CONFIG_X86_INTEL_TSX_MODE_AUTO
+	_kernelConfig__bad-y__ CONFIG_X86_INTEL_TSX_MODE_OFF
 	
 	
 	_kernelConfig_warn-y__ CONFIG_SLAB_FREELIST_HARDENED
+	
+	# Uncertain.
+	_kernelConfig_warn-y__ CONFIG_X86_SGX
+	_kernelConfig_warn-y__ CONFIG_INTEL_TDX_GUEST
+	_kernelConfig_warn-y__ CONFIG_X86_SGX_kVM
+	_kernelConfig_warn-y__ CONFIG_KVM_AMD_SEV
+	
+	
+	_kernelConfig__bad-y__ CONFIG_RANDOMIZE_BASE
+	_kernelConfig__bad-y__ CONFIG_RANDOMIZE_MEMORY
 }
 
 # ATTENTION: Override with 'ops.sh' or similar.
@@ -8554,6 +8725,8 @@ _kernelConfig_require-virtualization-accessory() {
 	_kernelConfig_warn-y__ VIRTIO_MENU
 	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI
 	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI_LEGACY
+	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI_LIB
+	_kernelConfig_warn-y__ CONFIG_VIRTIO_PCI_LIB_LEGACY
 	_kernelConfig__bad-y_m CONFIG_VIRTIO_BALLOON
 	_kernelConfig__bad-y_m CONFIG_VIRTIO_INPUT
 	_kernelConfig__bad-y_m CONFIG_VIRTIO_MMIO
@@ -8597,7 +8770,8 @@ _kernelConfig_require-virtualbox() {
 	_messagePlain_nominal 'kernelConfig: virtualbox'
 	export kernelConfig_file="$1"
 	
-	_kernelConfig__bad-y__ CONFIG_X86_SYSFB
+	#_kernelConfig__bad-y__ CONFIG_X86_SYSFB
+	_kernelConfig__bad-y__ CONFIG_SYSFB
 	
 	_kernelConfig__bad-y__ CONFIG_ATA
 	_kernelConfig__bad-y__ CONFIG_SATA_AHCI
@@ -8631,6 +8805,7 @@ _kernelConfig_require-virtualbox() {
 	_kernelConfig__bad-y__ CONFIG_SND_PCI
 	_kernelConfig__bad-y__ CONFIG_SND_INTEL8X0
 	
+	_kernelConfig__bad-y__ CONFIG_USB
 	_kernelConfig__bad-y__ CONFIG_USB_SUPPORT
 	_kernelConfig__bad-y__ CONFIG_USB_XHCI_HCD
 	_kernelConfig__bad-y__ CONFIG_USB_EHCI_HCD
@@ -8702,6 +8877,8 @@ _kernelConfig_require-boot() {
 	
 	_kernelConfig__bad-y__ USB_OHCI_HCD_PCI
 	
+	_kernelConfig__bad-y__ USB_UHCI_HCD
+	
 	_kernelConfig__bad-y__ CONFIG_HID
 	_kernelConfig__bad-y__ CONFIG_HID_GENERIC
 	_kernelConfig__bad-y__ CONFIG_HID_BATTERY_STRENGTH
@@ -8714,7 +8891,9 @@ _kernelConfig_require-boot() {
 	_kernelConfig__bad-y__ CONFIG_EFI_STUB
 	_kernelConfig__bad-y__ CONFIG_EFI_MIXED
 	
-	_kernelConfig__bad-y__ CONFIG_EFI_VARS
+	# Seems 'EFI_VARS' has disappeared from recent kernel versions.
+	#_kernelConfig__bad-y__ CONFIG_EFI_VARS
+	_kernelConfig__bad-y__ CONFIG_EFIVAR_FS
 }
 
 
@@ -8740,7 +8919,7 @@ _kernelConfig_require-arch-x64() {
 	#_kernelConfig_warn-y__ CONFIG_INTEL_RDT
 	
 	# Maintenance may be easier with this enabled.
-	_kernelConfig_warn-y_m CONFIG_EFIVAR_FS
+	_kernelConfig_warn-y__ CONFIG_EFIVAR_FS
 	
 	# Presumably mixing entropy may be preferable.
 	_kernelConfig__bad-n__ CONFIG_RANDOM_TRUST_CPU
@@ -8759,7 +8938,7 @@ _kernelConfig_require-arch-x64() {
 	
 	_kernelConfig__bad-y__ CONFIG_IA32_EMULATION
 	_kernelConfig_warn-n__ IA32_AOUT
-	_kernelConfig__bad-y__ CONFIG_X86_X32
+	_kernelConfig__bad-y__ CONFIG_X86_X32_ABI
 	
 	_kernelConfig__bad-y__ CONFIG_BINFMT_ELF
 	_kernelConfig__bad-y_m CONFIG_BINFMT_MISC
@@ -8908,17 +9087,24 @@ _kernelConfig_require-latency() {
 	_kernelConfig__bad-y__ CONFIG_SCHED_AUTOGROUP
 	
 	
-	# CRITICAL!
-	# Default cannot be set currently.
-	_messagePlain_request 'request: Set '\''bfq'\'' as default IO scheduler (strongly recommended).'
-	#_kernelConfig__bad-y__ DEFAULT_IOSCHED
-	#_kernelConfig__bad-y__ DEFAULT_BFQ
 	
-	# CRITICAL!
-	# Expected to protect interactive applications from background IO.
-	# https://www.youtube.com/watch?v=ANfqNiJVoVE
-	_kernelConfig__bad-y__ CONFIG_IOSCHED_BFQ
-	_kernelConfig__bad-y__ CONFIG_BFQ_GROUP_IOSCHED
+	
+	# Newer information suggests BFQ may have worst case latency issues.
+	# https://bugzilla.redhat.com/show_bug.cgi?id=1851783
+	## CRITICAL!
+	## Default cannot be set currently.
+	#_messagePlain_request 'request: Set '\''bfq'\'' as default IO scheduler (strongly recommended).'
+	##_kernelConfig__bad-y__ DEFAULT_IOSCHED
+	##_kernelConfig__bad-y__ DEFAULT_BFQ
+	
+	## CRITICAL!
+	## Expected to protect interactive applications from background IO.
+	## https://www.youtube.com/watch?v=ANfqNiJVoVE
+	#_kernelConfig__bad-y__ CONFIG_IOSCHED_BFQ
+	#_kernelConfig__bad-y__ CONFIG_BFQ_GROUP_IOSCHED
+	
+	
+	
 	
 	
 	# Uncertain.
@@ -8954,7 +9140,7 @@ _kernelConfig_require-memory() {
 	
 	# Uncertain.
 	_kernelConfig_warn-y__ CONFIG_TRANSPARENT_HUGEPAGE
-	_kernelConfig_warn-y__ CONFIG_CLEANCACHE
+	#_kernelConfig_warn-y__ CONFIG_CLEANCACHE
 	_kernelConfig_warn-y__ CONFIG_FRONTSWAP
 	_kernelConfig_warn-y__ CONFIG_ZSWAP
 	
@@ -9005,7 +9191,8 @@ _kernelConfig_require-investigation_docker() {
 	
 	# Apparently, 'CONFIG_MEMCG_SWAP_ENABLED' missing from recent 'menuconfig' .
 	#_kernelConfig_warn-y__ CONFIG_MEMCG_SWAP_ENABLED
-	_kernelConfig_warn-y__ CONFIG_MEMCG_SWAP
+	#_kernelConfig_warn-y__ CONFIG_MEMCG_SWAP
+	_kernelConfig_warn-y__ CONFIG_MEMCG
 	
 	_kernelConfig_warn-y__ CONFIG_CGROUP_HUGETLB
 	_kernelConfig_warn-y__ CONFIG_RT_GROUP_SCHED
@@ -9114,6 +9301,7 @@ _kernelConfig_request_build() {
 }
 
 
+# NOTICE: Usually, 'desktop' will be preferable.
 # ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
 _kernelConfig_panel() {
 	_messageNormal 'kernelConfig: panel'
@@ -9152,6 +9340,7 @@ _kernelConfig_panel() {
 	_kernelConfig_request_build
 }
 
+# NOTICE: Usually, 'desktop' will be preferable.
 # ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
 _kernelConfig_mobile() {
 	_messageNormal 'kernelConfig: mobile'
@@ -9190,6 +9379,7 @@ _kernelConfig_mobile() {
 	_kernelConfig_request_build
 }
 
+# NOTICE: Recommended! Most 'mobile' and 'panel' use cases will not benefit enough from power efficiency, reduced CPU cycles, or performance.
 # ATTENTION: As desired, ignore, or override with 'ops.sh' or similar.
 _kernelConfig_desktop() {
 	_messageNormal 'kernelConfig: desktop'
@@ -9263,7 +9453,15 @@ _importShortcuts() {
 	
 	if ! [[ "$PATH" == *":""$HOME""/bin"* ]] && ! [[ "$PATH" == "$HOME""/bin"* ]] && [[ -e "$HOME"/bin ]] && [[ -d "$HOME"/bin ]]
 	then
-		export PATH="$PATH":"$HOME"/bin
+		#export PATH="$PATH":"$HOME"/bin
+		
+		# CAUTION: Dubious workaround to prevent '/usr/local/bin/ubiquitous_bash.sh' , or '/usr/local/bin' , from overriding later program versions in '~/bin' .
+		if [[ $( ( export PATH="$PATH":"$HOME"/bin ; type -p ubiquitous_bash.sh ) ) == "/usr/local/bin/ubiquitous_bash.sh" ]]
+		then
+			export PATH="$HOME"/bin:"$PATH"
+		else
+			export PATH="$PATH":"$HOME"/bin
+		fi
 	fi
 	
 	_tryExec "_visualPrompt"
@@ -10236,6 +10434,8 @@ _anchor() {
 	
 	_anchor_configure
 	_anchor_configure "$scriptAbsoluteFolder"/_anchor.bat
+
+	_tryExec "_anchor_special"
 	
 	! [[ -e "$scriptAbsoluteFolder"/_anchor ]] && ! [[ -e "$scriptAbsoluteFolder"/_anchor.bat ]] && return 1
 	
@@ -10426,27 +10626,27 @@ _unix_renice_critical() {
 	local processListFile
 	processListFile="$tmpSelf"/.pidlist_$(_uid)
 	
-	_priority_enumerate_pattern "^ksysguard$" >> "$processListFile"
-	_priority_enumerate_pattern "^ksysguardd$" >> "$processListFile"
-	_priority_enumerate_pattern "^top$" >> "$processListFile"
-	_priority_enumerate_pattern "^iotop$" >> "$processListFile"
-	_priority_enumerate_pattern "^latencytop$" >> "$processListFile"
+	_priority_enumerate_pattern ^ksysguard$ >> "$processListFile"
+	_priority_enumerate_pattern ^ksysguardd$ >> "$processListFile"
+	_priority_enumerate_pattern ^top$ >> "$processListFile"
+	_priority_enumerate_pattern ^iotop$ >> "$processListFile"
+	_priority_enumerate_pattern ^latencytop$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^Xorg$" >> "$processListFile"
-	_priority_enumerate_pattern "^modeset$" >> "$processListFile"
+	_priority_enumerate_pattern ^Xorg$ >> "$processListFile"
+	_priority_enumerate_pattern ^modeset$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^smbd$" >> "$processListFile"
-	_priority_enumerate_pattern "^nmbd$" >> "$processListFile"
+	_priority_enumerate_pattern ^smbd$ >> "$processListFile"
+	_priority_enumerate_pattern ^nmbd$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^ssh$" >> "$processListFile"
-	_priority_enumerate_pattern "^sshd$" >> "$processListFile"
-	_priority_enumerate_pattern "^ssh-agent$" >> "$processListFile"
+	_priority_enumerate_pattern ^ssh$ >> "$processListFile"
+	_priority_enumerate_pattern ^sshd$ >> "$processListFile"
+	_priority_enumerate_pattern ^ssh-agent$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^sshfs$" >> "$processListFile"
+	_priority_enumerate_pattern ^sshfs$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^socat$" >> "$processListFile"
+	_priority_enumerate_pattern ^socat$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^cron$" >> "$processListFile"
+	#_priority_enumerate_pattern ^cron$ >> "$processListFile"
 	
 	local currentPID
 	
@@ -10462,17 +10662,17 @@ _unix_renice_interactive() {
 	local processListFile
 	processListFile="$tmpSelf"/.pidlist_$(_uid)
 	
-	_priority_enumerate_pattern "^kwin$" >> "$processListFile"
-	_priority_enumerate_pattern "^pager$" >> "$processListFile"
+	_priority_enumerate_pattern ^kwin$ >> "$processListFile"
+	_priority_enumerate_pattern ^pager$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^pulseaudio$" >> "$processListFile"
+	_priority_enumerate_pattern ^pulseaudio$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^synergy$" >> "$processListFile"
-	_priority_enumerate_pattern "^synergys$" >> "$processListFile"
+	_priority_enumerate_pattern ^synergy$ >> "$processListFile"
+	_priority_enumerate_pattern ^synergys$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^kactivitymanagerd$" >> "$processListFile"
+	_priority_enumerate_pattern ^kactivitymanagerd$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^dbus" >> "$processListFile"
+	_priority_enumerate_pattern ^dbus >> "$processListFile"
 	
 	local currentPID
 	
@@ -10488,28 +10688,28 @@ _unix_renice_app() {
 	local processListFile
 	processListFile="$tmpSelf"/.pidlist_$(_uid)
 	
-	_priority_enumerate_pattern "^plasmashell$" >> "$processListFile"
+	_priority_enumerate_pattern ^plasmashell$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^audacious$" >> "$processListFile"
-	_priority_enumerate_pattern "^vlc$" >> "$processListFile"
+	_priority_enumerate_pattern ^audacious$ >> "$processListFile"
+	_priority_enumerate_pattern ^vlc$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^firefox$" >> "$processListFile"
+	_priority_enumerate_pattern ^firefox$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^dolphin$" >> "$processListFile"
+	_priority_enumerate_pattern ^dolphin$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^kwrite$" >> "$processListFile"
+	_priority_enumerate_pattern ^kwrite$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^konsole$" >> "$processListFile"
-	
-	
-	_priority_enumerate_pattern "^okular$" >> "$processListFile"
-	
-	_priority_enumerate_pattern "^xournal$" >> "$processListFile"
-	
-	_priority_enumerate_pattern "^soffice.bin$" >> "$processListFile"
+	_priority_enumerate_pattern ^konsole$ >> "$processListFile"
 	
 	
-	_priority_enumerate_pattern "^pavucontrol$" >> "$processListFile"
+	_priority_enumerate_pattern ^okular$ >> "$processListFile"
+	
+	_priority_enumerate_pattern ^xournal$ >> "$processListFile"
+	
+	_priority_enumerate_pattern ^soffice.bin$ >> "$processListFile"
+	
+	
+	_priority_enumerate_pattern ^pavucontrol$ >> "$processListFile"
 	
 	local currentPID
 	
@@ -10525,44 +10725,44 @@ _unix_renice_idle() {
 	local processListFile
 	processListFile="$tmpSelf"/.pidlist_$(_uid)
 	
-	_priority_enumerate_pattern "^packagekitd$" >> "$processListFile"
+	_priority_enumerate_pattern ^packagekitd$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^apt-config$" >> "$processListFile"
+	_priority_enumerate_pattern ^apt-config$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^ModemManager$" >> "$processListFile"
+	#_priority_enumerate_pattern ^ModemManager$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^sddm$" >> "$processListFile"
+	#_priority_enumerate_pattern ^sddm$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^lpqd$" >> "$processListFile"
-	#_priority_enumerate_pattern "^cupsd$" >> "$processListFile"
-	#_priority_enumerate_pattern "^cups-browsed$" >> "$processListFile"
+	#_priority_enumerate_pattern ^lpqd$ >> "$processListFile"
+	#_priority_enumerate_pattern ^cupsd$ >> "$processListFile"
+	#_priority_enumerate_pattern ^cups-browsed$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^akonadi" >> "$processListFile"
-	_priority_enumerate_pattern "^akonadi_indexing_agent$" >> "$processListFile"
+	_priority_enumerate_pattern ^akonadi >> "$processListFile"
+	_priority_enumerate_pattern ^akonadi_indexing_agent$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^kdeconnectd$" >> "$processListFile"
-	#_priority_enumerate_pattern "^kacceessibleapp$" >> "$processListFile"
-	#_priority_enumerate_pattern "^kglobalaccel5$" >> "$processListFile"
+	#_priority_enumerate_pattern ^kdeconnectd$ >> "$processListFile"
+	#_priority_enumerate_pattern ^kacceessibleapp$ >> "$processListFile"
+	#_priority_enumerate_pattern ^kglobalaccel5$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^kded4$" >> "$processListFile"
-	#_priority_enumerate_pattern "^ksmserver$" >> "$processListFile"
+	#_priority_enumerate_pattern ^kded4$ >> "$processListFile"
+	#_priority_enumerate_pattern ^ksmserver$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^sleep$" >> "$processListFile"
+	_priority_enumerate_pattern ^sleep$ >> "$processListFile"
 	
-	_priority_enumerate_pattern "^exim4$" >> "$processListFile"
-	_priority_enumerate_pattern "^apache2$" >> "$processListFile"
-	_priority_enumerate_pattern "^mysqld$" >> "$processListFile"
-	_priority_enumerate_pattern "^ntpd$" >> "$processListFile"
-	#_priority_enumerate_pattern "^avahi-daemon$" >> "$processListFile"
+	_priority_enumerate_pattern ^exim4$ >> "$processListFile"
+	_priority_enumerate_pattern ^apache2$ >> "$processListFile"
+	_priority_enumerate_pattern ^mysqld$ >> "$processListFile"
+	_priority_enumerate_pattern ^ntpd$ >> "$processListFile"
+	#_priority_enumerate_pattern ^avahi-daemon$ >> "$processListFile"
 	
 	
 	# WARNING: Probably unnecessary and counterproductive. May risk halting important compile jobs.
-	#_priority_enumerate_pattern "^cc1$" >> "$processListFile"
-	#_priority_enumerate_pattern "^cc1plus$" >> "$processListFile"
+	#_priority_enumerate_pattern ^cc1$ >> "$processListFile"
+	#_priority_enumerate_pattern ^cc1plus$ >> "$processListFile"
 	
-	#_priority_enumerate_pattern "^tar$" >> "$processListFile"
-	#_priority_enumerate_pattern "^xz$" >> "$processListFile"
-	#_priority_enumerate_pattern "^kcompactd0$" >> "$processListFile"
+	#_priority_enumerate_pattern ^tar$ >> "$processListFile"
+	#_priority_enumerate_pattern ^xz$ >> "$processListFile"
+	#_priority_enumerate_pattern ^kcompactd0$ >> "$processListFile"
 	
 	
 	local currentPID
@@ -14720,6 +14920,28 @@ _variableLocalTest_sequence() {
 	[[ "$currentSubshellTestC" != "" ]] && _stop 1
 	[[ "$currentSubshellTestC" == 'true' ]] && _stop 1
 	
+	
+	export currentGlobalSubshellTest="true"
+	if [[ $( ( echo "$currentGlobalSubshellTest" ) ) != "true" ]]
+	then
+		_stop 1
+	fi
+	if [[ $( ( export currentGlobalSubshellTest="false" ; echo "$currentGlobalSubshellTest" ) ) != "false" ]]
+	then
+		_stop 1
+	else
+		true
+	fi
+	if [[ $( ( echo "$currentGlobalSubshellTest" ) ) != "true" ]]
+	then
+		_stop 1
+	fi
+	if [[ "$currentGlobalSubshellTest" != "true" ]]
+	then
+		_stop 1
+	fi
+	
+	
 	! ( echo true ) | grep 'true' > /dev/null && _stop 1
 	! ( echo "$currentGlobalA" ) | grep 'true' > /dev/null && _stop 1
 	! ( echo "$currentLocalA" ) | grep 'true' > /dev/null && _stop 1
@@ -15655,12 +15877,26 @@ _test-shell-cygwin() {
 		echo 'fail: count: PATH: '"$currentPathCount"
 		_messageFAIL
 	fi
-	if [[ "$currentPathCount" -gt 32 ]]
+	if [[ "$currentPathCount" -gt 44 ]]
 	then
 		echo 'warn: count: PATH: '"$currentPathCount"
 		echo 'warn: MSWEXTPATH may be ignored'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
+	
+	if [[ "$currentPathCount" -gt 32 ]]
+	then
+		echo 'warn: count: PATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH exceeds preferred 32'
+		_messagePlain_request 'request: reduce the length of PATH variable'
+	fi
+	if [[ "$currentPathCount" -gt 34 ]]
+	then
+		echo 'warn: count: PATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH exceeds preferred 34'
+		_messagePlain_request 'request: reduce the length of PATH variable'
+	fi
+	
 	
 	
 	local currentPathCount
@@ -15670,12 +15906,27 @@ _test-shell-cygwin() {
 		echo 'fail: count: MSWEXTPATH: '"$currentPathCount"
 		_messageFAIL
 	fi
-	if [[ "$currentPathCount" -gt 32 ]]
+	if [[ "$currentPathCount" -gt 44 ]]
 	then
 		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
 		echo 'warn: MSWEXTPATH may be ignored by default'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
+	
+	
+	if [[ "$currentPathCount" -gt 32 ]]
+	then
+		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH exceeds preferred 32'
+		_messagePlain_request 'request: reduce the length of PATH variable'
+	fi
+	if [[ "$currentPathCount" -gt 34 ]]
+	then
+		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH exceeds preferred 34'
+		_messagePlain_request 'request: reduce the length of PATH variable'
+	fi
+	
 	
 	
 	# Although use case specific (eg. flight sim with usual desktop applications installed) test cases may be necessary for MSW, to avoid ambiguity in expectations that every test includes an explicit PASS statement, a call to '_messagePASS' is still given.
