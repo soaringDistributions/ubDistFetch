@@ -8,7 +8,8 @@ _core_FAIL() {
 
 _wget_githubRelease_internal() {
 	local currentURL=$(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url")
-	_messagePlain_probe_cmd curl -L -o "$2" "$currentURL"
+	_messagePlain_probe curl -L -o "$2" "$currentURL"
+	curl -L -o "$2" "$currentURL"
 	[[ ! -e "$2" ]] && _core_FAIL 'missing: '"$1"' '"$2"
 }
 
