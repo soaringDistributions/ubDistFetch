@@ -78,7 +78,7 @@ jobs:
       - name: _ubDistFetch_split
         shell: bash
         run: |
-          ./_ubDistFetch_split.bat | sudo -n tee ./_lib/_ubDistFetch_split.log
+          ./ubiquitous_bash.sh _ubDistFetch_split | sudo -n tee ./_lib/_ubDistFetch_split.log
         timeout-minutes: 355
       - name: release! core
         uses: softprops/action-gh-release@v1
