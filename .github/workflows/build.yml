@@ -87,7 +87,7 @@ jobs:
           tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
           name: build
           files: |
-            ./_lib/core.tar.xz.part*
+            #./_lib/core.tar.xz.part*
             ./_lib/_ubDistFetch.log
 
 
