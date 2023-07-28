@@ -103,5 +103,33 @@ jobs:
           name: build
           files: |
             ./_lib/core.tar.xz.part01
+      - name: release! core
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: build
+          files: |
+            ./_lib/core.tar.xz.part02
+      - name: release! core
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: build
+          files: |
+            ./_lib/core.tar.xz.part03
+      - name: release! core
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: build
+          files: |
+            ./_lib/core.tar.xz.part04
+      - name: release! core
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
+          name: build
+          files: |
+            ./_lib/core.tar.xz.part05
 
 
