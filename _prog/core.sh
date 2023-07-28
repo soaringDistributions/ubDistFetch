@@ -310,7 +310,8 @@ _ubDistFetch_package() {
 	[[ -e "$scriptLib"/FAIL ]] && _messagePlain_bad 'flag: "$scriptLib"/FAIL' && _messageFAIL
 	cd "$scriptLib"
 	rm -f "$scriptLib"/core.tar.xz > /dev/null 2>&1
-	env XZ_OPT=-5 tar -cJvf "$scriptLib"/core.tar.xz ./core
+	[[ "$current_XZ_OPT_core" == "" ]] && export current_XZ_OPT_core="-5"
+	env XZ_OPT="$current_XZ_OPT_core" tar -cJvf "$scriptLib"/core.tar.xz ./core
 }
 
 

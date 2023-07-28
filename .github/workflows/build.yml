@@ -73,6 +73,7 @@ jobs:
       - name: _ubDistFetch_package
         shell: bash
         run: |
+          export current_XZ_OPT_core="-T0 -2"
           ./_ubDistFetch_package.bat | sudo -n tee ./_lib/_ubDistFetch_package.log
         timeout-minutes: 355
       - name: _ubDistFetch_split
@@ -86,11 +87,7 @@ jobs:
           tag_name: build-${{ github.run_id }}-${{ github.run_attempt }}
           name: build
           files: |
-            ./_lib/core.tar.xz.part00
-            ./_lib/core.tar.xz.part01
-            ./_lib/core.tar.xz.part02
-            ./_lib/core.tar.xz.part03
+            ./_lib/core.tar.xz.part*
             ./_lib/_ubDistFetch.log
-        timeout-minutes: 355
 
 
