@@ -7,7 +7,7 @@ _core_FAIL() {
 }
 
 _wget_githubRelease_internal() {
-	local currentURL=$(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url")
+	local currentURL=$(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url" | sort -n -r | head -n 1)
 	_messagePlain_probe curl -L -o "$2" "$currentURL"
 	curl -L -o "$2" "$currentURL"
 	[[ ! -e "$2" ]] && _core_FAIL 'missing: '"$1"' '"$2"
