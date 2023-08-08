@@ -104,6 +104,14 @@ _ubDistFetch() {
 		rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/xclipsync ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
 	
 	
 	

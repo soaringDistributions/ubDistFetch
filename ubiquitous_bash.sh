@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4093251917'
+export ub_setScriptChecksum_contents='2057476186'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -760,6 +760,43 @@ then
 	ionice() {
 		false
 	}
+
+	_wsl() {
+		local currentBin_wsl
+		currentBin_wsl=$(type -p wsl)
+
+		if ( [[ "$1" != "-"* ]] || [[ "$1" == "-u" ]] || [[ "$1" == "-e" ]] || [[ "$1" == "--exec" ]] ) && ( [[ "$1" != "-d" ]] || [[ "$2" != "-d" ]] || [[ "$3" != "-d" ]] || [[ "$4" != "-d" ]] || [[ "$5" != "-d" ]] || [[ "$6" != "-d" ]] )
+		then
+			if "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubdist' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubdist "$@"
+				"$currentBin_wsl" -d ubdist "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubDistBuild' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubDistBuild "$@"
+				"$currentBin_wsl" -d ubDistBuild "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubdist_embedded' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubdist_embedded "$@"
+				"$currentBin_wsl" -d ubdist_embedded "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^Debian' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d Debian "$@"
+				"$currentBin_wsl" -d Debian "$@"
+				return
+			fi
+			"$currentBin_wsl" "$@"
+			return
+		fi
+		"$currentBin_wsl" "$@"
+		return
+	}
+	l() {
+		_wsl "$@"
+	}
 fi
 
 
@@ -791,12 +828,26 @@ _sudo_cygwin_sequence() {
 	chmod u+x "$safeTmp"/cygwin_sudo_temp.sh
 	
 	
-	
+		
 	cp "$scriptAbsoluteLocation" "$safeTmp"/
-	chmod u+x "$safeTmp"/$(basename "$scriptAbsoluteLocation")
+	local currentScriptBasename
+	currentScriptBasename=$(basename "$scriptAbsoluteLocation")
+	chmod u+x "$safeTmp"/"$currentScriptBasename"
 	
-	cp "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/_bin.bat
+	cp "$scriptLib"/ubiquitous_bash/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
+	cp -f "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
 	chmod u+x "$safeTmp"/_bin.bat
+
+	[[ ! -e "$safeTmp"/_bin.bat ]] && _messagePlain_bad 'bad: missing: _bin.bat' && _messageFAIL && _stop 1
+
+	if type _anchor_configure > /dev/null 2>&1
+	then
+		"$safeTmp"/"$currentScriptBasename" _anchor_configure "$safeTmp"/_bin.bat
+	else
+		_messagePlain_bad 'bad: missing: _anchor_configure'
+		_messageFAIL && _stop 1
+		_stop 1
+	fi
 	
 
 	# 'Do it as Administrator.'
@@ -805,7 +856,9 @@ _sudo_cygwin_sequence() {
 	if [[ "$scriptAbsoluteFolder" == "/cygdrive/c"* ]]
 	then
 		# WARNING: May be untested, or (especially under interactive shell) may call obsolete code.
-		cygstart --action=runas "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
+		#cygstart --action=runas "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
+
+		cygstart --action=runas "$safeTmp"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
 	else
 		cygstart --action=runas "$safeTmp"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
 	fi
@@ -823,6 +876,7 @@ _sudo_cygwin() {
 }
 
 # CAUTION: BROKEN !
+# (at least historically this did not work reliably though it may or may not be reliable now)
 if _if_cygwin && type cygstart > /dev/null 2>&1
 then
 	sudo_cygwin() {
@@ -840,6 +894,11 @@ then
 		
 		return 1
 	}
+	sudoc() {
+		[[ "$1" == "-n" ]] && return 1
+		sudo_cygwin "$@"
+	}
+	alias sudo=sudoc
 fi
 
 
@@ -875,6 +934,16 @@ _userMSW() {
 }
 
 
+_powershell() {
+    local currentPowershellBinary
+    currentPowershellBinary=$(find /cygdrive/c/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/d/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/e/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/f/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+
+	#_userMSW "$currentPowershellBinary" "$@"
+    "$currentPowershellBinary" "$@"
+}
 
 
 
@@ -5529,387 +5598,6 @@ _fetchDep_debianBullseye() {
 
 
 
-_fetchDep_debianBuster_special() {
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-	
-# 	if [[ "$1" == *"java"* ]]
-# 	then
-# 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y default-jdk default-jre
-# 		return 0
-# 	fi
-	
-	if [[ "$1" == *"wine"* ]] && ! dpkg --print-foreign-architectures | grep i386 > /dev/null 2>&1
-	then
-		sudo -n dpkg --add-architecture i386
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y wine wine32 wine64 libwine libwine:i386 fonts-wine
-		return 0
-	fi
-	
-	if [[ "$1" == "realpath" ]] || [[ "$1" == "readlink" ]] || [[ "$1" == "dirname" ]] || [[ "$1" == "basename" ]] || [[ "$1" == "sha512sum" ]] || [[ "$1" == "sha256sum" ]] || [[ "$1" == "head" ]] || [[ "$1" == "tail" ]] || [[ "$1" == "sleep" ]] || [[ "$1" == "env" ]] || [[ "$1" == "cat" ]] || [[ "$1" == "mkdir" ]] || [[ "$1" == "dd" ]] || [[ "$1" == "rm" ]] || [[ "$1" == "ln" ]] || [[ "$1" == "ls" ]] || [[ "$1" == "test" ]] || [[ "$1" == "true" ]] || [[ "$1" == "false" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y coreutils
-		return 0
-	fi
-	
-	if [[ "$1" == "mount" ]] || [[ "$1" == "umount" ]] || [[ "$1" == "losetup" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mount
-		return 0
-	fi
-	
-	if [[ "$1" == "mountpoint" ]] || [[ "$1" == "mkfs" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y util-linux
-		return 0
-	fi
-	
-	if [[ "$1" == "mkfs.ext4" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y e2fsprogs
-		return 0
-	fi
-	
-	if [[ "$1" == "parted" ]] || [[ "$1" == "partprobe" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y parted
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-arm-static" ]] || [[ "$1" == "qemu-armeb-static" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu qemu-user-static binfmt-support
-		#update-binfmts --display
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-system-x86_64" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-system-x86
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-img" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-utils
-		return 0
-	fi
-	
-	if [[ "$1" == "VirtualBox" ]] || [[ "$1" == "VBoxSDL" ]] || [[ "$1" == "VBoxManage" ]] || [[ "$1" == "VBoxHeadless" ]]
-	then
-		sudo -n mkdir -p /etc/apt/sources.list.d
-		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian buster contrib' | sudo -n tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
-		
-		"$scriptAbsoluteLocation" _getDep wget
-		! _wantDep wget && return 1
-		
-		# TODO Check key fingerprints match "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF" and "7B0F AB3A 13B9 0743 5925  D9C9 5442 2A4B 98AB 5139" respectively.
-		wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo -n apt-key add -
-		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
-		
-		echo "WARNING: Recommend manual system configuration after install. See https://www.virtualbox.org/wiki/Downloads ."
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "gpg" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y gnupg
-		return 0
-	fi
-	
-	#Unlikely scenario for hosts.
-	if [[ "$1" == "grub-install" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub2
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub-legacy
-		return 0
-	fi
-	
-	if [[ "$1" == "MAKEDEV" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y makedev
-		return 0
-	fi
-	
-	if [[ "$1" == "fgrep" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
-		return 0
-	fi
-	
-	if [[ "$1" == "fgrep" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
-		return 0
-	fi
-	
-	if [[ "$1" == "awk" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mawk
-		return 0
-	fi
-	
-	if [[ "$1" == "kill" ]] || [[ "$1" == "ps" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y procps
-		return 0
-	fi
-	
-	if [[ "$1" == "find" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y findutils
-		return 0
-	fi
-	
-	if [[ "$1" == "docker" ]]
-	then
-		sudo -n update-alternatives --set iptables /usr/sbin/iptables-legacy
-		sudo -n update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-		#sudo -n systemctl restart docker
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-		
-		# Sometimes may be useful as a workaround for docker 'overlay2' 'storage-driver' .
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y fuse-overlayfs
-		
-		"$scriptAbsoluteLocation" _getDep curl
-		! _wantDep curl && return 1
-		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo -n apt-key add -
-		local aptKeyFingerprint
-		aptKeyFingerprint=$(sudo -n apt-key fingerprint 0EBFCD88 2> /dev/null)
-		[[ "$aptKeyFingerprint" == "" ]] && return 1
-		
-		sudo -n add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y docker docker-engine docker.io docker-ce docker
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y docker-ce
-		
-		sudo -n usermod -a -G docker "$USER"
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "smbd" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y samba
-		return 0
-	fi
-	
-	if [[ "$1" == "atom" ]]
-	then
-		curl -L https://packagecloud.io/AtomEditor/atom/gpgkey | sudo -n apt-key add -
-		sudo -n sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/ub_atom.list'
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y atom
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "GL/gl.h" ]] || [[ "$1" == "GL/glext.h" ]] || [[ "$1" == "GL/glx.h" ]] || [[ "$1" == "GL/glxext.h" ]] || [[ "$1" == "GL/dri_interface.h" ]] || [[ "$1" == "x86_64-linux-gnu/pkgconfig/dri.pc" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mesa-common-dev
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "go" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y golang-go
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "php" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y php
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "cura-lulzbot" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation. See https://www.lulzbot.com/learn/tutorials/cura-lulzbot-edition-installation-debian ."
-cat << 'CZXWXcRMTo8EmM8i4d'
-wget -qO - https://download.alephobjects.com/ao/aodeb/aokey.pub | sudo -n apt-key add -
-sudo -n cp /etc/apt/sources.list /etc/apt/sources.list.bak && sudo -n sed -i '$a deb http://download.alephobjects.com/ao/aodeb jessie main' /etc/apt/sources.list && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install cura-lulzbot
-CZXWXcRMTo8EmM8i4d
-		echo "(typical)"
-		_stop 1
-	fi
-	
-	if [[ "$1" =~ "FlashPrint" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation. See http://www.flashforge.com/support-center/flashprint-support/ ."
-		_stop 1
-	fi
-	
-	if [[ "$1" == "cargo" ]] || [[ "$1" == "rustc" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation."
-cat << 'CZXWXcRMTo8EmM8i4d'
-curl https://sh.rustup.rs -sSf | sh
-echo '[[ -e "$HOME"/.cargo/bin ]] && export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-CZXWXcRMTo8EmM8i4d
-		echo "(typical)"
-		_stop 1
-	fi
-	
-	if [[ "$1" == "firejail" ]]
-	then
-		echo "WARNING: Recommend manual system configuration after install. See https://firejail.wordpress.com/download-2/ ."
-		echo "WARNING: Desktop override symlinks may cause problems, especially preventing proxy host jumping by CoreAutoSSH!"
-		return 1
-	fi
-	
-	
-	if [[ "$1" == "nix-env" ]]
-	then
-		_tryExec '_test_nix-env_upstream'
-		#_tryExec '_test_nix-env_upstream_beta'
-		
-		return 0
-	fi
-	
-	
-	if [[ "$1" == "croc" ]]
-	then
-		_tryExec '_test_croc_upstream'
-		#_tryExec '_test_croc_upstream_beta'
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "rclone" ]]
-	then
-		_tryExec '_test_rclone_upstream'
-		#_tryExec '_test_rclone_upstream_beta'
-		
-		return 0
-	fi
-	
-	
-	if [[ "$1" == "terraform" ]]
-	then
-		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
-		sudo -n apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y terraform
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "vagrant" ]]
-	then
-		#curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
-		#sudo -n apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant-libvirt
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "digimend-debug" ]] || [[ "$1" == 'udev/rules.d/90-digimend.rules' ]] || [[ "$1" == 'X11/xorg.conf.d/50-digimend.conf' ]]
-	then
-		if ! _wantDep digimend-debug && [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian' > /dev/null 2>&1
-		then
-			if [[ -e "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb ]]
-			then
-				yes | sudo -n dpkg -i "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb
-			fi
-			
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
-			
-			curl -L "https://github.com/DIGImend/digimend-kernel-drivers/releases/download/v10/digimend-dkms_10_all.deb" -o "$safeTmp"/"digimend-dkms_10_all.deb"
-			yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_10_all.deb"
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
-			sudo rm -f "$safeTmp"/"digimend-dkms_10_all.deb"
-		fi
-		
-		return 0
-	fi
-	
-	
-	return 1
-}
-
-_fetchDep_debianBuster_sequence() {
-	_start
-	
-	_mustGetSudo
-	
-	_wantDep "$1" && _stop 0
-	
-	_fetchDep_debianBuster_special "$@" && _wantDep "$1" && _stop 0
-	
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$1" && _wantDep "$1" && _stop 0
-	
-	_apt-file search "$1" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
-	
-	local sysPathAll
-	sysPathAll=$(sudo -n bash -c "echo \$PATH")
-	sysPathAll="$PATH":"$sysPathAll"
-	local sysPathArray
-	IFS=':' read -r -a sysPathArray <<< "$sysPathAll"
-	
-	local currentSysPath
-	local matchingPackageFile
-	local matchingPackagePattern
-	local matchingPackage
-	for currentSysPath in "${sysPathArray[@]}"
-	do
-		matchingPackageFile=""
-		matchingPackagePath=""
-		matchingPackage=""
-		matchingPackagePattern="$currentSysPath"/"$1"
-		matchingPackageFile=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f2- -d' ')
-		matchingPackage=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f1 -d':')
-		if [[ "$matchingPackage" != "" ]]
-		then
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
-			_wantDep "$1" && _stop 0
-		fi
-	done
-	matchingPackage=""
-	matchingPackage=$(head -n 1 "$safeTmp"/pkgsOut | cut -f1 -d':')
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
-	_wantDep "$1" && _stop 0
-	
-	_stop 1
-}
-
-_fetchDep_debianBuster() {
-	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
-	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
-	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
-	
-	export DEBIAN_FRONTEND=noninteractive
-	
-	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
-	"$scriptAbsoluteLocation" _fetchDep_debianBuster_sequence "$@"
-	"$scriptAbsoluteLocation" _fetchDep_debianBuster_sequence "$@"
-}
-
 
 
 
@@ -5935,14 +5623,16 @@ _fetchDep_debian() {
 		#return
 	#fi
 	
+	
+	# WARNING: Obsolete. Disabled.
+	#if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 10 > /dev/null 2>&1
+	#then
+		#_fetchDep_debianBuster "$@"
+		#return
+	#fi
+	
+	
 	# WARNING: Obsolete. Declining support. Eventual removal expected approximately one year after two Debian stable releases.
-	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 10 > /dev/null 2>&1
-	then
-		_fetchDep_debianBuster "$@"
-		return
-	fi
-	
-	
 	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 11 > /dev/null 2>&1
 	then
 		_fetchDep_debianBullseye "$@"
@@ -6642,6 +6332,18 @@ _getMost_debian12_install() {
 	
 	# CAUTION: Workaround. Debian defaults to an obsolete version of qalc which is unusable.
 	_getMost_backend_aptGetInstall -t bookworm-backports qalc
+
+
+
+	# ATTENTION: SEVERE: Cause for concern. Absence of this is not properly detected by '_getDep python', '_getDep /usr/bin/python'  .
+	_getMost_backend_aptGetInstall python-is-python3
+
+
+	# May be useful for WSL2 .
+	_getMost_backend_aptGetInstall usbip
+
+	
+	_getMost_backend apt-get -d install -y virtualbox-7.0
 }
 
 _getMost_debian11_install() {
@@ -6715,6 +6417,9 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall axel
 	_getMost_backend_aptGetInstall unionfs-fuse
 	_getMost_backend_aptGetInstall samba
+
+	_getMost_backend_aptGetInstall gimp
+	_getMost_backend_aptGetInstall gimp-data-extras
 	
 	_getMost_backend_aptGetInstall aria2
 	
@@ -6860,11 +6565,11 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall octave-level-set
 	_getMost_backend_aptGetInstall octave-linear-algebra
 	_getMost_backend_aptGetInstall octave-lssa
-	_getMost_backend_aptGetInstall octave-ltfat
+	#_getMost_backend_aptGetInstall octave-ltfat
 	_getMost_backend_aptGetInstall octave-mapping
 	_getMost_backend_aptGetInstall octave-miscellaneous
 	_getMost_backend_aptGetInstall octave-missing-functions
-	_getMost_backend_aptGetInstall octave-mpi
+	#_getMost_backend_aptGetInstall octave-mpi
 	_getMost_backend_aptGetInstall octave-msh
 	_getMost_backend_aptGetInstall octave-mvn
 	_getMost_backend_aptGetInstall octave-nan
@@ -7113,6 +6818,18 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall freecad
 	
 	
+
+	_getMost_backend_aptGetInstall xclip
+
+	_getMost_backend_aptGetInstall tcl
+	_getMost_backend_aptGetInstall tk
+
+	_getMost_backend_aptGetInstall xserver-xephyr
+
+
+	_getMost_backend_aptGetInstall qt5-style-plugins
+	_getMost_backend_aptGetInstall qt5ct
+	
 	
 	_getMost_backend apt-get remove --autoremove -y plasma-discover
 	
@@ -7247,7 +6964,36 @@ _getMost_ubuntu22() {
 	_messagePlain_probe 'end: _getMost_ubuntu22'
 }
 
-
+# ATTENTION: Cloud 'end user' function.
+_getMost_ubuntu22-VBoxManage() {
+	_messagePlain_probe 'begin: _getMost_ubuntu22-VBoxManage'
+	
+	_set_getMost_backend "$@"
+	_set_getMost_backend_debian "$@"
+	_test_getMost_backend "$@"
+	
+	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
+	echo 'Dpkg::Options {"--force-confdef"};' | _getMost_backend tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | _getMost_backend tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	
+	#https://askubuntu.com/questions/876240/how-to-automate-setting-up-of-keyboard-configuration-package
+	#apt-get install -y debconf-utils
+	export DEBIAN_FRONTEND=noninteractive
+	
+	
+	_getMost_ubuntu22_aptSources "$@"
+	
+	#_getMost_ubuntu22_install "$@"
+	#_getMost_backend apt-get -d install -y virtualbox-6.1
+	_getMost_backend apt-get -d install -y virtualbox-7.0
+	
+	_getMost_backend apt-get remove --autoremove -y plasma-discover
+	
+	_getMost_backend apt-get -y clean
+	
+	
+	_messagePlain_probe 'end: _getMost_ubuntu22-VBoxManage'
+}
 
 
 
@@ -7702,7 +7448,7 @@ _getMinimal_cloud() {
 	#unset devfast
 	
 	
-	
+	return 0
 }
 
 
@@ -8189,6 +7935,98 @@ _resetFakeHomeEnv() {
 	_resetFakeHomeEnv_nokeep
 } 
 
+
+_here_wsl_conf() {
+    cat << 'CZXWXcRMTo8EmM8i4d'
+
+[boot]
+systemd = true
+command = /bin/bash -c 'systemctl stop sddm ; rm -f /root/_rootGrab.sh ; ( rm /home/user/___quick/mount.sh ; rmdir /home/user/___quick ; ( [[ ! -e /home/user/___quick ]] && ln -s /mnt/c/q /home/user/___quick ) ; rm -f /home/user/___quick/q )'
+
+[user]
+default = user
+
+[wsl2]
+nestedVirtualization=true
+
+
+CZXWXcRMTo8EmM8i4d
+}
+
+
+
+
+
+
+
+
+
+_here_wsl_qt5ct_conf() {
+    cat << 'CZXWXcRMTo8EmM8i4d'
+
+[Appearance]
+color_scheme_path=/usr/share/qt5ct/colors/airy.conf
+custom_palette=false
+icon_theme=breeze-dark
+standard_dialogs=default
+style=Breeze
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+double_click_interval=400
+gui_effects=@Invalid()
+keyboard_scheme=2
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+stylesheets=@Invalid()
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3
+
+[Troubleshooting]
+force_raster_widgets=1
+ignored_applications=@Invalid()
+
+CZXWXcRMTo8EmM8i4d
+}
+
+_write_wsl_qt5ct_conf() {
+    if [[ "$HOME" == "/root" ]] || [[ $(id -u) == 0 ]]
+    then
+        _messagePlain_bad 'bad: root'
+        _messageFAIL
+    fi
+
+    local currentHome
+    currentHome="$HOME"
+    [[ "$currentHome" == "/root" ]] && currentHome="/home/user"
+    [[ "$1" != "" ]] && currentHome="$1"
+
+    [[ -e "$currentHome"/.config/qt5ct/qt5ct.conf ]] && return 0
+    
+    mkdir -p "$currentHome"/.config/qt5ct
+    mkdir -p "$currentHome"/.config/qt5ct/colors
+    mkdir -p "$currentHome"/.config/qt5ct/qss
+    
+    _here_wsl_qt5ct_conf > "$currentHome"/.config/qt5ct/qt5ct.conf
+
+    [[ -e "$currentHome"/.config/qt5ct/qt5ct.conf ]] && return 0
+
+    return 1
+}
+
+# WARNING: Experimental. Installer use only. May cause issues with applications running natively from the MSW side. Fortunately, it seems QT_QPA_PLATFORMTHEME is ignored if qt5ct is not present, as expected in the case of 'native' QT MSW applications.
+_write_msw_qt5ct() {
+    _messagePlain_request 'request: If the value of system variable WSLENV is important to you, the previous value is noted here.'
+    _messagePlain_probe_var WSLENV
+    
+    setx QT_QPA_PLATFORMTHEME qt5ct /m
+    setx WSLENV QT_QPA_PLATFORMTHEME /m
+}
+
 #####Shortcuts
 
 # https://unix.stackexchange.com/questions/434409/make-a-bash-ps1-that-counts-streak-of-correct-commands
@@ -8258,11 +8096,14 @@ _visualPrompt() {
 	
 	
 	
-	if ! _if_cygwin
+	if _if_cygwin
 	then
-		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
-	else
 		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	elif ( uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1 )
+	then
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"-wsl2'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	else
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '	
 	fi
 	
 	#export PS1="$prompt_nixShell""$PS1"
@@ -8930,19 +8771,25 @@ _wget_githubRelease-stdout() {
 _wget_githubRelease_join-stdout() {
 	local currentURL
 	local currentURL_array
-	local currentIteration
 
-	currentIteration=0
+	local currentIterationcurrentIteration=0
 	for currentIteration in $(seq -f "%02g" 0 32)
 	do
 		currentURL=$(_wget_githubRelease-URL "$1" "$2" "$3"".part""$currentIteration")
 		[[ "$currentURL" == "" ]] && break
 		[[ "$currentURL" != "" ]] && currentURL_array+=( "$currentURL" )
 	done
-	
-	_messagePlain_probe curl -L "${currentURL_array[@]}" >&2
 
-	curl -L "${currentURL_array[@]}"
+	# https://unix.stackexchange.com/questions/412868/bash-reverse-an-array
+	local currentValue
+	for currentValue in "${currentURL_array[@]}"
+	do
+		currentURL_array_reversed=("$currentValue" "${currentURL_array_reversed[@]}")
+	done
+	
+	_messagePlain_probe curl -L "${currentURL_array_reversed[@]}" >&2
+
+	curl -L "${currentURL_array_reversed[@]}"
 }
 
 _wget_githubRelease_join() {
@@ -11767,6 +11614,52 @@ export ub_anchor_user
 
 export ub_anchor_autoupgrade=""
 export ub_anchor_autoupgrade
+
+
+
+
+
+_set_msw_qt5ct() {
+    ! _if_cygwin && return 1
+
+    [[ "$QT_QPA_PLATFORMTHEME" != "qt5ct" ]] && export QT_QPA_PLATFORMTHEME=qt5ct
+    if [[ "$WSLENV" != "QT_QPA_PLATFORMTHEME" ]] && [[ "$WSLENV" != "QT_QPA_PLATFORMTHEME"* ]] && [[ "$WSLENV" != *"QT_QPA_PLATFORMTHEME" ]] && [[ "$WSLENV" != *"QT_QPA_PLATFORMTHEME"* ]]
+    then
+        export WSLENV="$WSLENV:QT_QPA_PLATFORMTHEME"
+    fi
+    return 0
+}
+
+
+# wsl printenv | grep QT_QPA_PLATFORMTHEME
+# ATTENTION: Will also unset QT_QPA_PLATFORMTHEME if appropriate (and for this reason absolutely should be hooked by 'Linux' shells).
+# Strongly recommend writing the ' export QT_QPA_PLATFORMTHEME=qt5ct ' or equivalent statement to ' /etc/environment.d/ub_wsl2_qt5ct.sh ' , '/etc/environment.d/90ub_wsl2_qt5ct.conf' , or similarly effective non-login non-interactive shell startup script.
+#  Unfortunately, '/etc/environment.d' is usually ignored by (eg. Debian) Linux distributions, to the point that variables declared by files provided by installed packages are not exported to any apparent environment.
+#  Alternatives attempted include:
+#  /etc/security/pam_env.conf
+#  ~/.bashrc
+#  ~/.bash_profile
+#  ~/.profile
+_set_qt5ct() {
+    ! uname -a | grep -i 'microsoft' > /dev/null 2>&1 && return 1
+    ! uname -a | grep -i 'WSL2' > /dev/null 2>&1 && return 1
+
+    if [[ "$DISPLAY" != ":0" ]]
+    then
+        export QT_QPA_PLATFORMTHEME=
+        unset QT_QPA_PLATFORMTHEME
+    fi
+    
+    _write_wsl_qt5ct_conf "$@"
+
+
+    export QT_QPA_PLATFORMTHEME=qt5ct
+
+    return 0
+}
+
+! _set_msw_qt5ct && _set_qt5ct
+
 
 
 
@@ -16919,6 +16812,10 @@ _test() {
 	
 	_tryExec "_test_packetDriveDevice"
 	_tryExec "_test_gparted"
+
+
+	_tryExec "_test_wsl2_internal"
+
 	
 	# WARNING: Disabled by default. Newer FLOSS (ie. 'barrier'), seems to have displaced the older 'synergy' software.
 	# ATTENTION: Override with 'ops' or similar.
@@ -17519,6 +17416,14 @@ _ubDistFetch() {
 		rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/xclipsync ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
 	
 	
 	
