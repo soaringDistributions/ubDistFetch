@@ -6,10 +6,8 @@ _core_FAIL() {
 	_messageFAIL
 }
 
-_wget_githubRelease_internal() {
-	local currentURL=$(curl -s "https://api.github.com/repos/""$1""/releases" | jq -r ".[] | select(.name == \"internal\") | .assets[] | select(.name == \""$2"\") | .browser_download_url" | sort -n -r | head -n 1)
-	_messagePlain_probe curl -L -o "$2" "$currentURL"
-	curl -L -o "$2" "$currentURL"
+_wget_githubRelease_internal-core() {
+	_wget_githubRelease_internal "$@"
 	[[ ! -e "$2" ]] && _core_FAIL 'missing: '"$1"' '"$2"
 }
 
@@ -106,6 +104,14 @@ _ubDistFetch() {
 		rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/xclipsync ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
 	
 	
 	
@@ -120,7 +126,7 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/installations/
 		
-		_wget_githubRelease_internal soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz
+		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz
 		
 		mv -f linux-lts-amd64-debian.tar.gz kernel_linux/linux-lts-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
@@ -133,7 +139,7 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/installations/
 
-		_wget_githubRelease_internal soaringDistributions/mirage335KernelBuild linux-mainline-amd64-debian.tar.gz
+		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-mainline-amd64-debian.tar.gz
 
 		mv -f linux-mainline-amd64-debian.tar.gz kernel_linux/linux-mainline-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
@@ -146,25 +152,25 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
 		
-		_wget_githubRelease_internal mirage335/ubiquitous_bash ubcp-cygwin-portable-installer.log
-		_wget_githubRelease_internal mirage335/ubiquitous_bash _mitigate-ubcp.log
-		_wget_githubRelease_internal mirage335/ubiquitous_bash _setupUbiquitous.log
-		_wget_githubRelease_internal mirage335/ubiquitous_bash _test-lean.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash ubcp-cygwin-portable-installer.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _mitigate-ubcp.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _setupUbiquitous.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _test-lean.log
 	fi
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
 	fi
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.7z ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubcp-core.7z
-		_wget_githubRelease_internal mirage335/ubiquitous_bash package_ubcp-core.log
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubcp-core.7z
+		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubcp-core.log
 	fi
 	
 	
