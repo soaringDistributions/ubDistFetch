@@ -190,6 +190,17 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335GizmoScience
 	
 	
+
+	if ! [[ -e "$scriptLib"/core/installations/klipper ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive https://github.com/Klipper3d/klipper && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/klipper ]] && _core_FAIL 'missing: klipper'
+
+
+
+
 	
 	
 	cd "$scriptLib"/core/infrastructure
