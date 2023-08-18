@@ -24,6 +24,8 @@ _ubDistFetch_gitBestFetch() {
 	local currentCheckout
 	currentCheckout="$4"
 	[[ "$currentCheckout" == "" ]] && currentCheckout=HEAD
+
+	git config --global checkout.workers -1
 	
 	! _messagePlain_probe_cmd mkdir -p "$1"  && _core_FAIL
 	! _messagePlain_probe_cmd cd "$1" && _core_FAIL
