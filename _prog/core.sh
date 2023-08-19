@@ -201,14 +201,6 @@ _ubDistFetch() {
 	! [[ -e "$scriptLib"/core/installations/klipper ]] && _core_FAIL 'missing: klipper'
 
 
-	if ! [[ -e "$scriptLib"/core/installations/klipper ]]
-	then
-		cd "$scriptLib"/core/installations
-		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive https://github.com/Klipper3d/klipper && _core_FAIL
-	fi
-	! [[ -e "$scriptLib"/core/installations/klipper ]] && _core_FAIL 'missing: klipper'
-
-
 
 	#if ! [[ -e "$scriptLib"/core/installations/kiauh ]]
 	#then
