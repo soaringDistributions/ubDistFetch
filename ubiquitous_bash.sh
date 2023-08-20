@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='719295698'
+export ub_setScriptChecksum_contents='2694514203'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -8522,6 +8522,32 @@ _query() {
 	( cd "$qc" ; _queryClient _bin cat | _log_query "$queryTmp"/tx.log | ( cd "$qs" ; _queryServer _bin cat | _log_query "$queryTmp"/xc.log | ( cd "$qc" ; _queryClient _bin cat | _log_query "$queryTmp"/rx.log ; return "${PIPESTATUS[0]}" )))
 }
 
+
+_github_removeActionsHTTPS-filter() {
+    _messagePlain_probe '_github_removeActionsHTTPS-filter: '"$1"
+    
+    sed -i 's/^\sextraheader.*$//g' "$1"
+    sed -i 's/^\sinsteadOf = git@github.com:.*$//g' "$1"
+    sed -i 's/^\sinsteadOf = org.*@github.com:.*$//g' "$1"
+}
+
+_github_removeActionsHTTPS() {
+    if [[ "$1" != *".git"* ]] && [[ "$1" != *".git" ]]
+    then
+        _messagePlain_bad 'warn: missing: .git: '"$1"
+        _messageFAIL
+        _stop 1
+        return 1
+    fi
+
+    find "$1" -type f -name 'config' -exec "$scriptAbsoluteLocation" _github_removeActionsHTTPS-filter {} \;
+    
+
+}
+
+
+
+
 _testGit() {
 	_wantGetDep git
 }
@@ -10932,8 +10958,7 @@ _setupUbiquitous() {
 	if _if_cygwin
 	then
 		echo 'detected: cygwin'
-		_messagePlain_probe_cmd git config --global core.autocrlf input
-		_messagePlain_probe_cmd git config --global core.eol lf
+		_messagePlain_probe_cmd _setupUbiquitous_accessories-git
 	fi
 	
 	_force_cygwin_symlinks
