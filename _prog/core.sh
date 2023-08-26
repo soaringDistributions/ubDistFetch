@@ -67,7 +67,7 @@ _ubDistFetch_gitBestFetch_github_distllc() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
 	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:soaringDistributions/"$2".git "$2"
 	then
-		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335 '"$@"
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_distllc '"$@"
 		_messageFAIL
 	fi
 	return 0
@@ -218,6 +218,10 @@ _ubDistFetch() {
 	
 	
 	cd "$scriptLib"/core/infrastructure
+	
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/infrastructure ubDistBuild
+
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/infrastructure ubDistFetch
 	
 	
 	_messageNormal '########## infrastructure: 'moby
