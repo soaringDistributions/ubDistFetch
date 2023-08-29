@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4213596736'
+export ub_setScriptChecksum_contents='1367119359'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -17884,24 +17884,30 @@ _ubDistFetch() {
 	
 	_messageNormal '########## installations: 'ubcp
 	mkdir -p "$scriptLib"/core/installations/ubcp
-	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw.7z ]]
+
+	# Not strictly necessary for development. Prefer installer for 'extendedInterface' instead of direct installation from 'package_ubiquitous_bash-msw.7z' .
+	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_mitigate-ubcp.log ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_setupUbiquitous.log ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_test-lean.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
+		##_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
+		#_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
 		
 		_wget_githubRelease_internal-core mirage335/ubiquitous_bash ubcp-cygwin-portable-installer.log
 		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _mitigate-ubcp.log
 		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _setupUbiquitous.log
 		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _test-lean.log
 	fi
-	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.7z ]]
+
+	# Not strictly necessary for development. Contents of 'package_ubcp-core.7z' can be added to an 'ubiquitous_bash' based project, this 'rotten' package merely includes a template 'ubiquitous_bash' project.
+	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
+		##_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
+		#_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
 	fi
-	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.7z ]]
+
+	# WARNING: Essential.
+	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
 		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubcp-core.7z
@@ -17909,6 +17915,7 @@ _ubDistFetch() {
 	fi
 	
 	
+	# May be obsolete. Live ISO itself should now include everything necessary to automatically derive the 'miniCD' ISO .
 	_messageNormal '########## installations: 'mirage335TechArchive_discImages
 	mkdir -p "$scriptLib"/core/installations/mirage335TechArchive_discImages
 	if [[ ! -e "$scriptLib"/core/installations/mirage335TechArchive_discImages/m335TechArc_mCD.iso ]]
