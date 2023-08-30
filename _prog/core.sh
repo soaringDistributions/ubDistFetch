@@ -12,7 +12,7 @@ _wget_githubRelease_internal-core() {
 }
 
 # "$1" ~= "$scriptLib"/core/infrastructure
-# "$2" ~= git@github.com:mirage335/ubiquitous_bash.git
+# "$2" ~= git@github.com:mirage335-colossus/ubiquitous_bash.git
 # "$3" ~= ubiquitous_bash
 # "$4" ~= HEAD (optional)
 _ubDistFetch_gitBestFetch() {
@@ -52,6 +52,15 @@ _ubDistFetch_gitBestFetch() {
 	cd "$functionEntryPWD"
 }
 
+_ubDistFetch_gitBestFetch_github_mirage335-colossus() {
+	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
+	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335-colossus/"$2".git "$2"
+	then
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335-colossus '"$@"
+		_messageFAIL
+	fi
+	return 0
+}
 
 _ubDistFetch_gitBestFetch_github_mirage335() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
@@ -156,29 +165,29 @@ _ubDistFetch() {
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_mitigate-ubcp.log ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_setupUbiquitous.log ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/_test-lean.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		##_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.7z
-		#_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw.log
+		##_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubiquitous_bash-msw.7z
+		#_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubiquitous_bash-msw.log
 		
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash ubcp-cygwin-portable-installer.log
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _mitigate-ubcp.log
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _setupUbiquitous.log
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash _test-lean.log
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash ubcp-cygwin-portable-installer.log
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash _mitigate-ubcp.log
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash _setupUbiquitous.log
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash _test-lean.log
 	fi
 
 	# Not strictly necessary for development. Contents of 'package_ubcp-core.7z' can be added to an 'ubiquitous_bash' based project, this 'rotten' package merely includes a template 'ubiquitous_bash' project.
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubiquitous_bash-msw-rotten.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		##_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
-		#_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
+		##_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubiquitous_bash-msw-rotten.7z
+		#_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubiquitous_bash-msw-rotten.log
 	fi
 
 	# WARNING: Essential.
 	if [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.7z ]] && [[ ! -e "$scriptLib"/core/installations/ubcp/package_ubcp-core.log ]]
 	then
 		cd "$scriptLib"/core/installations/ubcp
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubcp-core.7z
-		_wget_githubRelease_internal-core mirage335/ubiquitous_bash package_ubcp-core.log
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubcp-core.7z
+		_wget_githubRelease_internal-core mirage335-colossus/ubiquitous_bash package_ubcp-core.log
 	fi
 	
 	
@@ -242,9 +251,11 @@ _ubDistFetch() {
 	fi
 	_ubDistFetch_gitBestFetch "$scriptLib"/core/infrastructure git@github.com:moby/moby.git moby 3e1df952b7d693ac3961f492310852bdf3106240
 	
-	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure ubiquitous_bash
+	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure ubiquitous_bash
+	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ubiquitous_bash
 	
-	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure extendedInterface
+	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure extendedInterface
+	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure extendedInterface
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure mirage335_documents
 	
