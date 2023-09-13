@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2671811323'
+export ub_setScriptChecksum_contents='2868585476'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -6656,6 +6656,15 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall libusb-1.0
 
 
+
+	_getMost_backend_aptGetInstall ddd
+	_getMost_backend_aptGetInstall gdb
+	_getMost_backend_aptGetInstall libbabeltrace1
+	_getMost_backend_aptGetInstall libc6-dbg
+	_getMost_backend_aptGetInstall libsource-highlight-common
+	_getMost_backend_aptGetInstall libsource-highlight4v5
+
+
 	
 	# ATTENTION: ONLY change (eg. to 'remove') if needed to ensure a kernel is installed AND custom kernel is not in use.
 	_getMost_backend_aptGetInstall linux-image-amd64
@@ -12046,6 +12055,7 @@ then
 	if [[ "$tmpSelf" == "" ]]
 	then
 		export tmpWSL="$HOME"/.ubtmp
+		[[ "$realHome" != "" ]] && export tmpWSL="$realHome"/.ubtmp
 		[[ ! -e "$tmpWSL" ]] && mkdir -p "$tmpWSL"
 		
 		if [[ "$tmpWSL" != "" ]]
@@ -15155,7 +15165,12 @@ _prepare_abstract() {
 	else
 		if ! chown "$USER":"$USER" "$abstractfs_root" > /dev/null 2>&1
 		then
-			! /sbin/chown "$USER" "$abstractfs_root" && exit 1
+			if [[ -e /sbin/chown ]]
+			then
+				! /sbin/chown "$USER" "$abstractfs_root" && exit 1
+			else
+				! /usr/bin/chown "$USER" "$abstractfs_root" && exit 1
+			fi
 		fi
 	fi
 	
@@ -15175,7 +15190,12 @@ _prepare_abstract() {
 	else
 		if ! chown "$USER":"$USER" "$abstractfs_lock" > /dev/null 2>&1
 		then
-			! /sbin/chown "$USER" "$abstractfs_lock" && exit 1
+			if [[ -e /sbin/chown ]]
+			then
+				! /sbin/chown "$USER" "$abstractfs_lock" && exit 1
+			else
+				! /usr/bin/chown "$USER" "$abstractfs_lock" && exit 1
+			fi
 		fi
 	fi
 }
