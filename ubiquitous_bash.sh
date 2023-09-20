@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='796228141'
+export ub_setScriptChecksum_contents='1410994927'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -7083,7 +7083,7 @@ _getMost_debian11_install() {
 
 
 
-
+	_getMost_backend_aptGetInstall fldigi
 	
 	
 	_getMost_backend apt-get remove --autoremove -y plasma-discover
@@ -10890,7 +10890,7 @@ _setupUbiquitous_accessories_here-plasma_hook() {
 
 # sourced by /usr/lib/x86_64-linux-gnu/libexec/plasma-sourceenv.sh
 
-#LANG=C
+LANG=C
 export LANG
 
 CZXWXcRMTo8EmM8i4d
@@ -11175,7 +11175,7 @@ _setupUbiquitous_accessories_here-nixenv-bashrc() {
 #  Hidden or invalid characters in "\$PATH" would seem a sensible cause, but how grep would disregard this while bash would not, seems difficult to explain.
 #  Expected cause is interpretation by a shell other than bash .
 #   CAUTION: Compatability with shells other than bash may be important .
-if echo "$PATH" | grep 'nix-profile/bin' > /dev/null 2>&1 || [[ "\$PATH" == *"nix-profile/bin"* ]]
+if echo "\$PATH" | grep 'nix-profile/bin' > /dev/null 2>&1 || [[ "\$PATH" == *"nix-profile/bin"* ]]
 then
 	PATH=\$(echo "\$PATH" | sed 's|:'"$HOME"'/.nix-profile/bin||g;s|'"$HOME"'/.nix-profile/bin:||g')
 	export PATH
@@ -18495,6 +18495,7 @@ _ubDistFetch() {
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
 	
 	
+	_messageNormal '########## installations: 'programs
 	if ! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]]
 	then
 		cd "$scriptLib"/core/installations
@@ -18512,6 +18513,30 @@ _ubDistFetch() {
 		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
 	fi
 	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/slvs_py ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:realthunder/slvs_py.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/slvs_py ]] && _core_FAIL 'missing: slvs_py'
+	
+	if ! [[ -e "$scriptLib"/core/installations/solvespace ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:realthunder/solvespace.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/solvespace ]] && _core_FAIL 'missing: solvespace'
+	
+	if ! [[ -e "$scriptLib"/core/installations/FreeCAD ]]
+	then
+		cd "$scriptLib"/core/installations
+		#! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:realthunder/FreeCAD.git && _core_FAIL
+		#! _messagePlain_probe_cmd _gitBest clone --depth 1 git@github.com:realthunder/FreeCAD.git && _core_FAIL
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:realthunder/FreeCAD.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/FreeCAD ]] && _core_FAIL 'missing: FreeCAD'
 	
 	
 	
