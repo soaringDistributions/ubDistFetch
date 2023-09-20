@@ -116,6 +116,7 @@ _ubDistFetch() {
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
 	
 	
+	_messageNormal '########## installations: 'programs
 	if ! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]]
 	then
 		cd "$scriptLib"/core/installations
@@ -133,6 +134,30 @@ _ubDistFetch() {
 		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
 	fi
 	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/slvs_py ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:realthunder/slvs_py.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/slvs_py ]] && _core_FAIL 'missing: slvs_py'
+	
+	if ! [[ -e "$scriptLib"/core/installations/solvespace ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:realthunder/solvespace.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/solvespace ]] && _core_FAIL 'missing: solvespace'
+	
+	if ! [[ -e "$scriptLib"/core/installations/FreeCAD ]]
+	then
+		cd "$scriptLib"/core/installations
+		#! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:realthunder/FreeCAD.git && _core_FAIL
+		#! _messagePlain_probe_cmd _gitBest clone --depth 1 git@github.com:realthunder/FreeCAD.git && _core_FAIL
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:realthunder/FreeCAD.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/FreeCAD ]] && _core_FAIL 'missing: FreeCAD'
 	
 	
 	
