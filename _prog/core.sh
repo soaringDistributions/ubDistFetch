@@ -157,7 +157,7 @@ _ubDistFetch() {
 		#! _messagePlain_probe_cmd _gitBest clone --depth 1 git@github.com:realthunder/FreeCAD.git && _core_FAIL
 		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:realthunder/FreeCAD.git && _core_FAIL
 	fi
-	! [[ -e "$scriptLib"/core/installations/FreeCAD ]] && _core_FAIL 'missing: FreeCAD'
+	! [[ -e "$scriptLib"/core/installations/FreeCAD ]] && ! [[ -e "$scriptLib"/core/installations/FreeCAD.git ]] && _core_FAIL 'missing: FreeCAD'
 	
 	
 	
