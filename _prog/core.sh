@@ -316,6 +316,9 @@ _ubDistFetch() {
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure flipKey
+	cd "$scriptLib"/core/infrastructure/flipKey
+	./ubiquitous_bash.sh _package
+	cd "$scriptLib"/core/infrastructure
 	
 	
 	
