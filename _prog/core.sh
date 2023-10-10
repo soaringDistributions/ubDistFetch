@@ -255,7 +255,7 @@ _ubDistFetch() {
 	if ! [[ -e "$scriptLib"/core/installations/klipper ]]
 	then
 		cd "$scriptLib"/core/installations
-		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive https://github.com/Klipper3d/klipper && _core_FAIL
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:Klipper3d/klipper.git && _core_FAIL
 	fi
 	! [[ -e "$scriptLib"/core/installations/klipper ]] && _core_FAIL 'missing: klipper'
 
@@ -289,6 +289,14 @@ _ubDistFetch() {
 
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure kinematicBase-large
 
+
+	# https://github.com/mirage335/gedaProduction/blob/a9525331749c5dbfba05c687395ccbdc2be1af6c/laserstencil/millproject
+	if ! [[ -e "$scriptLib"/core/installations/pcb2gcode ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:pcb2gcode/pcb2gcode.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/pcb2gcode ]] && _core_FAIL 'missing: pcb2gcode'
 
 	
 	
