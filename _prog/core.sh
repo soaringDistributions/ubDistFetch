@@ -449,7 +449,13 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure VR_Headset_Hanger
 	
 	
-	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure aftermarket_8kX_hinge
+	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure aftermarket_8kX_hinge
+	if ! [[ -e "$scriptLib"/core/infrastructure/aftermarket_8kX_hinge ]]
+	then
+		cd "$scriptLib"/core/infrastructure
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:mirage335/aftermarket_8kX_hinge.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/infrastructure/aftermarket_8kX_hinge ]] && ! [[ -e "$scriptLib"/core/infrastructure/aftermarket_8kX_hinge.git ]] && _core_FAIL 'missing: aftermarket_8kX_hinge'
 
 
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure Mirage335BiosignalAmp
