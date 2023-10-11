@@ -467,7 +467,6 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure 30MHzLowPass
 
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure HVDC_Engine
-	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure PWMController
 	
 	
 	
