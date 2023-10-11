@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2239200891'
+export ub_setScriptChecksum_contents='3706332944'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -18816,9 +18816,27 @@ _ubDistFetch() {
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335GizmoScience
 	
 
+
+	# WARNING: May be obsolete, untested, or not recently maintained.
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations BiosignalProcessor
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations LaserDemo
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations HF_Upconverter
+
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations audioManager
 
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations ChannelScanKit
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mouserTools
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations OpenActuators
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations C_CMake_Template
+
+
+
 	
 
 	if ! [[ -e "$scriptLib"/core/installations/klipper ]]
@@ -18860,12 +18878,13 @@ _ubDistFetch() {
 
 
 	# https://github.com/mirage335/gedaProduction/blob/a9525331749c5dbfba05c687395ccbdc2be1af6c/laserstencil/millproject
-	if ! [[ -e "$scriptLib"/core/installations/pcb2gcode ]]
-	then
-		cd "$scriptLib"/core/installations
-		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:pcb2gcode/pcb2gcode.git && _core_FAIL
-	fi
-	! [[ -e "$scriptLib"/core/installations/pcb2gcode ]] && _core_FAIL 'missing: pcb2gcode'
+	#if ! [[ -e "$scriptLib"/core/infrastructure/pcb2gcode ]]
+	#then
+		#cd "$scriptLib"/core/infrastructure
+		#! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:pcb2gcode/pcb2gcode.git && _core_FAIL
+	#fi
+	#! [[ -e "$scriptLib"/core/infrastructure/pcb2gcode ]] && _core_FAIL 'missing: pcb2gcode'
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure pcb2gcode
 
 	
 	
@@ -18882,6 +18901,14 @@ _ubDistFetch() {
 	
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure ubiquitous_bash
 	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ubiquitous_bash
+
+	#_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ubiquitous_bash_bundle
+	if ! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle ]]
+	then
+		cd "$scriptLib"/core/infrastructure
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:mirage335-colossus/ubiquitous_bash_bundle.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle ]] && ! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle.git ]] && _core_FAIL 'missing: ubiquitous_bash_bundle'
 	
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure extendedInterface
 	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure extendedInterface
@@ -18975,12 +19002,28 @@ _ubDistFetch() {
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure translate2geda
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure gEDA_refdes_renumALL
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure webClient
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure zipTiePanel
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure VR_Headset_Hanger
+	
+	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure aftermarket_8kX_hinge
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure Mirage335BiosignalAmp
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure BiosignalSimulator
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure LinearPSU
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure 30MHzLowPass
 	
 	
 	
