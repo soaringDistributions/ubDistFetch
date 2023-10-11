@@ -250,6 +250,10 @@ _ubDistFetch() {
 	
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335GizmoScience
 	
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations audioManager
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations ChannelScanKit
 	
 
 	if ! [[ -e "$scriptLib"/core/installations/klipper ]]
