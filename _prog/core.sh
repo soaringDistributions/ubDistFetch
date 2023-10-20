@@ -367,6 +367,8 @@ _ubDistFetch() {
 	./ubiquitous_bash.sh _package
 	cd "$scriptLib"/core/infrastructure
 	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure credManager
+	
 	
 	
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure arduinoUbiquitous
