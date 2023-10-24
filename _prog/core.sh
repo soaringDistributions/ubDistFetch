@@ -136,6 +136,14 @@ _ubDistFetch() {
 	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
 
 
+	if ! [[ -e "$scriptLib"/core/installations/pycam ]]
+ 	then
+  		cd "$scriptLib"/core/installations
+ 		git clone --depth 1 --recursive git://pycam.git.sourceforge.net/gitroot/pycam/pycam
+   	fi
+	! [[ -e "$scriptLib"/core/installations/pycam ]] && _core_FAIL 'missing: pycam'
+
+
 	if ! [[ -e "$scriptLib"/core/installations/slvs_py ]]
 	then
 		cd "$scriptLib"/core/installations
