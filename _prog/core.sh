@@ -126,6 +126,21 @@ _ubDistFetch() {
 		rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
+	
+	
+	# https://www.kb.cert.org/vuls/id/332928/
+	#  'This issue is addressed in Ghostscript version 9.24.
+	#  'remove Ghostscript from your system'
+	#   CAUTION: There seems to be some political effort to end the existence of Ghostscript. Ghostscript is a necessity for generating accurate CAD integratable andprintable PDF output from EDA. Until Ghostscript is not going away, a known working version of the source code MUST be shipped to ensure availability for possible maintenance separate from upstream dist/OS if necessary.
+	if ! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1 ]]
+	then
+		cd "$scriptLib"/core/installations
+		wget 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10021/ghostscript-10.02.1.tar.gz' -O ghostscript-10.02.1.tar.gz
+		#! _messagePlain_probe_cmd tar xf ghostscript-10.02.1.tar.gz && _core_FAIL
+		#rm -f ghostscript-10.02.1.tar.gz
+	fi
+	#! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1 ]] && _core_FAIL 'missing: ghostscript-10.02.1'
+	! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1.tar.gz ]] && _core_FAIL 'missing: ghostscript-10.02.1.tar.gz'
 
 
 	if ! [[ -e "$scriptLib"/core/installations/xclipsync ]]

@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='3125047833'
+export ub_setScriptChecksum_contents='148360325'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -18781,6 +18781,21 @@ _ubDistFetch() {
 		rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
+	
+	
+	# https://www.kb.cert.org/vuls/id/332928/
+	#  'This issue is addressed in Ghostscript version 9.24.
+	#  'remove Ghostscript from your system'
+	#   CAUTION: There seems to be some political effort to end the existence of Ghostscript. Ghostscript is a necessity for generating accurate CAD integratable andprintable PDF output from EDA. Until Ghostscript is not going away, a known working version of the source code MUST be shipped to ensure availability for possible maintenance separate from upstream dist/OS if necessary.
+	if ! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1 ]]
+	then
+		cd "$scriptLib"/core/installations
+		wget 'https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10021/ghostscript-10.02.1.tar.gz' -O ghostscript-10.02.1.tar.gz
+		#! _messagePlain_probe_cmd tar xf ghostscript-10.02.1.tar.gz && _core_FAIL
+		#rm -f ghostscript-10.02.1.tar.gz
+	fi
+	#! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1 ]] && _core_FAIL 'missing: ghostscript-10.02.1'
+	! [[ -e "$scriptLib"/core/installations/ghostscript-10.02.1.tar.gz ]] && _core_FAIL 'missing: ghostscript-10.02.1.tar.gz'
 
 
 	if ! [[ -e "$scriptLib"/core/installations/xclipsync ]]
@@ -18789,6 +18804,14 @@ _ubDistFetch() {
 		! _messagePlain_probe_cmd _gitBest clone --recursive git@github.com:apenwarr/xclipsync.git && _core_FAIL
 	fi
 	! [[ -e "$scriptLib"/core/installations/xclipsync ]] && _core_FAIL 'missing: xclipsync'
+
+
+	if ! [[ -e "$scriptLib"/core/installations/pycam ]]
+ 	then
+  		cd "$scriptLib"/core/installations
+ 		git clone --depth 1 --recursive git://pycam.git.sourceforge.net/gitroot/pycam/pycam
+   	fi
+	! [[ -e "$scriptLib"/core/installations/pycam ]] && _core_FAIL 'missing: pycam'
 
 
 	if ! [[ -e "$scriptLib"/core/installations/slvs_py ]]
