@@ -156,6 +156,7 @@ _ubDistFetch() {
   		cd "$scriptLib"/core/installations
  		#git clone --depth 1 --recursive git://pycam.git.sourceforge.net/gitroot/pycam/pycam
  		_gitBest clone --depth 1 --recursive git@github.com:SebKuzminsky/pycam.git
+ 		cd "$scriptLib"/core/installations/pycam
  		_gitBest fetch --shallow-exclude=v0.6.3
    	fi
 	! [[ -e "$scriptLib"/core/installations/pycam ]] && _core_FAIL 'missing: pycam'
