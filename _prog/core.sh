@@ -336,6 +336,8 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure flightDeck
 
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure kinematicBase-large
+	
+	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure tinyMakeLab
 
 
 	# https://github.com/mirage335/gedaProduction/blob/a9525331749c5dbfba05c687395ccbdc2be1af6c/laserstencil/millproject
