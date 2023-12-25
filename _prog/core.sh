@@ -116,6 +116,26 @@ _ubDistFetch() {
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
 	
 	
+	
+	_messageNormal '########## installations: 'source_code
+	# MSW Binary for VirtualBox apparently depends on 'vc_redist', which may not be or may not remain a usable dependency. Thus, although Linux VirtualBox may be usefully available, only the source code may exist for MSW.
+	# Any use or availability of VirtualBox, not just MSW, is now strongly discouraged, and likely will be eliminated eventually in favor of QEMU .
+	# https://forums.virtualbox.org/viewtopic.php?t=108104
+	#  Seems there is some controversy here. In fact, there is license text to allow redistribution of 'vc_redist.x64.exe' . Microsoft's own knowledgeable 'Bing Chat' confirms Microsoft does allow sharing the file so long as some guidelines are followed.
+	# https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170
+	# https://visualstudio.microsoft.com/license-terms/
+	# https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/
+	#  'Distributable Code'
+	# https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170
+	#  The obvious conclusion is that MSW documentation regarding redistributable licensing either is not well documented or more likely relies on legalease which Oracle dislikes. In any case, transitioning away from and preserving open-source code from, VirtualBox, is a reasonable response at this time.
+	if ! [[ -e "$scriptLib"/core/installations/VirtualBox-7.0.12a.tar.bz2 ]]
+	then
+		cd "$scriptLib"/core/installations
+		wget 'https://download.virtualbox.org/virtualbox/7.0.12/VirtualBox-7.0.12a.tar.bz2'
+	fi
+	! [[ -e "$scriptLib"/core/installations/VirtualBox-7.0.12a.tar.bz2 ]] && _core_FAIL 'missing: VirtualBox-7.0.12a.tar.bz2'
+	
+	
 	_messageNormal '########## installations: 'programs
 	if ! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]]
 	then
