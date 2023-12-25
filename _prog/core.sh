@@ -128,6 +128,8 @@ _ubDistFetch() {
 	#  'Distributable Code'
 	# https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170
 	#  The obvious conclusion is that MSW documentation regarding redistributable licensing either is not well documented or more likely relies on legalease which Oracle dislikes. In any case, transitioning away from and preserving open-source code from, VirtualBox, is a reasonable response at this time.
+	# https://forums.virtualbox.org/viewtopic.php?t=108556&start=30
+	#  There is apparently some possibility that VirtualBox 7.0.13 has again included 'vc_redist', and that the removal was for some technical reason. However, the eventual elimination of VirtualBox should still occur, as with any case of erratic dependency issues.
 	if ! [[ -e "$scriptLib"/core/installations/VirtualBox-7.0.12a.tar.bz2 ]]
 	then
 		cd "$scriptLib"/core/installations
