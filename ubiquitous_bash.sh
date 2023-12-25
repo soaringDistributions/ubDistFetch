@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1806412296'
+export ub_setScriptChecksum_contents='1881777229'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -11006,6 +11006,8 @@ _kernelConfig_require-tradeoff-legacy() {
 	_kernelConfig__bad-n__ LEGACY_VSYSCALL_EMULATE
 }
 
+# WARNING: May be untested .
+# WARNING: May not identify drastically performance degrading features from harden-NOTcompatible .
 # WARNING: Risk must be evaluated for specific use cases.
 # WARNING: Insecure.
 # Standalone simulators (eg. flight sim):
@@ -11051,15 +11053,16 @@ _kernelConfig_require-tradeoff-perform() {
 
 # May become increasing tolerable and preferable for the vast majority of use cases.
 # WARNING: Risk must be evaluated for specific use cases.
-# WARNING: BREAKS some high-performance real-time applicatons (eg. flight sim, VR, AR).
+# WARNING: May BREAK some high-performance real-time applicatons (eg. flight sim, VR, AR).
 # Standalone simulators (eg. flight sim):
 # * May have hard real-time frame latency limits within 10% of the fastest avaialble from a commercially avaialble CPU.
 # * May be severely single-thread CPU constrained.
 # * May have real-time workloads exactly matching those suffering half performance due to security mitigations.
-# * May not require real-time security mitigations.
+# * May not (or may) require real-time security mitigations.
 # Disabling hardening may as much as double performance for some workloads.
 # https://www.phoronix.com/scan.php?page=article&item=linux-retpoline-benchmarks&num=2
 # https://www.phoronix.com/scan.php?page=article&item=linux-416early-spectremelt&num=4
+# DANGER: Hardware performance is getting better, while software security issues are getting worse. Think of faster computer processors as security hardware.
 _kernelConfig_require-tradeoff-harden() {
 	_messagePlain_nominal 'kernelConfig: tradeoff-harden'
 	_messagePlain_request 'Carefully evaluate '\''tradeoff-harden'\'' for specific use cases.'
@@ -11087,13 +11090,12 @@ _kernelConfig_require-tradeoff-harden() {
 	
 	_kernelConfig__bad-y__ CONFIG_RANDOMIZE_BASE
 	_kernelConfig__bad-y__ CONFIG_RANDOMIZE_MEMORY
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
 	# Special.
 	# VM guest should be tested.
 
@@ -11135,6 +11137,168 @@ _kernelConfig_require-tradeoff-harden() {
 
 }
 
+# WARNING: ATTENTION: Before moving to tradeoff-harden (compatible), ensure vboxdrv, vboxadd, nvidia, nvidia legacy, kernel modules can be loaded without issues, and also ensure significant performance penalty configuration options are oppositely documented in the tradeoff-perform function .
+# WARNING: Disables out-of-tree modules . VirtualBox and NVIDIA drivers WILL NOT be permitted to load .
+_kernelConfig_require-tradeoff-harden-NOTcompatible() {
+	# https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project/Recommended_Settings#sysctls
+	
+	_kernelConfig__bad-y__ CONFIG_BUG
+	_kernelConfig__bad-y__ CONFIG_BUG_ON_DATA_CORRUPTION
+	
+	_kernelConfig__bad-y__ CONFIG_PANIC_ON_OOPS
+	if ! cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "CONFIG_PANIC_TIMEOUT"'\=-1' > /dev/null 2>&1
+	then
+		_messagePlain_bad 'bad: not:    -1: '"CONFIG_PANIC_TIMEOUT"
+		export kernelConfig_bad='true'
+	fi
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_KASAN
+	_kernelConfig__bad-y__ CONFIG_KASAN_INLINE
+	_kernelConfig__bad-y__ CONFIG_KASAN_VMALLOC
+	
+	
+	# DUBIOUS. KASAN should catch everything KFENCE does, but apparently CONFIG_KASAN_VMALLOCKFENCE may rarely catch errors.
+	#_kernelConfig__bad-y__ CONFIG_KFENCE
+	
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SCHED_STACK_END_CHECK
+	_kernelConfig__bad-y__ CONFIG_DEBUG_CREDENTIALS
+	_kernelConfig__bad-y__ CONFIG_DEBUG_NOTIFIERS
+	_kernelConfig__bad-y__ CONFIG_DEBUG_LIST
+	_kernelConfig__bad-y__ CONFIG_DEBUG_SG
+	_kernelConfig__bad-y__ CONFIG_DEBUG_VIRTUAL
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SLUB_DEBUG
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SLAB_FREELIST_RANDOM
+	_kernelConfig__bad-y__ CONFIG_SLAB_FREELIST_HARDENED
+	_kernelConfig__bad-y__ CONFIG_SHUFFLE_PAGE_ALLOCATOR
+	
+	
+	_kernelConfig__bad-y__ CONFIG_INIT_ON_ALLOC_DEFAULT_ON
+	_kernelConfig__bad-y__ CONFIG_INIT_ON_FREE_DEFAULT_ON
+	
+	_kernelConfig__bad-y__ CONFIG_ZERO_CALL_USED_REGS
+	
+	
+	_kernelConfig__bad-y__ CONFIG_HARDENED_USERCOPY
+	_kernelConfig__bad-n__ CONFIG_HARDENED_USERCOPY_FALLBACK
+	_kernelConfig__bad-n__ CONFIG_HARDENED_USERCOPY_PAGESPAN
+	
+	
+	_kernelConfig__bad-y__ CONFIG_UBSAN
+	_kernelConfig__bad-y__ CONFIG_UBSAN_TRAP
+	_kernelConfig__bad-y__ CONFIG_UBSAN_BOUNDS
+	_kernelConfig__bad-y__ CONFIG_UBSAN_SANITIZE_ALL
+	_kernelConfig__bad-n__ CONFIG_UBSAN_SHIFT
+	_kernelConfig__bad-n__ CONFIG_UBSAN_DIV_ZERO
+	_kernelConfig__bad-n__ CONFIG_UBSAN_UNREACHABLE
+	_kernelConfig__bad-n__ CONFIG_UBSAN_BOOL
+	_kernelConfig__bad-n__ CONFIG_UBSAN_ENUM
+	_kernelConfig__bad-n__ CONFIG_UBSAN_ALIGNMENT
+	# This is only available on Clang builds, and is likely already enabled if CONFIG_UBSAN_BOUNDS=y is set:
+	_kernelConfig__bad-y__ CONFIG_UBSAN_LOCAL_BOUNDS
+	
+	
+	
+	_kernelConfig__bad-n__ CONFIG_DEVMEM
+	#_kernelConfig__bad-y__ CONFIG_STRICT_DEVMEM
+	#_kernelConfig__bad-y__ CONFIG_IO_STRICT_DEVMEM
+	
+	
+	_kernelConfig__bad-y__ CONFIG_CFI_CLANG
+	_kernelConfig__bad-n__ CONFIG_CFI_PERMISSIVE
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_STACKPROTECTOR
+	_kernelConfig__bad-y__ CONFIG_STACKPROTECTOR_STRONG
+	
+	
+	_kernelConfig__bad-n__ CONFIG_DEVKMEM
+	
+	_kernelConfig__bad-n__ CONFIG_COMPAT_BRK
+	_kernelConfig__bad-n__ CONFIG_PROC_KCORE
+	_kernelConfig__bad-n__ CONFIG_ACPI_CUSTOM_METHOD
+	
+	_kernelConfig__bad-n__ CONFIG_LEGACY_TIOCSTI
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SECURITY_LOCKDOWN_LSM
+	_kernelConfig__bad-y__ CONFIG_SECURITY_LOCKDOWN_LSM_EARLY
+	_kernelConfig__bad-y__ CONFIG_LOCK_DOWN_KERNEL_FORCE_CONFIDENTIALITY
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SECURITY_DMESG_RESTRICT
+	
+	_kernelConfig__bad-y__ CONFIG_VMAP_STACK
+	
+	
+	_kernelConfig__bad-n__ CONFIG_LDISC_AUTOLOAD
+	
+	
+	
+	# Enable GCC Plugins
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGINS
+
+	# Gather additional entropy at boot time for systems that may not have appropriate entropy sources.
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGIN_LATENT_ENTROPY
+
+	# Force all structures to be initialized before they are passed to other functions.
+	# When building with GCC:
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGIN_STRUCTLEAK
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGIN_STRUCTLEAK_BYREF_ALL
+
+	# Wipe stack contents on syscall exit (reduces stale data lifetime in stack)
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGIN_STACKLEAK
+	_kernelConfig__bad-n__ CONFIG_STACKLEAK_METRICS
+	_kernelConfig__bad-n__ CONFIG_STACKLEAK_RUNTIME_DISABLE
+
+	# Randomize the layout of system structures. This may have dramatic performance impact, so
+	# use with caution or also use CONFIG_GCC_PLUGIN_RANDSTRUCT_PERFORMANCE=y
+	_kernelConfig__bad-y__ CONFIG_GCC_PLUGIN_RANDSTRUCT
+	_kernelConfig__bad-n__ CONFIG_GCC_PLUGIN_RANDSTRUCT_PERFORMANCE
+	
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_SECURITY
+	_kernelConfig__bad-y__ CONFIG_SECURITY_YAMA
+	
+	_kernelConfig__bad-y__ CONFIG_X86_64
+	
+	
+	_kernelConfig__bad-n__ CONFIG_SECURITY_SELINUX_BOOTPARAM
+	_kernelConfig__bad-n__ CONFIG_SECURITY_SELINUX_DEVELOP
+	_kernelConfig__bad-n__ CONFIG_SECURITY_WRITABLE_HOOKS
+	
+	
+	
+	_kernelConfig_warn-n__ CONFIG_KEXEC
+	_kernelConfig_warn-n__ CONFIG_HIBERNATION
+	
+	
+	
+	_kernelConfig__bad-y__ CONFIG_RESET_ATTACK_MITIGATION
+	
+	
+	_kernelConfig_warn-y__ CONFIG_EFI_DISABLE_PCI_DMA
+	
+	
+	
+	# WARNING: CAUTION: Now obviously this is really incompatible. Do NOT move this to any other function.
+	_kernelConfig_warn-y__ CONFIG_MODULE_SIG_FORCE
+}
+
 # ATTENTION: Override with 'ops.sh' or similar.
 _kernelConfig_require-tradeoff() {
 	_kernelConfig_require-tradeoff-legacy "$@"
@@ -11145,10 +11309,18 @@ _kernelConfig_require-tradeoff() {
 	if [[ "$kernelConfig_tradeoff_perform" == 'true' ]]
 	then
 		_kernelConfig_require-tradeoff-perform "$@"
+	else
+		_kernelConfig_require-tradeoff-harden "$@"
+	fi
+	
+	[[ "$kernelConfig_tradeoff_compatible" == "" ]] && export kernelConfig_tradeoff_compatible='false'
+	
+	if [[ "$kernelConfig_tradeoff_compatible" != 'true' ]]
+	then
+		_kernelConfig_require-tradeoff-harden-NOTcompatible "$@"
 		return
 	fi
 	
-	_kernelConfig_require-tradeoff-harden "$@"
 	return
 }
 
@@ -11757,6 +11929,7 @@ _kernelConfig_panel() {
 	_messageNormal 'kernelConfig: panel'
 	
 	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_tradeoff_compatible" == "" ]] && export kernelConfig_tradeoff_compatible='true'
 	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=300
 	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='false'
 	
@@ -11796,6 +11969,7 @@ _kernelConfig_mobile() {
 	_messageNormal 'kernelConfig: mobile'
 	
 	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_tradeoff_compatible" == "" ]] && export kernelConfig_tradeoff_compatible='true'
 	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=300
 	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='true'
 	
@@ -11836,6 +12010,7 @@ _kernelConfig_desktop() {
 	_messageNormal 'kernelConfig: desktop'
 	
 	[[ "$kernelConfig_tradeoff_perform" == "" ]] && export kernelConfig_tradeoff_perform='false'
+	[[ "$kernelConfig_tradeoff_compatible" == "" ]] && export kernelConfig_tradeoff_compatible='true'
 	[[ "$kernelConfig_frequency" == "" ]] && export kernelConfig_frequency=1000
 	[[ "$kernelConfig_tickless" == "" ]] && export kernelConfig_tickless='false'
 	
@@ -11874,6 +12049,7 @@ _kernelConfig_server() {
 	_messageNormal 'kernelConfig: server'
 
 	export kernelConfig_tradeoff_perform='false'
+	export kernelConfig_tradeoff_compatible='false'
 	_kernelConfig_desktop "$@"
 }
 
@@ -19788,6 +19964,19 @@ _ubDistFetch() {
 		mv -f linux-mainline-amd64-debian.tar.gz kernel_linux/linux-mainline-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
 		tar xf linux-mainline-amd64-debian.tar.gz
+	fi
+	
+	_messageNormal '########## installations: 'linux-mainline-server
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-server-amd64-debian.tar.gz ]]
+	then
+		cd "$scriptLib"/core/installations/
+
+		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-mainline-server-amd64-debian.tar.gz
+
+		mv -f linux-mainline-server-amd64-debian.tar.gz kernel_linux/linux-mainline-server-amd64-debian.tar.gz
+		cd "$scriptLib"/core/installations/kernel_linux
+		tar xf linux-mainline-server-amd64-debian.tar.gz
 	fi
 	
 	

@@ -226,6 +226,19 @@ _ubDistFetch() {
 		tar xf linux-mainline-amd64-debian.tar.gz
 	fi
 	
+	_messageNormal '########## installations: 'linux-mainline-server
+	mkdir -p "$scriptLib"/core/installations/kernel_linux
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-server-amd64-debian.tar.gz ]]
+	then
+		cd "$scriptLib"/core/installations/
+
+		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-mainline-server-amd64-debian.tar.gz
+
+		mv -f linux-mainline-server-amd64-debian.tar.gz kernel_linux/linux-mainline-server-amd64-debian.tar.gz
+		cd "$scriptLib"/core/installations/kernel_linux
+		tar xf linux-mainline-server-amd64-debian.tar.gz
+	fi
+	
 	
 	_messageNormal '########## installations: 'ubcp
 	mkdir -p "$scriptLib"/core/installations/ubcp
