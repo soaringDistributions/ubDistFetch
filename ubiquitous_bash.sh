@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1082012228'
+export ub_setScriptChecksum_contents='778854993'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -19868,6 +19868,8 @@ _ubDistFetch() {
 	#  'Distributable Code'
 	# https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170
 	#  The obvious conclusion is that MSW documentation regarding redistributable licensing either is not well documented or more likely relies on legalease which Oracle dislikes. In any case, transitioning away from and preserving open-source code from, VirtualBox, is a reasonable response at this time.
+	# https://forums.virtualbox.org/viewtopic.php?t=108556&start=30
+	#  There is apparently some possibility that VirtualBox 7.0.13 has again included 'vc_redist', and that the removal was for some technical reason. However, the eventual elimination of VirtualBox should still occur, as with any case of erratic dependency issues.
 	if ! [[ -e "$scriptLib"/core/installations/VirtualBox-7.0.12a.tar.bz2 ]]
 	then
 		cd "$scriptLib"/core/installations
@@ -19986,17 +19988,17 @@ _ubDistFetch() {
 		tar xf linux-mainline-amd64-debian.tar.gz
 	fi
 	
-	_messageNormal '########## installations: 'linux-mainline-server
+	_messageNormal '########## installations: 'linux-lts-server
 	mkdir -p "$scriptLib"/core/installations/kernel_linux
-	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-mainline-server-amd64-debian.tar.gz ]]
+	if [[ ! -e "$scriptLib"/core/installations/kernel_linux/linux-lts-server-amd64-debian.tar.gz ]]
 	then
 		cd "$scriptLib"/core/installations/
 
-		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-mainline-server-amd64-debian.tar.gz
+		_wget_githubRelease_internal-core soaringDistributions/mirage335KernelBuild linux-lts-server-amd64-debian.tar.gz
 
-		mv -f linux-mainline-server-amd64-debian.tar.gz kernel_linux/linux-mainline-server-amd64-debian.tar.gz
+		mv -f linux-lts-server-amd64-debian.tar.gz kernel_linux/linux-lts-server-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
-		tar xf linux-mainline-server-amd64-debian.tar.gz
+		tar xf linux-lts-server-amd64-debian.tar.gz
 	fi
 	
 	
