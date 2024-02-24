@@ -143,9 +143,10 @@ _ubDistFetch() {
 	then
 		cd "$scriptLib"/core/installations
 		#wget 'https://phoenixnap.dl.sourceforge.net/project/pstoedit/pstoedit/3.75/pstoedit-3.75.tar.gz' -O pstoedit-3.75.tar.gz
-		wget 'https://sourceforge.net/projects/pstoedit/files/pstoedit/3.75/pstoedit-3.75.tar.gz/download' -O pstoedit-3.75.tar.gz
+		#wget 'https://sourceforge.net/projects/pstoedit/files/pstoedit/3.75/pstoedit-3.75.tar.gz/download' -O pstoedit-3.75.tar.gz
+		wget 'https://web.archive.org/web/20210913182309if_/https://versaweb.dl.sourceforge.net/project/pstoedit/pstoedit/3.75/pstoedit-3.75.tar.gz' -O pstoedit-3.75.tar.gz
 		! _messagePlain_probe_cmd tar xf pstoedit-3.75.tar.gz && _core_FAIL
-		rm -f pstoedit-3.75.tar.gz
+		#rm -f pstoedit-3.75.tar.gz
 	fi
 	! [[ -e "$scriptLib"/core/installations/pstoedit-3.75 ]] && _core_FAIL 'missing: pstoedit-3.75'
 	
