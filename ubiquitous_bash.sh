@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4279708243'
+export ub_setScriptChecksum_contents='538215036'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -20440,6 +20440,15 @@ _ubDistFetch() {
 	
 	
 	
+	
+	
+	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure quickWriter
+	
+	
+	
+	
+	
 	cd "$scriptLib"
 	cd "$functionEntryPWD"
 	_stop
@@ -20467,6 +20476,26 @@ _ubDistFetch_split() {
 
 	cd "$functionEntryPWD"
 }
+
+
+
+
+
+# ATTENTION: NOTICE: Specifically for core directories with both non-portable files (ie. python venv) and heavy dependencies (ie. '_getMost' ) .
+# CAUTION: NOTICE: MUST install core directories (ie. any extraction of 'ubDistFetch_package') to ~/core before calling this function. 
+_ubDistFetch_setup() {
+	if [[ -e "$HOME"/core/infrastructure/quickWriter ]]
+	then
+		"$HOME"/core/infrastructure/quickWriter/quickWriter _setup_prog
+	fi
+}
+
+
+
+
+
+
+
 
 
 _refresh_anchors() {

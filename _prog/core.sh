@@ -536,6 +536,15 @@ _ubDistFetch() {
 	
 	
 	
+	
+	
+	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure quickWriter
+	
+	
+	
+	
+	
 	cd "$scriptLib"
 	cd "$functionEntryPWD"
 	_stop
@@ -563,6 +572,26 @@ _ubDistFetch_split() {
 
 	cd "$functionEntryPWD"
 }
+
+
+
+
+
+# ATTENTION: NOTICE: Specifically for core directories with both non-portable files (ie. python venv) and heavy dependencies (ie. '_getMost' ) .
+# CAUTION: NOTICE: MUST install core directories (ie. any extraction of 'ubDistFetch_package') to ~/core before calling this function. 
+_ubDistFetch_setup() {
+	if [[ -e "$HOME"/core/infrastructure/quickWriter ]]
+	then
+		"$HOME"/core/infrastructure/quickWriter/quickWriter _setup_prog
+	fi
+}
+
+
+
+
+
+
+
 
 
 _refresh_anchors() {
