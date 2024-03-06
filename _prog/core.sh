@@ -233,7 +233,7 @@ _ubDistFetch() {
 		
 		mv -f linux-lts-amd64-debian.tar.gz kernel_linux/linux-lts-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
-		tar xf linux-lts-amd64-debian.tar.gz
+		#tar xf linux-lts-amd64-debian.tar.gz
 	fi
 	
 	_messageNormal '########## installations: 'linux-mainline
@@ -246,7 +246,7 @@ _ubDistFetch() {
 
 		mv -f linux-mainline-amd64-debian.tar.gz kernel_linux/linux-mainline-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
-		tar xf linux-mainline-amd64-debian.tar.gz
+		#tar xf linux-mainline-amd64-debian.tar.gz
 	fi
 	
 	_messageNormal '########## installations: 'linux-lts-server
@@ -259,7 +259,7 @@ _ubDistFetch() {
 
 		mv -f linux-lts-server-amd64-debian.tar.gz kernel_linux/linux-lts-server-amd64-debian.tar.gz
 		cd "$scriptLib"/core/installations/kernel_linux
-		tar xf linux-lts-server-amd64-debian.tar.gz
+		#tar xf linux-lts-server-amd64-debian.tar.gz
 	fi
 	
 	
