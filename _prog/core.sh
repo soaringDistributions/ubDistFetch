@@ -207,7 +207,15 @@ _ubDistFetch() {
 		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:realthunder/FreeCAD.git && _core_FAIL
 	fi
 	! [[ -e "$scriptLib"/core/installations/FreeCAD ]] && ! [[ -e "$scriptLib"/core/installations/FreeCAD.git ]] && _core_FAIL 'missing: FreeCAD'
-	
+
+
+
+
+
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations CAD_Assistant
+
+
+
 
 
 	if ! [[ -e "$scriptLib"/core/installations/gr-pipe ]]
