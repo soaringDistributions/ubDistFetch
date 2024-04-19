@@ -375,6 +375,13 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/infrastructure ubDistFetch
 
 
+	
+	cd "$scriptLib"/core/infrastructure
+	
+	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure virtuousCritter
+
+
+
 	cd "$scriptLib"/core/infrastructure
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure flightDeck
