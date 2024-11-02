@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2220315427'
+export ub_setScriptChecksum_contents='3133576576'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -804,7 +804,8 @@ then
 	#l() {
 		#_wsl "$@"
 	#}
-	alias l='_wsl'
+	#alias l='_wsl'
+	alias u='_wsl'
 fi
 
 
@@ -8934,14 +8935,34 @@ _setup_wsl2_procedure() {
     _messagePlain_probe wsl --update
     wsl --update
 
+    _messagePlain_probe wsl --install --no-launch
+    wsl --install --no-launch
+    
+    echo 'WSL errors and usage information above may or may not be disregarded.'
+
+    _messagePlain_probe wsl --update
+    wsl --update
+    
+    _messagePlain_probe wsl --set-default-version 2
+    wsl --set-default-version 2
+
+    _messagePlain_probe wsl --update
+    wsl --update
+
     sleep 45
     wsl --update
 
     sleep 5
     wsl --update
+    
+    sleep 5
+    wsl --set-default-version 2
 
     sleep 5
     wsl --update
+    
+    sleep 5
+    wsl --set-default-version 2
 }
 _setup_wsl2() {
     "$scriptAbsoluteLocation" _setup_wsl2_procedure "$@"
@@ -17676,6 +17697,9 @@ _vector() {
 	
 	
 	_tryExec "_vector_virtUser"
+	
+	
+	_tryExec "_vector_ollama"
 }
 
 
@@ -19448,6 +19472,11 @@ _test() {
 	# ATTENTION: Override with 'ops' or similar.
 	# More portable computing (ie. better laptops) and hardware (eg. mechanical) USB switches are also displacing the usefulness of such keyboard/mouse sharing software.
 	#_tryExec "_test_synergy"
+	
+	
+	
+	_tryExec "_test_ollama"
+	
 	
 	
 	_tryExec "_test_devqalculate"
