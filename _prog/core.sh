@@ -366,6 +366,89 @@ _ubDistFetch() {
 
 
 
+
+
+
+	cd "$scriptLib"/core/installations
+	if ! [[ -e "$scriptLib"/core/installations/anylabeling ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd mkdir -p "$scriptLib"/core/installations/anylabeling && _core_FAIL
+		
+		cd "$scriptLib"/core/installations/anylabeling
+		#! wget https://github.com/soaringDistributions/anylabeling/releases/download/archive-v0.4.8/AnyLabeling-GPU.exe && _core_FAIL
+		! wget https://github.com/vietanhdev/anylabeling/releases/download/v0.4.8/AnyLabeling-GPU.exe && _core_FAIL
+		#! wget https://github.com/soaringDistributions/anylabeling/releases/download/archive-v0.4.8/AnyLabeling-Linux && _core_FAIL
+		! wget https://github.com/vietanhdev/anylabeling/releases/download/v0.4.8/AnyLabeling-Linux && _core_FAIL
+		#! wget https://github.com/soaringDistributions/anylabeling/releases/download/archive-v0.4.8/AnyLabeling-Linux-GPU && _core_FAIL
+		! wget https://github.com/vietanhdev/anylabeling/releases/download/v0.4.8/AnyLabeling-Linux-GPU && _core_FAIL
+		#! wget https://github.com/soaringDistributions/anylabeling/releases/download/archive-v0.4.8/AnyLabeling.exe && _core_FAIL
+		! wget https://github.com/vietanhdev/anylabeling/releases/download/v0.4.8/AnyLabeling.exe && _core_FAIL
+		
+		
+		cd "$scriptLib"/core/installations/anylabeling
+		#! wget https://github.com/soaringDistributions/X-AnyLabeling/releases/download/archive-v2.3.6/X-AnyLabeling-CPU.exe && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.3.6/X-AnyLabeling-CPU.exe && _core_FAIL
+		#! wget https://github.com/soaringDistributions/X-AnyLabeling/releases/download/archive-v2.3.6/X-AnyLabeling-GPU.exe && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.3.6/X-AnyLabeling-GPU.exe && _core_FAIL
+		#! wget https://github.com/soaringDistributions/X-AnyLabeling/releases/download/archive-v2.3.6/X-Anylabeling-Linux-CPU && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.3.6/X-Anylabeling-Linux-CPU && _core_FAIL
+		#! wget https://github.com/soaringDistributions/X-AnyLabeling/releases/download/archive-v2.3.6/X-Anylabeling-Linux-GPU && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.3.6/X-Anylabeling-Linux-GPU && _core_FAIL
+		
+		
+		
+		cd "$scriptLib"/core/installations/anylabeling
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive https://github.com/soaringDistributions/segment_anything-models && _core_FAIL
+		
+		cd "$scriptLib"/core/installations/anylabeling/segment_anything-models
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive/mobile_sam_20230629_quant.zip && _core_FAIL
+		! wget https://huggingface.co/vietanhdev/segment-anything-onnx-models/blob/main/mobile_sam_20230629_quant.zip && _core_FAIL
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive/sam_vit_b_01ec64_quant.zip && _core_FAIL
+		! wget https://huggingface.co/vietanhdev/segment-anything-onnx-models/blob/main/sam_vit_b_01ec64_quant.zip && _core_FAIL
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive/sam_vit_h_4b8939_quant.zip && _core_FAIL
+		! wget https://huggingface.co/vietanhdev/segment-anything-onnx-models/blob/main/sam_vit_h_4b8939_quant.zip && _core_FAIL
+		
+		
+		# sam-hq_vit_h_quant-r20231111
+		cd "$scriptLib"/core/installations/anylabeling/segment_anything-models
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive-002/sam_hq_vit_h_decoder.onnx && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.0.0/sam_hq_vit_h_decoder.onnx && _core_FAIL
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive-002/sam_hq_vit_h_encoder_quant.onnx && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v2.0.0/sam_hq_vit_h_encoder_quant.onnx && _core_FAIL
+		
+		
+		# lvm_sam_ssk_kvasir_vit_b-r20230810
+		cd "$scriptLib"/core/installations/anylabeling/segment_anything-models
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive-002/sam-med2d_b.decoder.onnx && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam-med2d_b.decoder.onnx && _core_FAIL
+		#! wget https://github.com/soaringDistributions/segment_anything-models/releases/download/archive-002/sam-med2d_b.encoder.onnx && _core_FAIL
+		! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam-med2d_b.encoder.onnx && _core_FAIL
+		
+		
+		
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_buidnewprocess.decoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_buidnewprocess.decoder.quant.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_buidnewprocess.encoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_buidnewprocess.encoder.quant.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_isiconlytrain.decoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_isiconlytrain.decoder.quant.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_isiconlytrain.encoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_isiconlytrain.encoder.quant.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_kvasir.decoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_kvasir.decoder.quant.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_kvasir.encoder.onnx && _core_FAIL
+		#! wget https://github.com/CVHub520/X-AnyLabeling/releases/download/v0.2.0/sam_model_best_large_ssl_kvasir.encoder.quant.onnx && _core_FAIL
+		
+	fi
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	cd "$scriptLib"/core/infrastructure
