@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='3202121357'
+export ub_setScriptChecksum_contents='603065563'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -20046,6 +20046,16 @@ _ubDistFetch_gitBestFetch() {
 	cd "$functionEntryPWD"
 }
 
+_ubDistFetch_gitBestFetch_github_mirage335-special() {
+	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
+	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335-special/"$2".git "$2"
+	then
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335-special '"$@"
+		_messageFAIL
+	fi
+	return 0
+}
+
 _ubDistFetch_gitBestFetch_github_mirage335-gizmos() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
 	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335-gizmos/"$2".git "$2"
@@ -20650,6 +20660,9 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion
 	
 	
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/infrastructure iconArt
 	
 	
 	

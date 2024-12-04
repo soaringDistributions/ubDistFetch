@@ -52,6 +52,16 @@ _ubDistFetch_gitBestFetch() {
 	cd "$functionEntryPWD"
 }
 
+_ubDistFetch_gitBestFetch_github_mirage335-special() {
+	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
+	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335-special/"$2".git "$2"
+	then
+		_core_FAIL '_ubDistFetch_gitBestFetch_github_mirage335-special '"$@"
+		_messageFAIL
+	fi
+	return 0
+}
+
 _ubDistFetch_gitBestFetch_github_mirage335-gizmos() {
 	_messageNormal '########## '$(_safeEcho_newline "$1" | tail -c 25 | rev | cut -d/ -f1 | tr -dc 'A-Za-z0-9' | rev)' '"$2"
 	if ! _ubDistFetch_gitBestFetch "$1" git@github.com:mirage335-gizmos/"$2".git "$2"
@@ -656,6 +666,9 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion
 	
 	
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/infrastructure iconArt
 	
 	
 	
