@@ -446,6 +446,19 @@ _ubDistFetch() {
 	
 	
 	
+
+
+
+	if ! [[ -e "$scriptLib"/core/installations/maximize-build-space ]]
+	then
+		cd "$scriptLib"/core/installations
+		! _messagePlain_probe_cmd _gitBest clone --depth 1 --recursive git@github.com:easimon/maximize-build-space.git && _core_FAIL
+	fi
+	! [[ -e "$scriptLib"/core/installations/maximize-build-space ]] && _core_FAIL 'missing: maximize-build-space'
+
+
+
+
 	
 	
 	
@@ -638,6 +651,9 @@ _ubDistFetch() {
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure quickWriter
+
+	
+	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion
 	
 	
 	
