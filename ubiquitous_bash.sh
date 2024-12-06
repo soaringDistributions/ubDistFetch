@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1312195860'
+export ub_setScriptChecksum_contents='4234341902'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -1426,6 +1426,9 @@ _report_setup_ubcp() {
 	[[ "$1" == "/" ]] && currentCygdriveC_equivalent=$(echo "$PWD" | sed 's/\(\/cygdrive\/[a-zA-Z]*\).*/\1/')
 
 	find /bin/ /usr/bin/ /sbin/ /usr/sbin/ | tee "$currentCygdriveC_equivalent"/core/infrastructure/ubcp-binReport > /dev/null
+
+
+	apt-cyg show | cut -f1 -d\ | tail -n +2 | tee "$currentCygdriveC_equivalent"/core/infrastructure/ubcp-packageReport > /dev/null
 }
 
 
@@ -1891,12 +1894,6 @@ _package-cygwinOnly() {
 _package-cygwin() {
 	_package-cygwinOnly "$@"
 }
-
-
-
-
-
-
 
 
 
@@ -5729,9 +5726,14 @@ _fetchDep_debianBullseye_sequence() {
 }
 
 _fetchDep_debianBullseye() {
+	# ATTRIBUTION-AI: ChatGPT o1-preview 2024-11-20 .
+	echo 'APT::AutoRemove::RecommendsImportant "true";
+APT::AutoRemove::SuggestsImportant "true";' | sudo -n tee /etc/apt/apt.conf.d/99autoremove-recommends > /dev/null
+
+	
 	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
-	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
-	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confdef"};' | sudo -n tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
+	echo 'Dpkg::Options {"--force-confold"};' | sudo -n tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
 	
 	export DEBIAN_FRONTEND=noninteractive
 	
@@ -6567,6 +6569,8 @@ _getMost_debian11_install() {
 	fi
 	
 	_getMost_backend_aptGetInstall git
+	
+	_getMost_backend_aptGetInstall git-lfs
 
 	_getMost_backend_aptGetInstall bup
 	
@@ -6657,6 +6661,8 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall aria2
 	_getMost_backend_aptGetInstall unionfs-fuse
 	_getMost_backend_aptGetInstall samba
+	
+	_getMost_backend_aptGetInstall dia
 	
 	_getMost_backend_aptGetInstall libcups2-dev
 
@@ -7246,6 +7252,12 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall fldigi
 	_getMost_backend_aptGetInstall flamp
 	_getMost_backend_aptGetInstall psk31lx
+
+
+	_getMost_backend_aptGetInstall zip
+	_getMost_backend_aptGetInstall unzip
+	
+	_getMost_backend_aptGetInstall par2
 	
 	
 	_getMost_backend apt-get remove --autoremove -y plasma-discover
@@ -7283,6 +7295,19 @@ _getMost_debian11_install() {
 	
 	
 	_getMost_backend_aptGetInstall cloud-guest-utils
+
+
+
+
+	
+	
+	_getMost_backend_aptGetInstall python3-piexif
+	
+
+	_getMost_backend_aptGetInstall python3-torch
+	_getMost_backend_aptGetInstall python3-torchaudio
+	_getMost_backend_aptGetInstall python3-torchtext
+	_getMost_backend_aptGetInstall python3-torchvision
 	
 	
 	
@@ -7473,6 +7498,10 @@ _set_getMost_backend_debian() {
 	_getMost_backend_aptGetInstall() {
 		# --no-upgrade
 		# -o Dpkg::Options::="--force-confold"
+
+		# ATTRIBUTION-AI: ChatGPT o1-preview 2024-11-20 .
+		echo 'APT::AutoRemove::RecommendsImportant "true";
+APT::AutoRemove::SuggestsImportant "true";' | _getMost_backend tee /etc/apt/apt.conf.d/99autoremove-recommends > /dev/null
 		
 		if ! _getMost_backend dash -c 'type apt-fast' > /dev/null 2>&1 || [[ "$RUNNER_OS" != "" ]]
 		then
@@ -8101,12 +8130,16 @@ _get_from_nix-user() {
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-channel --update'
 
 	
+	# CAUTION: May correctly fail, due to marked insecure, due to CVE-2024-6775 , or similar. Do NOT force.
 	#_custom_installDeb /root/core/installations/Wire.deb
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-env -iA nixpkgs.wire-desktop'
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/wire-desktop.desktop'
+	
+
 	_getMost_backend sudo -n -u "$currentUser" cp -a /home/"$currentUser"/.nix-profile/share/icons /home/"$currentUser"/.local/share/
 	
 	sleep 3
+
 	
 	#nix-env --uninstall geda
 	#export NIXPKGS_ALLOW_INSECURE=1
@@ -8725,6 +8758,859 @@ _nix_update() {
 	
 	nix-channel --list
 	nix-channel --update
+}
+
+
+
+
+# ATTRIBUTION-AI: ChatGPT o1-preview 2024-11-25 .
+# This is a tricky issue, which is not easily reproduced nor solved. Presumably due to '| tee' under the powershell environment used by 'build.yml', or possibly due to standard input somehow being piped as well, stdout is redirected while stderr actually does exist but is reported as a non-existent file when written to, and cannot be replaced, with error messages 'No such file or directory' and 'Read-only file system'. Redirections of subshells through other means, such as ' 2>&1 ' does not work.
+# ATTENTION: There may not be any real solution other than simply avoiding depending on usable /dev/stderr , such as by using quiet mode with apt-cyg --quiet .
+_cygwin_workaround_dev_stderr() {
+    # ChatGPT search found this link, which strongly implicates the '| tee' used for logging by build.yml as causing the absence of stderr .
+    # https://cygwin.com/pipermail/cygwin/2017-July/233639.html?utm_source=chatgpt.com
+
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #_messagePlain_warn 'warn: workaround /dev/stderr: exec 2>&1'
+        ## ATTRIBUTION-AI: ChatGPT 4o 2024-11-25 .
+        #exec 2>&1
+    #fi
+    
+    # DUBIOUS
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #mkdir -p /dev
+        #ln -sf /proc/self/fd/1 /dev/stderr
+    #fi
+
+    # DUBIOUS
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #mkdir -p /dev
+        #ln -sf /proc/self/fd/1 /dev/stderr
+    #fi
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #mkdir -p /dev
+        #ln -sf /dev/fd/1 /dev/stderr
+    #fi
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #mkdir -p /dev
+        #ln -sf /proc/$$/fd/1 /dev/stderr
+    #fi
+
+    
+    # Local experiments with a functional Cygwin/MSW environment show creating /dev/stderr_experiment this way is apparently not usable anyway.
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #mkdir -p /dev
+        #mknod /dev/stderr c 1 3
+        #chmod 622 /dev/stderr
+    #fi
+
+    #if [ ! -e /dev/stderr ] || ! echo x | tee /dev/stderr > /dev/null
+    #then
+        #_messagePlain_bad 'fail: missing: /dev/stderr'
+        #_messageFAIL
+    #fi
+
+    return 0
+}
+
+
+
+
+_getMost_cygwin_sequence-priority() {
+    _cygwin_workaround_dev_stderr
+
+    _start
+
+    _messageNormal "_getMost_cygwin_priority: apt-cyg --quiet install"
+    
+    #nc,
+
+cat << 'CZXWXcRMTo8EmM8i4d' | grep -v '^#' | tee "$safeTmp"/cygwin_package_list_priority_01
+bash-completion
+bc
+bzip
+coreutils
+curl
+dos2unix
+expect
+git
+git-svn
+gnupg
+inetutils
+jq
+lz4
+mc
+nc
+openssh
+openssl
+perl
+psmisc
+python37
+pv
+rsync
+ssh-pageant
+screen
+subversion
+unzip
+vim
+wget
+zip
+zstd
+tigervnc-server
+flex
+bison
+libncurses-devel
+par2
+python3-pip
+gnupg2
+CZXWXcRMTo8EmM8i4d
+
+
+
+cat << 'CZXWXcRMTo8EmM8i4d' | grep -v '^#' | tee "$safeTmp"/cygwin_package_list_priority_02
+bash-completion
+bc
+bzip
+coreutils
+curl
+dos2unix
+expect
+git
+git-svn
+gnupg
+inetutils
+jq
+lz4
+mc
+nc
+openssh
+openssl
+perl
+psmisc
+python37
+pv
+rsync
+ssh-pageant
+screen
+subversion
+unzip
+vim
+wget
+zip
+zstd
+procps-ng
+awk
+socat
+aria2
+jq
+gnupg2
+php
+php-PEAR
+php-devel
+gnuplot-base
+gnuplot-doc
+gnuplot-qt5
+gnuplot-wx
+gnuplot-X11
+libqalculate-common
+libqalculate-devel
+libqalculate5
+cantor-backend-qalculate
+octave
+octave-devel
+octave-parallel
+octave-linear-algebra
+octave-general
+octave-geometry
+octave-strings
+octave-financial
+octave-communications
+octave-control
+mkisofs
+genisoimage
+dbus
+dbus-x11
+tigervnc-server
+flex
+bison
+libncurses-devel
+p7zip
+par2
+python3-pip
+gnupg2 2>&1
+CZXWXcRMTo8EmM8i4d
+
+
+    local currentLine
+
+    cat "$safeTmp/cygwin_package_list_priority_01" | while read currentLine
+    do
+        #echo "$currentLine"
+        _messagePlain_probe apt-cyg --quiet install "$currentLine"
+        apt-cyg --quiet install "$currentLine" 2>&1
+    done
+
+    cat "$safeTmp/cygwin_package_list_priority_02" | while read currentLine
+    do
+        #echo "$currentLine"
+        _messagePlain_probe apt-cyg --quiet install "$currentLine"
+        apt-cyg --quiet install "$currentLine" 2>&1
+    done
+
+    _stop
+}
+_getMost_cygwin-priority() {
+    "$scriptAbsoluteLocation" _getMost_cygwin_sequence-priority "$@"
+}
+
+_getMost_cygwin_sequence() {
+    _cygwin_workaround_dev_stderr
+
+    _start
+
+    _messageNormal "_getMost_cygwin: list installed"
+    apt-cyg --quiet show | cut -f1 -d\ | tail -n +2 | tee "$safeTmp"/cygwin_package_list_installed
+
+    _messageNormal "_getMost_cygwin: list desired"
+    cat << 'CZXWXcRMTo8EmM8i4d' | grep -v '^#' | tee "$safeTmp"/cygwin_package_list_desired
+#_autorebase
+#adwaita-icon-theme
+#alternatives
+aria2
+#at-spi2-core
+autoconf
+#autoconf2.1
+#autoconf2.5
+#autoconf2.7
+base-cygwin
+base-files
+bash
+bash-completion
+bc
+binutils
+bison
+bsdtar
+build-docbook-catalog
+bzip2
+#ca-certificates
+cantor
+cantor-backend-qalculate
+coreutils
+#crypto-policies
+#csih
+curl
+#cygrunsrv
+#cygutils
+#cygwin
+#cygwin-devel
+dash
+dbus
+dbus-x11
+dconf-service
+#dejavu-fonts
+desktop-file-utils
+dialog
+diffutils
+docbook-xml45
+docbook-xsl
+dos2unix
+#dri-drivers
+ed
+editrights
+expect
+file
+findutils
+flex
+gamin
+gawk
+gcc-core
+gcr
+gdk-pixbuf2.0-svg
+genisoimage
+#getent
+#gettext
+ghostscript
+ghostscript-fonts-other
+git
+git-svn
+glib2.0-networking
+gnome-keyring
+gnupg2
+gnuplot-X11
+gnuplot-base
+gnuplot-doc
+gnuplot-qt5
+gnuplot-wx
+grep
+groff
+gsettings-desktop-schemas
+#gtk-update-icon-cache
+gzip
+#hicolor-icon-theme
+hostname
+inetutils
+#info
+ipc-utils
+iso-codes
+jq
+#kf5-kdoctools
+less
+#libEGL1
+libFLAC8
+#libGL1
+#libGLU1
+#libGraphicsMagick++12 # ATTENTION
+#libGraphicsMagick3 # ATTENTION
+#libICE6
+#libKF5Archive5
+#libKF5Attica5
+#libKF5Auth5
+#libKF5Bookmarks5
+#libKF5Codecs5
+#libKF5Completion5
+#libKF5Config5
+#libKF5ConfigWidgets5
+#libKF5CoreAddons5
+#libKF5Crash5
+#libKF5DBusAddons5
+#libKF5GlobalAccel5
+#libKF5GuiAddons5
+#libKF5I18n5
+#libKF5IconThemes5
+#libKF5ItemViews5
+#libKF5JobWidgets5
+#libKF5KIO5
+#libKF5NewStuff5
+#libKF5Notifications5
+#libKF5Parts5
+#libKF5Service5
+#libKF5Solid5
+#libKF5Sonnet5
+#libKF5SyntaxHighlighting5
+#libKF5TextEditor5
+#libKF5TextWidgets5
+#libKF5Wallet5
+#libKF5WidgetsAddons5
+#libKF5WindowSystem5
+#libKF5XmlGui5
+#libQt5Core5
+#libQt5Gui5
+#libQt5Help5
+#libQt5Quick5
+#libQt5Script5
+#libQt5Sql5
+#libQt5Svg5
+#libQt5TextToSpeech5
+#libQt5X11Extras5
+#libQt5XmlPatterns5
+libSDL2_2.0_0
+#libSM6
+#libX11-xcb1
+#libX11_6
+#libXau6
+#libXaw7
+#libXcomposite1
+#libXcursor1
+#libXdamage1
+#libXdmcp6
+#libXext6
+#libXfixes3
+#libXfont2_2
+#libXft2
+#libXi6
+#libXinerama1
+#libXmu6
+#libXmuu1
+#libXpm4
+#libXrandr2
+#libXrender1
+#libXss1
+#libXt6
+#libXtst6
+#libaec0
+#libamd2
+#libapr1
+#libaprutil1
+libarchive13
+#libargon2_1
+libargp
+#libarpack0
+#libaspell15
+#libassuan0
+#libasyncns0
+#libatk-bridge2.0_0
+#libatk1.0_0
+#libatomic1
+#libatspi0
+libattr1
+libblkid1
+#libbrotlicommon1
+#libbrotlidec1
+#libbsd0
+#libbtf1
+#libbz2_1
+libcairo2
+#libcamd2
+#libcares2
+#libccolamd2
+#libcerf1
+#libcharset1
+#libcholmod3
+#libcln-devel
+#libcln6
+#libcolamd2
+#libcom_err2
+#libcroco0.6_3
+libcrypt0
+libcrypt2
+libcurl4
+#libcxsparse3
+#libdatrie1
+#libdb5.3
+libdbus-glib_1_2
+libdbus1_3
+libdbusmenu-qt5_2
+#libde265_0
+libdeflate0
+libdialog15
+libdotconf0
+libe2p2
+#libedit0
+#libenchant1
+#libepoxy0
+#libespeak1
+libexpat1
+libext2fs2
+libfam0
+libfdisk1
+libffi-devel
+libffi6
+libffi8
+#libfftw3_3
+libfido2
+libflite1
+libfltk1.3
+#libfontconfig-common
+#libfontconfig1
+#libfontenc1
+#libfreetype6
+#libfribidi0
+#libgailutil3_0
+#libgc1
+libgcc1
+libgck1_0
+libgcr-base3_1
+libgcr-ui3-common
+libgcr-ui3_1
+libgcrypt20
+libgd3
+#libgdbm4
+#libgdbm6
+#libgdbm_compat4
+libgdk_pixbuf2.0_0
+#libgeoclue0
+#libgfortran5
+#libgit2_25
+libgl2ps1
+#libglapi0
+#libglib2.0-devel
+#libglib2.0_0
+#libglpk40
+#libgmp-devel
+#libgmp10
+#libgmpxx4
+libgnutls30
+#libgomp1
+#libgpg-error0
+#libgpgme11
+#libgpgmepp6
+#libgraphite2_3
+libgs10
+libgs9
+#libgsasl-common
+#libgsasl18
+#libgssapi_krb5_2
+#libgstinterfaces1.0_0
+#libgstreamer1.0_0
+#libgtk3_0
+#libguile3.0_1
+#libharfbuzz-icu0
+#libharfbuzz0
+#libhdf5_200
+#libheif1
+libhogweed4
+libhogweed6
+#libhunspell1.6_0
+#libiconv
+#libiconv-devel
+#libiconv2
+#libicu56
+#libicu61
+#libicu74
+#libidn12
+#libidn2_0
+#libimagequant0
+#libintl-devel
+#libintl8
+#libiodbc2
+#libisl23
+#libjasper4
+#libjavascriptcoregtk3.0_0
+#libjbig2
+#libjpeg8
+#libjq1
+#libk5crypto3
+libklu1
+#libkpathsea6
+#libkrb5_3
+#libkrb5support0
+#libksba8
+#liblapack0
+#liblcms2_2
+libllvm8
+libltdl7
+liblua5.3
+#liblz4_1
+#liblzma5
+#liblzo2_2
+libmd0
+libmetalink3
+#libmetis0
+#libmp3lame0
+#libmpc3
+#libmpfr6
+#libmpg123_0
+#libmspack0
+#libmysqlclient18
+#libncurses++w10
+libncurses-devel
+#libncursesw10
+libnettle6
+libnettle8
+#libnghttp2_14
+#libnotify4
+#libnpth0
+#libntlm0
+#libogg0
+#libonig5
+#libopenblas
+#libopenldap2
+#libopenldap2_4_2
+#libopus0
+#liborc0.4_0
+libp11-kit0
+#libpango1.0_0
+#libpaper-common
+#libpaper1
+#libpcre-devel
+#libpcre1
+#libpcre16_0
+#libpcre2_16_0
+#libpcre2_8_0
+#libpcre32_0
+#libpcrecpp0
+#libpcreposix0
+#libphonon4qt5_4
+#libpipeline1
+libpixman1_0
+libpkgconf5
+libpng16
+libpopt-common
+libpopt0
+#libportaudio2
+libpotrace0
+#libpq5
+#libproc2_0
+#libproxy1
+#libpsl5
+libptexenc1
+#libpulse-simple0
+#libpulse0
+libqalculate-common
+libqalculate-devel
+libqalculate5
+#libqhull_8
+#libqrupdate0
+#libqscintilla2_qt5-common
+#libqscintilla2_qt5_13
+#libquadmath0
+libraqm0
+libreadline7
+libretls26
+librsvg2_2
+#libsamplerate0
+#libsasl2_3
+libsecret1_0
+#libserf1_0
+#libslang2
+#libsmartcols1
+#libsndfile1
+#libsodium-common
+#libsodium23
+#libsoup2.4_1
+libspectre1
+#libspeechd2
+#libspqr2
+#libsqlite3_0
+#libssh2_1
+#libssl1.0
+#libssl1.1
+#libssl3
+#libstdc++6
+#libsuitesparseconfig5
+#libsundials_ida5
+#libsundials_sunlinsol3
+#libsundials_sunmatrix3
+#libsybdb5
+#libsynctex2
+#libsz2
+#libtasn1_6
+#libteckit0
+#libtexlua53_5
+#libtexluajit2
+#libthai0
+#libtiff6
+#libtiff7
+#libuchardet0
+#libumfpack5
+#libunistring5
+#libusb1.0
+libuuid1
+#libvoikko1
+#libvorbis
+#libvorbis0
+#libvorbisenc2
+#libwebkitgtk3.0_0
+#libwebp5
+#libwebp7
+#libwebpdemux2
+#libwebpmux3
+libwrap0
+libwx_baseu3.0_0
+libwx_gtk3u3.0_0
+#libxcb-dri2_0
+#libxcb-glx0
+#libxcb-icccm4
+#libxcb-image0
+#libxcb-keysyms1
+#libxcb-randr0
+#libxcb-render-util0
+#libxcb-render0
+#libxcb-shape0
+#libxcb-shm0
+#libxcb-sync1
+#libxcb-util1
+#libxcb-xfixes0
+#libxcb-xinerama0
+#libxcb-xkb1
+#libxcb1
+#libxkbcommon0
+#libxkbfile1
+#libxml2
+libxml2-devel
+#libxslt
+libxxhash0
+#libzstd1
+#libzzip0.13
+#login
+lz4
+m4
+make
+#man-db
+#mariadb-common
+mc
+#mintty
+mkisofs
+#mysql-common
+#ncurses
+netcat
+octave
+octave-communications
+octave-control
+octave-devel
+octave-financial
+octave-general
+octave-geometry
+octave-io
+octave-linear-algebra
+octave-parallel
+octave-signal
+octave-strings
+octave-struct
+openssh
+openssl
+p11-kit
+p11-kit-trust
+p7zip
+par2
+patch
+perl
+#perl-Clone
+#perl-Encode-Locale
+#perl-Error
+#perl-File-Listing
+#perl-HTML-Parser
+#perl-HTML-Tagset
+#perl-HTTP-Cookies
+#perl-HTTP-Date
+#perl-HTTP-Message
+#perl-HTTP-Negotiate
+#perl-IO-HTML
+#perl-IO-String
+#perl-JSON-PP
+#perl-LWP-MediaTypes
+#perl-Net-HTTP
+#perl-TermReadKey
+#perl-TimeDate
+#perl-Tk
+#perl-Try-Tiny
+#perl-URI
+#perl-WWW-RobotRules
+#perl-XML-Parser
+#perl-YAML
+#perl-libwww-perl
+#perl_autorebase
+perl_base
+php
+php-PEAR
+php-bz2
+php-devel
+php-zlib
+pinentry
+pkg-config
+pkgconf
+poppler-data
+procps-ng
+psmisc
+#publicsuffix-list-dafsa
+pv
+python3
+python3-pip
+#python37
+#python37-pip
+#python37-setuptools
+#python39
+#python39-babel
+#python39-chardet
+#python39-docutils
+#python39-idna
+#python39-imagesize
+#python39-imaging
+#python39-iniconfig
+#python39-jinja2
+#python39-markupsafe
+#python39-olefile
+#python39-packaging
+#python39-pip
+#python39-platformdirs
+#python39-pluggy
+#python39-pygments
+#python39-pyparsing
+#python39-pytest
+#python39-railroad-diagrams
+#python39-requests
+#python39-setuptools
+#python39-six
+#python39-snowballstemmer
+#python39-sphinx
+#python39-sphinxcontrib-serializinghtml
+#python39-toml
+#python39-urllib3
+rebase
+rsync
+run
+screen
+sed
+#sgml-common
+#shared-mime-info
+socat
+#speech-dispatcher
+#ssh-pageant
+subversion
+#subversion-perl
+#suomi-malaga
+tar
+tcl
+tcl-tk
+terminfo
+texlive
+texlive-collection-basic
+texlive-collection-latex
+tigervnc-server
+tzcode
+tzdata
+unzip
+#urw-base35-fonts
+util-linux
+vim
+vim-common
+vim-minimal
+w32api-headers
+w32api-runtime
+wget
+which
+windows-default-manifest
+#xauth
+#xcursor-themes
+#xkbcomp
+#xkeyboard-config
+#xorg-server-common
+xxd
+xz
+zip
+zlib-devel
+zlib0
+zstd
+CZXWXcRMTo8EmM8i4d
+
+    _messageNormal "_getMost_cygwin: todo"
+    # ATTRIBUTION-AI: ChatGPT o1-preview 2024-11-25 .
+    grep -F -x -v -f "$safeTmp/cygwin_package_list_installed" "$safeTmp/cygwin_package_list_desired" | tee "$safeTmp/cygwin_package_list_todo"
+
+
+    local currentLine
+    cat "$safeTmp/cygwin_package_list_todo" | while read currentLine
+    do
+        #echo "$currentLine"
+        _messagePlain_probe apt-cyg --quiet install "$currentLine"
+        apt-cyg --quiet install "$currentLine" 2>&1
+    done
+
+
+    _stop
+}
+_getMost_cygwin() {
+    "$scriptAbsoluteLocation" _getMost_cygwin_sequence "$@" 2>&1
+}
+
+
+
+_custom_ubcp_prog() {
+	true
+}
+_custom_ubcp_sequence() {
+	_cygwin_workaround_dev_stderr
+    
+    _messageNormal '_custom_ubcp: apt-cyg --quiet'
+	_messagePlain_probe apt-cyg --quiet install ImageMagick
+    apt-cyg --quiet install ImageMagick 2>&1
+	#_messagePlain_probe_cmd apt-cyg --quiet install ffmpeg
+	
+	_messageNormal '_custom_ubcp: pip3'
+	_messagePlain_probe pip3 install piexif
+    pip3 install piexif 2>&1
+
+    _cygwin_workaround_dev_stderr
+	_custom_ubcp_prog "$@"
+}
+_custom_ubcp() {
+    "$scriptAbsoluteLocation" _custom_ubcp_sequence "$@" 2>&1
 }
 
 
@@ -11093,7 +11979,7 @@ _kernelConfig_require-tradeoff-perform() {
 	_messagePlain_nominal 'kernelConfig: tradeoff-perform'
 	_messagePlain_request 'Carefully evaluate '\''tradeoff-perform'\'' for specific use cases.'
 	export kernelConfig_file="$1"
-	
+
 	_kernelConfig__bad-n__ CONFIG_RETPOLINE
 	_kernelConfig__bad-n__ CONFIG_PAGE_TABLE_ISOLATION
 	
@@ -11139,6 +12025,32 @@ _kernelConfig_require-tradeoff-harden() {
 	_messagePlain_request 'Carefully evaluate '\''tradeoff-harden'\'' for specific use cases.'
 	export kernelConfig_file="$1"
 	
+	_kernelConfig__bad-y__ CPU_MITIGATIONS
+	_kernelConfig__bad-y__ MITIGATION_PAGE_TABLE_ISOLATION
+	_kernelConfig__bad-y__ MITIGATION_RETPOLINE
+	_kernelConfig__bad-y__ MITIGATION_RETHUNK
+	_kernelConfig__bad-y__ MITIGATION_UNRET_ENTRY
+	_kernelConfig__bad-y__ MITIGATION_CALL_DEPTH_TRACKING
+	_kernelConfig__bad-y__ MITIGATION_IBPB_ENTRY
+	_kernelConfig__bad-y__ MITIGATION_IBRS_ENTRY
+	_kernelConfig__bad-y__ MITIGATION_SRSO
+	_kernelConfig__bad-y__ MITIGATION_GDS
+	_kernelConfig__bad-y__ MITIGATION_RFDS
+	_kernelConfig__bad-y__ MITIGATION_SPECTRE_BHI
+	_kernelConfig__bad-y__ MITIGATION_MDS
+	_kernelConfig__bad-y__ MITIGATION_TAA
+	_kernelConfig__bad-y__ MITIGATION_MMIO_STALE_DATA
+	_kernelConfig__bad-y__ MITIGATION_L1TF
+	_kernelConfig__bad-y__ MITIGATION_RETBLEED
+	_kernelConfig__bad-y__ MITIGATION_SPECTRE_V1
+	_kernelConfig__bad-y__ MITIGATION_SPECTRE_V2
+	_kernelConfig__bad-y__ MITIGATION_SRBDS
+	_kernelConfig__bad-y__ MITIGATION_SSB
+
+	_kernelConfig__bad-y__ MITIGATION_SLS
+
+	_kernelConfig__bad-y__ CPU_SRSO
+
 	_kernelConfig__bad-y__ CONFIG_RETPOLINE
 	_kernelConfig__bad-y__ CONFIG_PAGE_TABLE_ISOLATION
 	
@@ -11187,7 +12099,7 @@ _kernelConfig_require-tradeoff-harden() {
 	#qemuArgs+=(-cpu host,-sgx-provisionkey,-sgx-tokenkey)
 
 	_kernelConfig__bad-y__ CONFIG_X86_SGX
-	_kernelConfig__bad-y__ CONFIG_X86_SGX_kVM
+	_kernelConfig__bad-y__ CONFIG_X86_SGX_KVM
 	_kernelConfig__bad-y__ CONFIG_INTEL_TDX_GUEST
 	_kernelConfig__bad-y__ TDX_GUEST_DRIVER
 
@@ -11200,10 +12112,16 @@ _kernelConfig_require-tradeoff-harden() {
 	#qemuArgs+=(-machine accel=kvm,confidential-guest-support=sev0 -object sev-guest,id=sev0,cbitpos=47,reduced-phys-bits=1 )
 	# #,policy=0x5
 
+
 	# https://libvirt.org/kbase/launch_security_sev.html
 	_kernelConfig__bad-y__ CONFIG_KVM_AMD_SEV
 	_kernelConfig__bad-y__ AMD_MEM_ENCRYPT
 	_kernelConfig__bad-y__ CONFIG_AMD_MEM_ENCRYPT_ACTIVE_BY_DEFAULT
+
+	_kernelConfig__bad-y__ KVM_SMM
+
+
+	_kernelConfig__bad-y__ RANDOM_KMALLOC_CACHES
 }
 _kernelConfig_require-tradeoff-harden-compatible() {
 	
@@ -11262,6 +12180,8 @@ _kernelConfig_require-tradeoff-harden-compatible() {
 	
 	_kernelConfig__bad-y__ CONFIG_INIT_ON_FREE_DEFAULT_ON
 	_kernelConfig__bad-y__ CONFIG_ZERO_CALL_USED_REGS
+
+	_kernelConfig__bad-y__ CONFIG_INIT_STACK_ALL_ZERO
 	
 	_kernelConfig__bad-n__ CONFIG_DEVMEM
 	_kernelConfig__bad-n__ CONFIG_DEVPORT
@@ -11304,6 +12224,11 @@ _kernelConfig_require-tradeoff-harden-compatible() {
 	
 	#_kernelConfig_warn-any CONFIG_KFENCE_DEFERRABLE
 	_kernelConfig_warn-y__ CONFIG_KFENCE_DEFERRABLE
+
+
+	# DUBIOUS . Seems to require a userspace service setting scheduling attributes for processes, and not supported by default.
+	# WARNING: Definitely much better to disable SMT .
+	#_kernelConfig__bad-y__ CONFIG_SCHED_CORE
 }
 
 # WARNING: ATTENTION: Before moving to tradeoff-harden (compatible), ensure vboxdrv, vboxadd, nvidia, nvidia legacy, kernel modules can be loaded without issues, and also ensure significant performance penalty configuration options are oppositely documented in the tradeoff-perform function .
@@ -11505,11 +12430,18 @@ _kernelConfig_require-tradeoff-harden-NOTcompatible() {
 	
 	
 	_kernelConfig_warn-y__ CONFIG_EFI_DISABLE_PCI_DMA
+
+
+	# ATTENTION: In practice, the 'gather_data_sampling=force' command line parameter has been available, through optional  "$globalVirtFS"/etc/default/grub.d/01_hardening_ubdist.cfg  .
+	_kernelConfig__bad-y__ CONFIG_GDS_FORCE_MITIGATION
 	
 	
 	
 	# WARNING: CAUTION: Now obviously this is really incompatible. Do NOT move this to any other function.
 	_kernelConfig_warn-y__ CONFIG_MODULE_SIG_FORCE
+
+	# WARNING: May be untested. Kernel default apparently 'Y'.
+	_kernelConfig_warn-y__ MODULE_SIG_ALL
 }
 
 # ATTENTION: Override with 'ops.sh' or similar.
@@ -11600,6 +12532,10 @@ _kernelConfig_require-virtualization-accessory() {
 	#_kernelConfig_warn-n__ CONFIG_XEN_SELFBALLOONING
 	#_kernelConfig_warn-n__ CONFIG_IOMMU_DEFAULT_PASSTHROUGH
 	#_kernelConfig_warn-n__ CONFIG_INTEL_IOMMU_DEFAULT_ON
+
+
+	# TODO: Evaluate.
+	_kernelConfig_warn-y__ KVM_HYPERV
 }
 
 # https://wiki.gentoo.org/wiki/VirtualBox
@@ -11814,6 +12750,13 @@ _kernelConfig_require-accessory() {
 	#PCIE_BW
 	#ACRN_GUEST
 	#XILINX SDFEC
+
+	# FB_NVIDIA , FB_RIVA , at best, has not been reccently tested with NOUVEAU or other NVIDIA drivers.
+	_kernelConfig_warn-n__ FB_NVIDIA
+	_kernelConfig_warn-n__ FB_RIVA
+
+
+
 }
 
 _kernelConfig_require-build() {
@@ -11874,6 +12817,14 @@ _kernelConfig_require-latency() {
 	_kernelConfig__bad-y__ CONFIG_CPU_FREQ_GOV_ONDEMAND
 	_kernelConfig__bad-y__ CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
 	_kernelConfig__bad-y__ CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+
+	# WARNING: May be untested.
+	#X86_AMD_PSTATE_DEFAULT_MODE
+	if ! cat "$kernelConfig_file" | _kernelConfig_reject-comments | grep "X86_AMD_PSTATE_DEFAULT_MODE"'\=3' > /dev/null 2>&1
+	then
+		_messagePlain_bad 'bad: not:      3: '"X86_AMD_PSTATE_DEFAULT_MODE"
+		export kernelConfig_bad='true'
+	fi
 	
 	# CRITICAL!
 	# CONFIG_PREEMPT is significantly more stable and compatible with third party (eg. VirtualBox) modules.
@@ -11964,6 +12915,9 @@ _kernelConfig_require-latency() {
 	# CRITICAL!
 	# Lightweight kernel compression theoretically may significantly accelerate startup from slow disks.
 	_kernelConfig__bad-y__ CONFIG_KERNEL_LZ4
+
+	# TODO
+	#PCP_BATCH_SCALE_MAX
 	
 }
 
@@ -12093,8 +13047,110 @@ _kernelConfig_require-special() {
 	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_VIA
 	_kernelConfig__bad-y_m HW_RANDOM_VIRTIO
 	_kernelConfig__bad-y__ CONFIG_HW_RANDOM_TPM
+
+
+	# Somewhat unusually, without known loss of performance.
+	# Discovered during 'make oldconfig' of 'Linux 6.12.1' from then existing 'mainline' config file.
+	_kernelConfig__bad-y__ X86_FRED
+
+	_kernelConfig__bad-y__ SLAB_BUCKETS
 	
 	
+
+	# TODO: Disabled presently (because this feature is in development and does not yet work), but seems like something to enable eventually.
+	# _kernelConfig__bad-y__ KVM_SW_PROTECTED_VM
+
+	
+	# Usually a bad idea, since BTRFS filesystem compression, etc, should take care of this better.
+	_kernelConfig__bad-n__ MODULE_COMPRESS
+
+	# TODO: Expected unhelpful, but worth considering.
+	#ZSWAP_SHRINKER_DEFAULT_ON
+
+
+	# Unusual tradeoff. Theoretically may cause issues for Gentoo doing fsck on read-only root (due to not necessarily having initramfs).
+	_kernelConfig__bad-y__ BLK_DEV_WRITE_MOUNTED
+	_kernelConfig_warn-n__ BLK_DEV_WRITE_MOUNTED
+
+	# If there is no compatibility issue, then the more compressible zswap allocator seems more useful.
+	#_kernelConfig__warn-y__ ZSWAP_ZPOOL_DEFAULT_ZSMALLOC 
+
+
+	# DANGER
+	# If you honestly believe Meta cares about end-user security...
+	# https://studio.youtube.com/video/MeUvSg9zQYc/edit
+	# https://studio.youtube.com/video/kXrLujzPm_4/edit
+	# There is just NO GOOD REASON to use or support Meta hardware. At all.
+	_kernelConfig__bad-n__ NET_VENDOR_META
+
+	# DANGER
+	# Although disabling kernel support is NEVER guaranteed to eliminate a 'BadUSB' style vulnerability, reducing this functionality is still very strongly recommended.
+	#
+	# SDIO . Especially useless, very few very old devices are expected to benefit from SDIO WiFi, etc, peripherials, while SDIO degrades one of the very few otherwise storage exclusive protocols (ie. SD card storage) into a 'BadUSB' input.
+	_kernelConfig__bad-n__ ATH10K_SDIO
+	_kernelConfig__bad-n__ ATH6KL_SDIO
+	_kernelConfig__bad-n__ B43_SDIO
+	_kernelConfig__bad-n__ BRCMFMAC_SDIO
+	_kernelConfig__bad-n__ BT_HCIBTSDIO
+	_kernelConfig__bad-n__ BT_MRVL_SDIO
+	_kernelConfig__bad-n__ BT_MTKSDIO
+	_kernelConfig__bad-n__ CW1200_WLAN_SDIO
+	_kernelConfig__bad-n__ GREYBUS_SDIO
+	_kernelConfig__bad-n__ LIBERTAS_SDIO
+	#
+	_kernelConfig__bad-n__ MMC_MESON_MX_SDIO # Disabled by default apparently.
+	_kernelConfig__bad-n__ MMC_MVSDIO # Disabled by default apparently.
+	#
+	#_kernelConfig__bad-n__ MT7663_USB_SDIO_COMMON
+	#
+	_kernelConfig__bad-n__ MT76_SDIO
+	_kernelConfig__bad-n__ MWIFIEX_SDIO
+	_kernelConfig__bad-n__ RSI_SDIO
+	_kernelConfig__bad-n__ RTW88_SDIO
+	#
+	_kernelConfig__bad-n__ SDIO_UART
+	#
+	_kernelConfig__bad-n__ SMS_SDIO_DRV
+	#
+	_kernelConfig__bad-n__ SSB_SDIOHOST
+	_kernelConfig__bad-n__ SSB_SDIOHOST_POSSIBLE
+	#
+	_kernelConfig__bad-n__ WILC1000_SDIO
+	_kernelConfig__bad-n__ WL1251_SDIO
+	_kernelConfig__bad-n__ WLCORE_SDIO
+	
+	_kernelConfig__bad-n__ RTW88_8822BS
+	_kernelConfig__bad-n__ RTW88_8822CS
+	_kernelConfig__bad-n__ RTW88_8723DS
+	_kernelConfig__bad-n__ RTW88_8723CS
+	_kernelConfig__bad-n__ RTW88_8821CS
+
+
+
+
+	# Requires compiling binaries to support this. Future Debian security updates may use this.
+	_kernelConfig__bad-y__ X86_USER_SHADOW_STACK
+
+
+
+	_kernelConfig__bad-y_m USB_GADGET
+
+	# ATTENTION: Only drivers that are highly likely to cripple the 'out-of-box-experience' to the point of being unable to perform gParted, revert, basic web browsing, etc, for relatively useful laptops/tablets/etc .
+	# Essential drivers (eg. iGPU, or at least basic 'VGA', keyboard, USB, etc) are normally included already Debian's default kernel config, if that is used as a starting point.
+	# WARNING: Delegating which drivers to enable to upstream default Debian (or other distro) config files may be better for reliability, etc.
+	_kernelConfig_warn-y_m ATH12K #WiFi7
+	_kernelConfig_warn-y_m MT7996E #WiFi7 Concurrent Tri-Band
+	_kernelConfig_warn-y_m RTW88_8822BU #WiFi USB
+	_kernelConfig_warn-y_m RTW88_8822CU
+	_kernelConfig_warn-y_m RTW88_8723DU
+	_kernelConfig_warn-y_m RTW88_8821CE
+	_kernelConfig_warn-y_m RTW88_8821CU
+	_kernelConfig_warn-y_m RTW89_8851BE
+	_kernelConfig_warn-y_m RTW89_8852AE
+	_kernelConfig_warn-y_m RTW89_8852BE
+
+
+
 	true
 }
 
