@@ -677,7 +677,7 @@ _ubDistFetch() {
 
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion
-	
+	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure puddleJumper
 	
 
 
