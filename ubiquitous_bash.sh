@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1718321236'
+export ub_setScriptChecksum_contents='896163483'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -4909,16 +4909,19 @@ _fetchDep_debianBookworm_special() {
 		
 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
 		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-7.0
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-7.0
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-7.1
 		
 		# https://www.virtualbox.org/ticket/20949
 		if ! type -p virtualbox > /dev/null 2>&1 && ! type -p VirtualBox > /dev/null 2>&1
 		then
 			#curl -L "https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
-			curl -L "https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
+			#curl -L "https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
+			curl -L "https://download.virtualbox.org/virtualbox/7.1.4/virtualbox-7.1_7.1.4-165100~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-7.1_7.1.4-165100~Debian~bookworm_amd64.deb"
 			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms
 			#yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
-			yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
+			#yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
+			yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-7.1_7.1.4-165100~Debian~bookworm_amd64.deb"
 			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
 		fi
 		
@@ -6524,9 +6527,11 @@ _getMost_debian12_install() {
 	_getMost_backend_aptGetInstall usbip
 
 	
-	_getMost_backend apt-get -d install -y virtualbox-7.0
+	#_getMost_backend apt-get -d install -y virtualbox-7.0
+	_getMost_backend apt-get -d install -y virtualbox-7.1
 
-	_getMost_backend_aptGetInstall virtualbox-7.0
+	#_getMost_backend_aptGetInstall virtualbox-7.0
+	_getMost_backend_aptGetInstall virtualbox-7.1
 }
 
 _getMost_debian11_install() {
@@ -6849,11 +6854,16 @@ _getMost_debian11_install() {
 	
 	# ATTENTION: ATTENTION: WARNING: CAUTION: DANGER: High maintenance. Expect to break and manually update frequently!
 	#_getMost_backend wget -qO- 'https://download.virtualbox.org/virtualbox/6.1.34/VBoxGuestAdditions_6.1.34.iso' | _getMost_backend tee /VBoxGuestAdditions.iso > /dev/null
-	_getMost_backend wget -qO- 'https://download.virtualbox.org/virtualbox/7.0.10/VBoxGuestAdditions_7.0.10.iso' | _getMost_backend tee /VBoxGuestAdditions.iso > /dev/null
+	#_getMost_backend wget -qO- 'https://download.virtualbox.org/virtualbox/7.0.10/VBoxGuestAdditions_7.0.10.iso' | _getMost_backend tee /VBoxGuestAdditions.iso > /dev/null
+	_getMost_backend wget -qO- 'https://download.virtualbox.org/virtualbox/7.1.4/VBoxGuestAdditions_7.1.4.iso' | _getMost_backend tee /VBoxGuestAdditions.iso > /dev/null
 	_getMost_backend 7z x /VBoxGuestAdditions.iso -o/VBoxGuestAdditions -aoa -y
 	_getMost_backend rm -f /VBoxGuestAdditions.iso
 	_getMost_backend chmod u+x /VBoxGuestAdditions/VBoxLinuxAdditions.run
 	
+	# https://forums.virtualbox.org/viewtopic.php?t=112770
+	echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT kvm.enable_virt_at_load=0"' | _getMost_backend tee ""/etc/default/grub.d/99_vbox_kvm_compatibility.cfg
+
+
 	
 	# From '/var/log/vboxadd-*' , 'shared folder support module' 'modprobe vboxguest failed'
 	# Due to 'rcvboxadd setup' and/or 'rcvboxadd quicksetup all' apparently ceasing to build subsequent modules (ie. 'vboxsf') after any error (ie. due to 'modprobe' failing unless VirtualBox virtual hardware is present).
@@ -7497,9 +7507,11 @@ _getMost_ubuntu22-VBoxManage() {
 	
 	#_getMost_ubuntu22_install "$@"
 	#_getMost_backend apt-get -d install -y virtualbox-6.1
-	_getMost_backend apt-get -d install -y virtualbox-7.0
+	#_getMost_backend apt-get -d install -y virtualbox-7.0
+	_getMost_backend apt-get -d install -y virtualbox-7.1
 	
-	_getMost_backend_aptGetInstall virtualbox-7.0
+	#_getMost_backend_aptGetInstall virtualbox-7.0
+	_getMost_backend_aptGetInstall virtualbox-7.1
 	
 	_getMost_backend apt-get remove --autoremove -y plasma-discover
 	
