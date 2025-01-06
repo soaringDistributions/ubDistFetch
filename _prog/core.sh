@@ -112,9 +112,11 @@ _ubDistFetch() {
 	export safeToDeleteGit="true"
 	_safeRMR "$scriptLib"/core/infrastructure
 	_safeRMR "$scriptLib"/core/installations
+	_safeRMR "$scriptLib"/core/variant
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
+	mkdir -p "$scriptLib"/core/variant
 	
 	rm -f "$scriptLib"/FAIL > /dev/null 2>&1
 	
@@ -685,6 +687,15 @@ _ubDistFetch() {
 	
 	
 	
+
+	#mkdir -p "$scriptLib"/core/variant
+	cd "$scriptLib"/core/variant
+	
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_dummy
+
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_puddleJumper
+
+
 	cd "$scriptLib"
 	cd "$functionEntryPWD"
 	_stop

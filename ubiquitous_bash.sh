@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='3522942330'
+export ub_setScriptChecksum_contents='1517939328'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -21255,9 +21255,11 @@ _ubDistFetch() {
 	export safeToDeleteGit="true"
 	_safeRMR "$scriptLib"/core/infrastructure
 	_safeRMR "$scriptLib"/core/installations
+	_safeRMR "$scriptLib"/core/variant
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
+	mkdir -p "$scriptLib"/core/variant
 	
 	rm -f "$scriptLib"/FAIL > /dev/null 2>&1
 	
@@ -21828,6 +21830,15 @@ _ubDistFetch() {
 	
 	
 	
+
+	#mkdir -p "$scriptLib"/core/variant
+	cd "$scriptLib"/core/variant
+	
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_dummy
+
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_puddleJumper
+
+
 	cd "$scriptLib"
 	cd "$functionEntryPWD"
 	_stop
