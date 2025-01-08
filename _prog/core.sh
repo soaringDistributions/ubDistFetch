@@ -113,10 +113,12 @@ _ubDistFetch() {
 	_safeRMR "$scriptLib"/core/infrastructure
 	_safeRMR "$scriptLib"/core/installations
 	_safeRMR "$scriptLib"/core/variant
+	_safeRMR "$scriptLib"/core/info
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
 	mkdir -p "$scriptLib"/core/variant
+	mkdir -p "$scriptLib"/core/info
 	
 	rm -f "$scriptLib"/FAIL > /dev/null 2>&1
 	
@@ -694,6 +696,14 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_dummy
 
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/variant ubdist_puddleJumper
+
+
+
+
+	#mkdir -p "$scriptLib"/core/info
+	cd "$scriptLib"/core/info
+	
+	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/info issues
 
 
 	cd "$scriptLib"
