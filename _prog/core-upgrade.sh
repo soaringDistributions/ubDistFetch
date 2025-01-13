@@ -172,7 +172,18 @@ _upgrade_sequence() {
 
     #_upgrade_repository /home/user/core/installations/mirage335KernelBuild
 
-    _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    #_upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    if ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    then
+        _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
+
+        cd /home/user/core/installations
+        ubDistFetch_gitBestFetch_github_distllc /home/user/core/installations gpd-fan-driver-linux
+        cd "$functionEntryPWD"
+        
+        _messagePlain_nominal 'PASS'
+        _messagePlain_good 'good: success: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
+    fi
 
 
     _upgrade_binary_GitHubRelease soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz
