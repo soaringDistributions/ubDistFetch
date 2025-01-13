@@ -178,7 +178,7 @@ _upgrade_sequence() {
         _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
 
         cd /home/user/core/installations
-        ubDistFetch_gitBestFetch_github_distllc /home/user/core/installations gpd-fan-driver-linux
+        _ubDistFetch_gitBestFetch_github_distllc /home/user/core/installations gpd-fan-driver-linux
         cd "$functionEntryPWD"
         
         _messagePlain_nominal 'PASS'
