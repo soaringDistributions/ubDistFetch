@@ -242,6 +242,9 @@ _ubDistFetch() {
 	
 	#_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations mirage335KernelBuild
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations mirage335KernelBuild
+
+
+	ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations gpd-fan-driver-linux
 	
 	
 	
@@ -540,7 +543,7 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ubiquitous_bash
 
 	#_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ubiquitous_bash_bundle
-	if ! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle ]]
+	if ! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle ]] && ! [[ -e "$scriptLib"/core/infrastructure/ubiquitous_bash_bundle.git ]]
 	then
 		cd "$scriptLib"/core/infrastructure
 		! _messagePlain_probe_cmd _gitBest clone --depth 1 --bare git@github.com:mirage335-colossus/ubiquitous_bash_bundle.git && _core_FAIL
