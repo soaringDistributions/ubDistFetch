@@ -151,7 +151,7 @@ _upgrade_binary_GitHubRelease_procedure() {
     _messagePlain_nominal '@@@@@@@@ _wget_githubRelease_internal-core'
     #! _messagePlain_probe_cmd _wget_githubRelease_internal-core "$currentRepo" "$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: _wget_githubRelease_internal-core' && _messageFAIL
     ! _messagePlain_probe_cmd _wget_githubRelease_internal "$currentRepo" "$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: _wget_githubRelease_internal' && _messageFAIL
-    mv -f "$currentFile" "$currentDestinationDir"/"$currentFile"
+    ! mv -f "$currentFile" "$currentDestinationDir"/"$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: mv' && _messageFAIL
 
     _messagePlain_nominal 'PASS'
     _messagePlain_good 'good: success: _upgrade_binary'

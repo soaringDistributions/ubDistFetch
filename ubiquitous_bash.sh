@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2212058322'
+export ub_setScriptChecksum_contents='3856152098'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -22145,7 +22145,7 @@ _upgrade_binary_GitHubRelease_procedure() {
     _messagePlain_nominal '@@@@@@@@ _wget_githubRelease_internal-core'
     #! _messagePlain_probe_cmd _wget_githubRelease_internal-core "$currentRepo" "$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: _wget_githubRelease_internal-core' && _messageFAIL
     ! _messagePlain_probe_cmd _wget_githubRelease_internal "$currentRepo" "$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: _wget_githubRelease_internal' && _messageFAIL
-    mv -f "$currentFile" "$currentDestinationDir"/"$currentFile"
+    ! mv -f "$currentFile" "$currentDestinationDir"/"$currentFile" && _messagePlain_bad 'fail: _upgrade_binary: mv' && _messageFAIL
 
     _messagePlain_nominal 'PASS'
     _messagePlain_good 'good: success: _upgrade_binary'
