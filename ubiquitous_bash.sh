@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='181681209'
+export ub_setScriptChecksum_contents='3368351356'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -22022,8 +22022,8 @@ _upgrade_repository() {
     currentCheckout="$2"
     [[ "$currentCheckout" == "" ]] && currentCheckout='HEAD'
 
-    _messagePlain_var currentRepoDir
-    _messagePlain_var currentCheckout
+    _messagePlain_probe_var currentRepoDir
+    _messagePlain_probe_var currentCheckout
 
     _messagePlain_nominal '@@@@@@@@@@ cd'
     ! _messagePlain_probe_cmd cd "$currentRepoDir" && _messagePlain_bad 'fail: upgrade_repository: cd' && _messageFAIL
@@ -22066,9 +22066,9 @@ _upgrade_binary_GitHubRelease() {
     local currentDestinationFile
     currentDestinationFile="$3"
 
-    _messagePlain_var currentRepo
-    _messagePlain_var currentFile
-    _messagePlain_var currentDestinationFile
+    _messagePlain_probe_var currentRepo
+    _messagePlain_probe_var currentFile
+    _messagePlain_probe_var currentDestinationFile
 
 
 
@@ -22167,7 +22167,7 @@ _upgrade_sequence() {
     #_upgrade_repository /home/user/core/installations/mirage335KernelBuild
 
     #_upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
-    if ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    if [[ -e /home/user/core/installations/gpd-fan-driver-linux ]] && ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
     then
         _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
 

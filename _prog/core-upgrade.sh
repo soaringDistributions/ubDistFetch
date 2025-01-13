@@ -28,8 +28,8 @@ _upgrade_repository() {
     currentCheckout="$2"
     [[ "$currentCheckout" == "" ]] && currentCheckout='HEAD'
 
-    _messagePlain_var currentRepoDir
-    _messagePlain_var currentCheckout
+    _messagePlain_probe_var currentRepoDir
+    _messagePlain_probe_var currentCheckout
 
     _messagePlain_nominal '@@@@@@@@@@ cd'
     ! _messagePlain_probe_cmd cd "$currentRepoDir" && _messagePlain_bad 'fail: upgrade_repository: cd' && _messageFAIL
@@ -72,9 +72,9 @@ _upgrade_binary_GitHubRelease() {
     local currentDestinationFile
     currentDestinationFile="$3"
 
-    _messagePlain_var currentRepo
-    _messagePlain_var currentFile
-    _messagePlain_var currentDestinationFile
+    _messagePlain_probe_var currentRepo
+    _messagePlain_probe_var currentFile
+    _messagePlain_probe_var currentDestinationFile
 
 
 
@@ -173,7 +173,7 @@ _upgrade_sequence() {
     #_upgrade_repository /home/user/core/installations/mirage335KernelBuild
 
     #_upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
-    if ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    if [[ -e /home/user/core/installations/gpd-fan-driver-linux ]] && ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
     then
         _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
 
