@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='575562726'
+export ub_setScriptChecksum_contents='1077109591'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -22051,8 +22051,8 @@ _upgrade_repository() {
     cd "$functionEntryPWD"
 }
 
-#_upgrade_binary_GitHubRelease /home/user/core/installations soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz
-_upgrade_binary_GitHubRelease() {
+#_upgrade_binary_GitHubRelease_procedure /home/user/core/installations soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz
+_upgrade_binary_GitHubRelease_procedure() {
     _messageNormal 'init: _upgrade_binary'
     local functionEntryPWD
     functionEntryPWD="$PWD"
@@ -22152,6 +22152,14 @@ _upgrade_binary_GitHubRelease() {
 
     cd "$functionEntryPWD"
 }
+_upgrade_binary_GitHubRelease_sequence() {
+    _start
+    _upgrade_binary_GitHubRelease_procedure "$@"
+    _stop
+}
+_upgrade_binary_GitHubRelease() {
+    "$scriptAbsoluteLocation" _upgrade_binary_GitHubRelease_sequence "$@"
+}
 
 
 _upgrade_sequence() {
@@ -22180,18 +22188,18 @@ _upgrade_sequence() {
     fi
 
 
-    _upgrade_binary_GitHubRelease soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz
-    _upgrade_binary_GitHubRelease soaringDistributions/mirage335KernelBuild linux-mainline-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-mainline-amd64-debian.tar.gz
-    #_upgrade_binary_GitHubRelease soaringDistributions/mirage335KernelBuild linux-lts-server-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-lts-server-amd64-debian.tar.gz
-    _upgrade_binary_GitHubRelease soaringDistributions/mirage335KernelBuild linux-mainline-server-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-mainline-server-amd64-debian.tar.gz
+    _upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-lts-amd64-debian.tar.gz
+    _upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-mainline-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-mainline-amd64-debian.tar.gz
+    #_upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-lts-server-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-lts-server-amd64-debian.tar.gz
+    _upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-mainline-server-amd64-debian.tar.gz /home/user/core/installations/kernel_linux/linux-mainline-server-amd64-debian.tar.gz
 
 
-    _upgrade_binary_GitHubRelease mirage335-colossus/ubiquitous_bash ubcp-cygwin-portable-installer.log /home/user/core/installations/ubcp/ubcp-cygwin-portable-installer.log
-    _upgrade_binary_GitHubRelease mirage335-colossus/ubiquitous_bash _mitigate-ubcp.log /home/user/core/installations/ubcp/_mitigate-ubcp.log
-    _upgrade_binary_GitHubRelease mirage335-colossus/ubiquitous_bash _setupUbiquitous.log /home/user/core/installations/ubcp/_setupUbiquitous.log
-    _upgrade_binary_GitHubRelease mirage335-colossus/ubiquitous_bash _test-lean.log /home/user/core/installations/ubcp/_test-lean.log
+    _upgrade_binary_GitHubRelease_procedure mirage335-colossus/ubiquitous_bash ubcp-cygwin-portable-installer.log /home/user/core/installations/ubcp/ubcp-cygwin-portable-installer.log
+    _upgrade_binary_GitHubRelease_procedure mirage335-colossus/ubiquitous_bash _mitigate-ubcp.log /home/user/core/installations/ubcp/_mitigate-ubcp.log
+    _upgrade_binary_GitHubRelease_procedure mirage335-colossus/ubiquitous_bash _setupUbiquitous.log /home/user/core/installations/ubcp/_setupUbiquitous.log
+    _upgrade_binary_GitHubRelease_procedure mirage335-colossus/ubiquitous_bash _test-lean.log /home/user/core/installations/ubcp/_test-lean.log
 
-    _upgrade_binary_GitHubRelease mirage335-colossus/ubiquitous_bash package_ubcp-core.7z /home/user/core/installations/ubcp/package_ubcp-core.7z
+    _upgrade_binary_GitHubRelease_procedure mirage335-colossus/ubiquitous_bash package_ubcp-core.7z /home/user/core/installations/ubcp/package_ubcp-core.7z
 
 
     _upgrade_repository /home/user/core/installations/audioManager
