@@ -181,7 +181,7 @@ _upgrade_sequence() {
     #_upgrade_repository /home/user/core/installations/mirage335KernelBuild
 
     #_upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
-    if [[ -e /home/user/core/installations/gpd-fan-driver-linux ]] && ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
+    if ! [[ -e /home/user/core/installations/gpd-fan-driver-linux ]] || ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/gpd-fan-driver-linux
     then
         _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
 
