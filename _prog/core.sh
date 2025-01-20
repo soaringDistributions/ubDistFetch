@@ -127,8 +127,10 @@ _ubDistFetch() {
 	
 	_messageNormal '########## installations: 'copyleft
 	[[ ! -e "$scriptLib"/core/installations/gpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/gpl-3.0.txt
+	[[ ! -e "$scriptLib"/core/installations/gpl-3.0.txt ]] && cd "$scriptLib"/core/installations && cp "$scriptAbsoluteFolder"/_ref/gpl-3.0.txt ./
 	[[ ! -e "$scriptLib"/core/installations/gpl-3.0.txt ]] && _core_FAIL 'missing: gpl-3.0.txt'
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
+	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && cp "$scriptAbsoluteFolder"/_ref/agpl-3.0.txt ./
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && _core_FAIL 'missing: agpl-3.0.txt'
 	
 	
