@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1847523546'
+export ub_setScriptChecksum_contents='1686119779'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -22184,8 +22184,10 @@ _upgrade_sequence() {
 	_messageNormal '########## installations: 'copyleft
     cd /home/user/core/installations
 	[[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && cd /home/user/core/installations && wget https://www.gnu.org/licenses/gpl-3.0.txt
+    [[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && cd /home/user/core/installations && cp "$scriptAbsoluteFolder"/_ref/gpl-3.0.txt ./
 	[[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && _core_FAIL 'missing: gpl-3.0.txt'
 	[[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && cd /home/user/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
+    [[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && cd /home/user/core/installations && cp "$scriptAbsoluteFolder"/_ref/agpl-3.0.txt ./
 	[[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && _core_FAIL 'missing: agpl-3.0.txt'
     cd "$functionEntryPWD"
 

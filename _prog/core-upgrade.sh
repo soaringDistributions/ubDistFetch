@@ -182,8 +182,10 @@ _upgrade_sequence() {
 	_messageNormal '########## installations: 'copyleft
     cd /home/user/core/installations
 	[[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && cd /home/user/core/installations && wget https://www.gnu.org/licenses/gpl-3.0.txt
+    [[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && cd /home/user/core/installations && cp "$scriptAbsoluteFolder"/_ref/gpl-3.0.txt ./
 	[[ ! -e /home/user/core/installations/gpl-3.0.txt ]] && _core_FAIL 'missing: gpl-3.0.txt'
 	[[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && cd /home/user/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
+    [[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && cd /home/user/core/installations && cp "$scriptAbsoluteFolder"/_ref/agpl-3.0.txt ./
 	[[ ! -e /home/user/core/installations/agpl-3.0.txt ]] && _core_FAIL 'missing: agpl-3.0.txt'
     cd "$functionEntryPWD"
 
