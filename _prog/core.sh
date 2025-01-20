@@ -244,7 +244,7 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations mirage335KernelBuild
 
 
-	ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations gpd-fan-driver-linux
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations gpd-fan-driver-linux
 	
 	
 	
