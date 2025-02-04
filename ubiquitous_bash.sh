@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2573738538'
+export ub_setScriptChecksum_contents='2463473504'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -22448,6 +22448,12 @@ _ubDistFetch() {
 
 
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations gpd-fan-driver-linux
+
+	# Should be an unnecessary conveninence, provided by 'ubDistBuild/_lib/_get_hardware.sh' called during 'ubDistBuild' ...
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations getHardware-CoralTPU
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations freecad-converter
 	
 	
 	
@@ -22720,6 +22726,7 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure tinyMakeLab
 
 
+
 	# https://github.com/mirage335/gedaProduction/blob/a9525331749c5dbfba05c687395ccbdc2be1af6c/laserstencil/millproject
 	#if ! [[ -e "$scriptLib"/core/infrastructure/pcb2gcode ]]
 	#then
@@ -22799,6 +22806,9 @@ _ubDistFetch() {
 	fi
 	
 	
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure AppImages_ubiquitous
+
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure BOM_designer
@@ -22856,6 +22866,8 @@ _ubDistFetch() {
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure zipTiePanel
 
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure wirewrap_huge
+
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure VR_Headset_Hanger
 	
 	
@@ -22884,6 +22896,14 @@ _ubDistFetch() {
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure quickWriter
+
+
+
+	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure SuperhetPlanner
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure SystemTemplate
+
+	
 
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion
@@ -23202,6 +23222,23 @@ _upgrade_sequence() {
         _messagePlain_good 'good: success: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
     fi
 
+    # Should be an unnecessary conveninence, provided by 'ubDistBuild/_lib/_get_hardware.sh' called during 'ubDistBuild' ...
+    #_upgrade_repository /home/user/core/installations/getHardware-CoralTPU
+    if ! [[ -e /home/user/core/installations/getHardware-CoralTPU ]] || ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/getHardware-CoralTPU
+    then
+        _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations getHardware-CoralTPU'
+
+        cd /home/user/core/installations
+        _ubDistFetch_gitBestFetch_github_distllc /home/user/core/installations getHardware-CoralTPU
+        cd "$functionEntryPWD"
+        
+        _messagePlain_nominal 'PASS'
+        _messagePlain_good 'good: success: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations getHardware-CoralTPU'
+    fi
+
+
+    _upgrade_repository /home/user/core/installations/freecad-converter
+
 
     mkdir -p /home/user/core/installations/kernel_linux
     _upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz /home/user/core/installations/kernel_linux
@@ -23281,6 +23318,10 @@ _upgrade_sequence() {
 
 
 
+    _upgrade_repository /home/user/core/infrastructure/AppImages_ubiquitous
+
+
+
     _upgrade_repository /home/user/core/infrastructure/BOM_designer
 
     _upgrade_repository /home/user/core/infrastructure/Freerouting
@@ -23329,6 +23370,10 @@ _upgrade_sequence() {
 
 
     _upgrade_repository /home/user/core/infrastructure/quickWriter
+
+
+    _upgrade_repository /home/user/core/infrastructure/SuperhetPlanner
+    _upgrade_repository /home/user/core/infrastructure/SystemTemplate
 
 
     _upgrade_repository /home/user/core/infrastructure/pumpCompanion

@@ -249,6 +249,12 @@ _ubDistFetch() {
 
 
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations gpd-fan-driver-linux
+
+	# Should be an unnecessary conveninence, provided by 'ubDistBuild/_lib/_get_hardware.sh' called during 'ubDistBuild' ...
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations getHardware-CoralTPU
+
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations freecad-converter
 	
 	
 	
@@ -521,6 +527,7 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure tinyMakeLab
 
 
+
 	# https://github.com/mirage335/gedaProduction/blob/a9525331749c5dbfba05c687395ccbdc2be1af6c/laserstencil/millproject
 	#if ! [[ -e "$scriptLib"/core/infrastructure/pcb2gcode ]]
 	#then
@@ -600,6 +607,9 @@ _ubDistFetch() {
 	fi
 	
 	
+
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure AppImages_ubiquitous
+
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure BOM_designer
@@ -657,6 +667,8 @@ _ubDistFetch() {
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure zipTiePanel
 
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure wirewrap_huge
+
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure VR_Headset_Hanger
 	
 	
@@ -685,6 +697,14 @@ _ubDistFetch() {
 	
 	
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure quickWriter
+
+
+
+	
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure SuperhetPlanner
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/infrastructure SystemTemplate
+
+	
 
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/infrastructure pumpCompanion

@@ -205,6 +205,23 @@ _upgrade_sequence() {
         _messagePlain_good 'good: success: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations gpd-fan-driver-linux'
     fi
 
+    # Should be an unnecessary conveninence, provided by 'ubDistBuild/_lib/_get_hardware.sh' called during 'ubDistBuild' ...
+    #_upgrade_repository /home/user/core/installations/getHardware-CoralTPU
+    if ! [[ -e /home/user/core/installations/getHardware-CoralTPU ]] || ! "$scriptAbsoluteLocation" _upgrade_repository /home/user/core/installations/getHardware-CoralTPU
+    then
+        _messageNormal 'init: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations getHardware-CoralTPU'
+
+        cd /home/user/core/installations
+        _ubDistFetch_gitBestFetch_github_distllc /home/user/core/installations getHardware-CoralTPU
+        cd "$functionEntryPWD"
+        
+        _messagePlain_nominal 'PASS'
+        _messagePlain_good 'good: success: ubDistFetch_gitBestFetch_github: ''/home/user/core/installations getHardware-CoralTPU'
+    fi
+
+
+    _upgrade_repository /home/user/core/installations/freecad-converter
+
 
     mkdir -p /home/user/core/installations/kernel_linux
     _upgrade_binary_GitHubRelease_procedure soaringDistributions/mirage335KernelBuild linux-lts-amd64-debian.tar.gz /home/user/core/installations/kernel_linux
@@ -284,6 +301,10 @@ _upgrade_sequence() {
 
 
 
+    _upgrade_repository /home/user/core/infrastructure/AppImages_ubiquitous
+
+
+
     _upgrade_repository /home/user/core/infrastructure/BOM_designer
 
     _upgrade_repository /home/user/core/infrastructure/Freerouting
@@ -332,6 +353,10 @@ _upgrade_sequence() {
 
 
     _upgrade_repository /home/user/core/infrastructure/quickWriter
+
+
+    _upgrade_repository /home/user/core/infrastructure/SuperhetPlanner
+    _upgrade_repository /home/user/core/infrastructure/SystemTemplate
 
 
     _upgrade_repository /home/user/core/infrastructure/pumpCompanion
