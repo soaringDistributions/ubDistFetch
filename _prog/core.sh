@@ -132,8 +132,20 @@ _ubDistFetch() {
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && wget https://www.gnu.org/licenses/agpl-3.0.txt
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && cd "$scriptLib"/core/installations && cp "$scriptAbsoluteFolder"/_ref/agpl-3.0.txt ./
 	[[ ! -e "$scriptLib"/core/installations/agpl-3.0.txt ]] && _core_FAIL 'missing: agpl-3.0.txt'
+
+
 	
-	
+	_messageNormal '########## installations: 'Debian Packages
+	cd "$scriptLib"/core/installations
+	if ! [[ -e "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
+	then
+		mkdir -p "$HOME"/core/installations/curlftpfs
+		curl -L 'https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		#yes | sudo -n dpkg -i "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+	fi
+	cd "$scriptLib"/core/installations
+
+
 	
 	_messageNormal '########## installations: 'source_code
 	# MSW Binary for VirtualBox apparently depends on 'vc_redist', which may not be or may not remain a usable dependency. Thus, although Linux VirtualBox may be usefully available, only the source code may exist for MSW.
