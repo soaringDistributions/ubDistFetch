@@ -137,11 +137,11 @@ _ubDistFetch() {
 	
 	_messageNormal '########## installations: 'Debian Packages
 	cd "$scriptLib"/core/installations
-	if ! [[ -e "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
+	if ! [[ -e "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
 	then
-		mkdir -p "$HOME"/core/installations/curlftpfs
-		curl -L 'https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
-		#yes | sudo -n dpkg -i "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		mkdir -p "$scriptLib"/core/installations/curlftpfs
+		curl -L 'https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		##yes | sudo -n dpkg -i "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
 	fi
 	cd "$scriptLib"/core/installations
 

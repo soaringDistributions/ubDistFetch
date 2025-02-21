@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='19222455'
+export ub_setScriptChecksum_contents='2867090018'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -1931,6 +1931,75 @@ _package-cygwin() {
 
 
 
+
+
+
+
+# Discouraged. Few file paths, some setup, etc, may be different. Otherwise, WSL should not be treated differently.
+_if_wsl() {
+    uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1
+}
+
+
+
+# Ingredients. Debian pacakges mirror, docker images, pre-built dist/OS images, etc.
+_set_ingredients() {
+    export ub_INGREDIENTS=""
+
+    local currentDriveLetter
+
+    if ! _if_cygwin
+    then
+        [[ -e /mnt/ingredients/ingredients ]] && mountpoint /mnt/ingredients && export ub_INGREDIENTS=/mnt/ingredients/ingredients && return 0
+
+        # STRONGLY PREFERRED.
+        [[ -e /mnt/ingredients ]] && mountpoint /mnt/ingredients && export ub_INGREDIENTS=/mnt/ingredients && return 0
+
+        # STRONGLY DISCOURAGED.
+        # Do NOT create "$HOME"/core/ingredients unless for some very unexpected reason it is necessary for a non-root user to use ingredients.
+        [[ -e "$HOME"/core/ingredients ]] && export ub_INGREDIENTS="$HOME"/core/ingredients && return 0
+
+        # WSL(2) specific.
+        #_if_wsl
+        #uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1
+        if type _if_wsl > /dev/null 2>&1 && _if_wsl
+        then
+            [[ -e /mnt/host/z/mnt/ingredients ]] && export ub_INGREDIENTS=/mnt/host/z/mnt/ingredients && return 0
+            [[ -e /mnt/z/mnt/ingredients ]] && export ub_INGREDIENTS=/mnt/z/mnt/ingredients && return 0
+            [[ -e /mnt/c/core/ingredients ]] && export ub_INGREDIENTS=/mnt/c/core/ingredients && return 0
+            [[ -e /mnt/host/c/core/ingredients ]] && export ub_INGREDIENTS=/mnt/host/c/core/ingredients && return 0
+            #
+            for currentDriveLetter in d e f g h i j k l m n o p q r s t u v w D E F G H I J K L M N O P Q R S T U V W
+            do
+                [[ -e /mnt/"$currentDriveLetter"/ingredients ]] && export ub_INGREDIENTS=/mnt/"$currentDriveLetter"/ingredients && return 0
+            done
+            if [[ -e /mnt/host ]]
+            then
+                for currentDriveLetter in d e f g h i j k l m n o p q r s t u v w D E F G H I J K L M N O P Q R S T U V W
+                do
+                    [[ -e /mnt/host/"$currentDriveLetter"/ingredients ]] && export ub_INGREDIENTS=/mnt/host/"$currentDriveLetter"/ingredients && return 0
+                done
+            fi
+        fi
+    fi
+
+    if _if_cygwin
+    then
+        [[ -e /cygdrive/z/mnt/ingredients ]] && export ub_INGREDIENTS=/cygdrive/z/mnt/ingredients && return 0
+        [[ -e /cygdrive/c/core/ingredients ]] && export ub_INGREDIENTS=/cygdrive/c/core/ingredients && return 0
+        #
+        for currentDriveLetter in d e f g h i j k l m n o p q r s t u v w D E F G H I J K L M N O P Q R S T U V W
+        do
+            [[ -e /cygdrive/"$currentDriveLetter"/ingredients ]] && export ub_INGREDIENTS=/cygdrive/"$currentDriveLetter"/ingredients && return 0
+        done
+    fi
+
+
+
+
+    [[ "$ub_INGREDIENTS" == "" ]] && return 1
+    return 0
+}
 
 
 
@@ -5029,14 +5098,14 @@ _fetchDep_debianBookworm_special() {
 
 		
 		# WARNING: Untested. May cause problems.
-		#_getMost_backend_aptGetInstall docker-ce
-		##_getMost_backend_aptGetInstall docker-compose-plugin
-		#_getMost_backend_aptGetInstall docker-ce
-		#_getMost_backend_aptGetInstall docker-buildx-plugin docker-ce-cli docker-ce-rootless-extras
-		_getMost_backend apt-get -d install -y docker-ce
-		#_getMost_backend apt-get -d install -y docker-compose-plugin
-		_getMost_backend apt-get -d install -y docker-ce
-		#_getMost_backend apt-get -d install -y docker-buildx-plugin docker-ce-cli docker-ce-rootless-extras
+		##_getMost_backend_aptGetInstall docker-ce
+		###_getMost_backend_aptGetInstall docker-compose-plugin
+		##_getMost_backend_aptGetInstall docker-ce
+		##_getMost_backend_aptGetInstall docker-buildx-plugin docker-ce-cli docker-ce-rootless-extras
+		#_getMost_backend apt-get -d install -y docker-ce
+		##_getMost_backend apt-get -d install -y docker-compose-plugin
+		#_getMost_backend apt-get -d install -y docker-ce
+		##_getMost_backend apt-get -d install -y docker-buildx-plugin docker-ce-cli docker-ce-rootless-extras
 
 		# ATTENTION: Speculative . May be untested. Enable if ever necessary.
 		#https://docs.docker.com/compose/install/
@@ -5203,7 +5272,7 @@ CZXWXcRMTo8EmM8i4d
 			curl -L "https://deb.debian.org/debian/pool/main/d/digimend-dkms/digimend-dkms_11-3_amd64.deb" -o "$safeTmp"/"digimend-dkms_11-3_amd64.deb"
 			yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_11-3_amd64.deb"
 			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
-			sudo rm -f "$safeTmp"/"digimend-dkms_11-3_amd64.deb"
+			sudo -n rm -f "$safeTmp"/"digimend-dkms_11-3_amd64.deb"
 		fi
 		
 		return 0
@@ -5249,6 +5318,25 @@ CZXWXcRMTo8EmM8i4d
 		! _wantDep 'nc' && echo 'warn: missing: nc'
 		
 		return 0
+	fi
+
+	if [[ "$1" == "curlftpfs" ]]
+	then
+		if [[ -e "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
+		then
+			yes | sudo -n dpkg -i "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		fi
+
+		if ! [[ -e "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
+		then
+			curl -L 'http://deb.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$safeTmp"/"curlftpfs_0.9.2-9+b1_amd64.deb"
+			yes | sudo -n dpkg -i "$safeTmp"/"curlftpfs_0.9.2-9+b1_amd64.deb"
+		fi
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
+		sudo -n rm -f "$safeTmp"/"curlftpfs_0.9.2-9+b1_amd64.deb"
+		
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y curlftpfs
 	fi
 	
 	
@@ -5302,512 +5390,73 @@ _fetchDep_debianBookworm_sequence() {
 
 _fetchDep_debianBookworm() {
 	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
-	echo 'Dpkg::Options {"--force-confdef"};' | sudo tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
-	echo 'Dpkg::Options {"--force-confold"};' | sudo tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
-	
-	export DEBIAN_FRONTEND=noninteractive
-	
-	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
-	"$scriptAbsoluteLocation" _fetchDep_debianBookworm_sequence "$@"
-	"$scriptAbsoluteLocation" _fetchDep_debianBookworm_sequence "$@"
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-_fetchDep_debianBullseye_special() {
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-	
-# 	if [[ "$1" == *"java"* ]]
-# 	then
-# 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y default-jdk default-jre
-# 		return 0
-# 	fi
-	
-	if [[ "$1" == *"wine"* ]] && ! dpkg --print-foreign-architectures | grep i386 > /dev/null 2>&1
-	then
-		sudo -n dpkg --add-architecture i386
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y wine wine32 wine64 libwine libwine:i386 fonts-wine
-		return 0
-	fi
-	
-	if [[ "$1" == "realpath" ]] || [[ "$1" == "readlink" ]] || [[ "$1" == "dirname" ]] || [[ "$1" == "basename" ]] || [[ "$1" == "sha512sum" ]] || [[ "$1" == "sha256sum" ]] || [[ "$1" == "head" ]] || [[ "$1" == "tail" ]] || [[ "$1" == "sleep" ]] || [[ "$1" == "env" ]] || [[ "$1" == "cat" ]] || [[ "$1" == "mkdir" ]] || [[ "$1" == "dd" ]] || [[ "$1" == "rm" ]] || [[ "$1" == "ln" ]] || [[ "$1" == "ls" ]] || [[ "$1" == "test" ]] || [[ "$1" == "true" ]] || [[ "$1" == "false" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y coreutils
-		return 0
-	fi
-	
-	if [[ "$1" == "mount" ]] || [[ "$1" == "umount" ]] || [[ "$1" == "losetup" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mount
-		return 0
-	fi
-	
-	if [[ "$1" == "mountpoint" ]] || [[ "$1" == "mkfs" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y util-linux
-		return 0
-	fi
-	
-	if [[ "$1" == "mkfs.ext4" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y e2fsprogs
-		return 0
-	fi
-	
-	if [[ "$1" == "parted" ]] || [[ "$1" == "partprobe" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y parted
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-arm-static" ]] || [[ "$1" == "qemu-armeb-static" ]] || [[ "$1" == "update-binfmts" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu qemu-user-static binfmt-support
-		#update-binfmts --display
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-system-x86_64" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-system-x86
-		return 0
-	fi
-	
-	if [[ "$1" == "qemu-img" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qemu-utils
-		return 0
-	fi
-	
-	if [[ "$1" == "VirtualBox" ]] || [[ "$1" == "VBoxSDL" ]] || [[ "$1" == "VBoxManage" ]] || [[ "$1" == "VBoxHeadless" ]]
-	then
-		sudo -n mkdir -p /etc/apt/sources.list.d
-		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bullseye contrib' | sudo -n tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
-		
-		"$scriptAbsoluteLocation" _getDep wget
-		! _wantDep wget && return 1
-		
-		# TODO Check key fingerprints match "B9F8 D658 297A F3EF C18D  5CDF A2F6 83C5 2980 AECF" and "7B0F AB3A 13B9 0743 5925  D9C9 5442 2A4B 98AB 5139" respectively.
-		wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo -n apt-key add -
-		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
-		
-		# https://www.virtualbox.org/ticket/20949
-		if ! type -p virtualbox > /dev/null 2>&1 && ! type -p VirtualBox > /dev/null 2>&1
-		then
-			curl -L "https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb" -o "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb"
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms
-			yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb"
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
-		fi
-		
-		echo "WARNING: Recommend manual system configuration after install. See https://www.virtualbox.org/wiki/Downloads ."
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "gpg" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y gnupg
-		return 0
-	fi
-	
-	#Unlikely scenario for hosts.
-	if [[ "$1" == "grub-install" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub2
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grub-legacy
-		return 0
-	fi
-	
-	if [[ "$1" == "MAKEDEV" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y makedev
-		return 0
-	fi
-	
-	if [[ "$1" == "fgrep" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
-		return 0
-	fi
-	
-	if [[ "$1" == "fgrep" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y grep
-		return 0
-	fi
-	
-	if [[ "$1" == "awk" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mawk
-		return 0
-	fi
-	
-	if [[ "$1" == "kill" ]] || [[ "$1" == "ps" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y procps
-		return 0
-	fi
-	
-	if [[ "$1" == "find" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y findutils
-		return 0
-	fi
-	
-	if [[ "$1" == "docker" ]] || [[ "$1" == "docker-compose" ]]
-	then
-		sudo -n update-alternatives --set iptables /usr/sbin/iptables-legacy
-		sudo -n update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-		#sudo -n systemctl restart docker
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-		
-		# Sometimes may be useful as a workaround for docker 'overlay2' 'storage-driver' .
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y fuse-overlayfs
-		
-		"$scriptAbsoluteLocation" _getDep curl
-		! _wantDep curl && return 1
-		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo -n apt-key add -
-		local aptKeyFingerprint
-		aptKeyFingerprint=$(sudo -n apt-key fingerprint 0EBFCD88 2> /dev/null)
-		[[ "$aptKeyFingerprint" == "" ]] && return 1
-		
-		sudo -n add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get remove -y docker docker-engine docker.io docker-ce docker
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y docker-ce
-		
-		sudo -n usermod -a -G docker "$USER"
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "smbd" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y samba
-		return 0
-	fi
-	
-	if [[ "$1" == "atom" ]]
-	then
-		#curl -L https://packagecloud.io/AtomEditor/atom/gpgkey | sudo -n apt-key add -
-		#sudo -n sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/ub_atom.list'
-		
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y atom
-		
-		#return 0
-		return 1
-	fi
-	
-	if [[ "$1" == "GL/gl.h" ]] || [[ "$1" == "GL/glext.h" ]] || [[ "$1" == "GL/glx.h" ]] || [[ "$1" == "GL/glxext.h" ]] || [[ "$1" == "GL/dri_interface.h" ]] || [[ "$1" == "x86_64-linux-gnu/pkgconfig/dri.pc" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y mesa-common-dev
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "go" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y golang-go
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "php" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y php
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "cura-lulzbot" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation. See https://www.lulzbot.com/learn/tutorials/cura-lulzbot-edition-installation-debian ."
-cat << 'CZXWXcRMTo8EmM8i4d'
-wget -qO - https://download.alephobjects.com/ao/aodeb/aokey.pub | sudo -n apt-key add -
-sudo -n cp /etc/apt/sources.list /etc/apt/sources.list.bak && sudo -n sed -i '$a deb http://download.alephobjects.com/ao/aodeb jessie main' /etc/apt/sources.list && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update && sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install cura-lulzbot
-CZXWXcRMTo8EmM8i4d
-		echo "(typical)"
-		_stop 1
-	fi
-	
-	if [[ "$1" =~ "FlashPrint" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation. See http://www.flashforge.com/support-center/flashprint-support/ ."
-		_stop 1
-	fi
-	
-	if [[ "$1" == "cargo" ]] || [[ "$1" == "rustc" ]]
-	then
-		#Testing/Sid only as of Stretch release cycle.
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y rustc cargo
-		
-		echo "Requires manual installation."
-cat << 'CZXWXcRMTo8EmM8i4d'
-curl https://sh.rustup.rs -sSf | sh
-echo '[[ -e "$HOME"/.cargo/bin ]] && export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-CZXWXcRMTo8EmM8i4d
-		echo "(typical)"
-		_stop 1
-	fi
-	
-	if [[ "$1" == "firejail" ]]
-	then
-		echo "WARNING: Recommend manual system configuration after install. See https://firejail.wordpress.com/download-2/ ."
-		echo "WARNING: Desktop override symlinks may cause problems, especially preventing proxy host jumping by CoreAutoSSH!"
-		return 1
-	fi
-	
-	
-	if [[ "$1" == "nix-env" ]]
-	then
-		_tryExec '_test_nix-env_upstream'
-		#_tryExec '_test_nix-env_upstream_beta'
-		
-		return 0
-	fi
-	
-	
-	if [[ "$1" == "croc" ]]
-	then
-		_tryExec '_test_croc_upstream'
-		#_tryExec '_test_croc_upstream_beta'
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "rclone" ]]
-	then
-		_tryExec '_test_rclone_upstream'
-		#_tryExec '_test_rclone_upstream_beta'
-		
-		return 0
-	fi
-	
-	
-	if [[ "$1" == "terraform" ]]
-	then
-		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
-		sudo -n apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y terraform
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "vagrant" ]]
-	then
-		#curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo -n apt-key add -
-		#sudo -n apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant-libvirt
-		
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y vagrant
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "digimend-debug" ]] || [[ "$1" == 'udev/rules.d/90-digimend.rules' ]] || [[ "$1" == 'X11/xorg.conf.d/50-digimend.conf' ]]
-	then
-		if ! _wantDep digimend-debug && [[ -e /etc/issue ]] && cat /etc/issue | grep 'Debian' > /dev/null 2>&1
-		then
-			if [[ -e "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb ]]
-			then
-				yes | sudo -n dpkg -i "$HOME"/core/installations/digimend-dkms/digimend-dkms_10_all.deb
-			fi
-			
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y digimend-dkms
-			
-			curl -L "https://github.com/DIGImend/digimend-kernel-drivers/releases/download/v10/digimend-dkms_10_all.deb" -o "$safeTmp"/"digimend-dkms_10_all.deb"
-			yes | sudo -n dpkg -i "$safeTmp"/"digimend-dkms_10_all.deb"
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
-			sudo rm -f "$safeTmp"/"digimend-dkms_10_all.deb"
-		fi
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "openssl/ssl.h" ]] || [[ "$1" == "include/openssl/ssl.h" ]] || [[ "$1" == "/usr/include/openssl/ssl.h" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libssl-dev
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "sqlite3.h" ]] || [[ "$1" == "sqlite3ext.h" ]] || [[ "$1" == "pkgconfig/sqlite3.pc" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y libsqlite3-dev
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "qalculate-gtk" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y qalculate-gtk
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -t bullseye-backports qalc
-		
-		! _wantDep 'qalculate-gtk' && echo 'warn: missing: qalculate-gtk'
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "qalc" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -t bullseye-backports qalc
-		
-		! _wantDep 'qalc' && echo 'warn: missing: qalc'
-		
-		return 0
-	fi
-	
-	if [[ "$1" == "nc" ]]
-	then
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y netcat-openbsd
-		
-		! _wantDep 'nc' && echo 'warn: missing: nc'
-		
-		return 0
-	fi
-	
-	
-	return 1
-}
-
-_fetchDep_debianBullseye_sequence() {
-	_start
-	
-	_mustGetSudo
-	
-	_wantDep "$1" && _stop 0
-	
-	_fetchDep_debianBullseye_special "$@" && _wantDep "$1" && _stop 0
-	
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$1" && _wantDep "$1" && _stop 0
-	
-	_apt-file search "$1" > "$safeTmp"/pkgsOut 2> "$safeTmp"/pkgsErr
-	
-	local sysPathAll
-	sysPathAll=$(sudo -n bash -c "echo \$PATH")
-	sysPathAll="$PATH":"$sysPathAll"
-	local sysPathArray
-	IFS=':' read -r -a sysPathArray <<< "$sysPathAll"
-	
-	local currentSysPath
-	local matchingPackageFile
-	local matchingPackagePattern
-	local matchingPackage
-	for currentSysPath in "${sysPathArray[@]}"
-	do
-		matchingPackageFile=""
-		matchingPackagePath=""
-		matchingPackage=""
-		matchingPackagePattern="$currentSysPath"/"$1"
-		matchingPackageFile=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f2- -d' ')
-		matchingPackage=$(grep ': '$matchingPackagePattern'$' "$safeTmp"/pkgsOut | cut -f1 -d':')
-		if [[ "$matchingPackage" != "" ]]
-		then
-			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
-			_wantDep "$1" && _stop 0
-		fi
-	done
-	matchingPackage=""
-	matchingPackage=$(head -n 1 "$safeTmp"/pkgsOut | cut -f1 -d':')
-	sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y "$matchingPackage"
-	_wantDep "$1" && _stop 0
-	
-	_stop 1
-}
-
-_fetchDep_debianBullseye() {
-	# ATTRIBUTION-AI: ChatGPT o1-preview 2024-11-20 .
-	echo 'APT::AutoRemove::RecommendsImportant "true";
-APT::AutoRemove::SuggestsImportant "true";' | sudo -n tee /etc/apt/apt.conf.d/99autoremove-recommends > /dev/null
-
-	
-	# https://askubuntu.com/questions/104899/make-apt-get-or-aptitude-run-with-y-but-not-prompt-for-replacement-of-configu
 	echo 'Dpkg::Options {"--force-confdef"};' | sudo -n tee /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
 	echo 'Dpkg::Options {"--force-confold"};' | sudo -n tee -a /etc/apt/apt.conf.d/50unattended-replaceconfig-ub > /dev/null
 	
 	export DEBIAN_FRONTEND=noninteractive
 	
 	#Run up to 2 times. On rare occasion, cache will become unusable again by apt-find before an installation can be completed. Overall, apt-find is the single weakest link in the system.
-	"$scriptAbsoluteLocation" _fetchDep_debianBullseye_sequence "$@"
-	"$scriptAbsoluteLocation" _fetchDep_debianBullseye_sequence "$@"
+	"$scriptAbsoluteLocation" _fetchDep_debianBookworm_sequence "$@"
+	"$scriptAbsoluteLocation" _fetchDep_debianBookworm_sequence "$@"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5861,12 +5510,13 @@ _fetchDep_debian() {
 	#fi
 	
 	
-	# WARNING: Obsolete. Declining support. Eventual removal expected approximately one year after two Debian stable releases.
-	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 11 > /dev/null 2>&1
-	then
-		_fetchDep_debianBullseye "$@"
-		return
-	fi
+	# WARNING: Obsolete. Disabled.
+	# ATTENTION: May be revived if important deployments of Debian Bullseye are discovered to still exist. Revive from '_ref/debian_bullseye.sh' if necessary.
+	#if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 11 > /dev/null 2>&1
+	#then
+		#_fetchDep_debianBullseye "$@"
+		#return
+	#fi
 
 
 	if [[ -e /etc/debian_version ]] && cat /etc/debian_version | head -c 2 | grep 12 > /dev/null 2>&1
@@ -6447,7 +6097,7 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bullseye contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 		
 		## https://fasttrack.debian.net/
@@ -6466,9 +6116,9 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 	elif [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '22.04' > /dev/null 2>&1
 	then
 		true
@@ -6477,12 +6127,12 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian jammy contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 	fi
 	
-	curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
+	curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 }
@@ -6511,7 +6161,7 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bookworm contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] https://download.docker.com/linux/debian bookworm stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 		
 		## https://fasttrack.debian.net/
@@ -6522,6 +6172,9 @@ _getMost_debian12_aptSources() {
 			#echo 'deb https://fasttrack.debian.net/debian-fasttrack/ bookworm-backports-staging main contrib' | _getMost_backend tee -a /etc/apt/sources.list
 		#fi
 		
+		# https://github.com/wireapp/wire-desktop/wiki/How-to-install-Wire-for-Desktop-on-Linux
+		#wget -q https://wire-app.wire.com/linux/releases.key -O- | sudo -n apt-key add -
+		#echo "deb [arch=amd64] https://wire-app.wire.com/linux/debian stable main" | sudo -n tee /etc/apt/sources.list.d/wire-desktop.list
 	fi
 	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '20.04' > /dev/null 2>&1
 	then
@@ -6531,9 +6184,9 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 	fi
 	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '22.04' > /dev/null 2>&1
 	then
@@ -6543,9 +6196,9 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian jammy contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 	fi
 	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '24.04' > /dev/null 2>&1
 	then
@@ -6555,12 +6208,12 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian noble contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 	fi
 	
-	curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | _getMost_backend apt-key add -
+	curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 }
@@ -6586,7 +6239,7 @@ _getMost_debian12_install() {
 	# CAUTION: Workaround. Debian defaults to an obsolete version of qalc which is unusable.
 	_getMost_backend_aptGetInstall -t bookworm-backports qalc
 
-
+	#_getMost_backend_aptGetInstall wire-desktop
 
 	# ATTENTION: SEVERE: Cause for concern. Absence of this is not properly detected by '_getDep python', '_getDep /usr/bin/python'  .
 	_getMost_backend_aptGetInstall python-is-python3
@@ -6626,6 +6279,8 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall bash dash
 
 	_getMost_backend_aptGetInstall aria2 curl gpg
+	_getMost_backend_aptGetInstall gnupg
+	_getMost_backend_aptGetInstall lsb-release
 
 	if ! _getMost_backend dash -c 'type apt-fast' > /dev/null 2>&1
 	then
@@ -6649,6 +6304,9 @@ _getMost_debian11_install() {
 	# May be able to resize with some combination of 'dd' and 'gparted' , possibly '_gparted' . May be untested.
 	#_messagePlain_probe 'apt-get upgrade'
 	#_getMost_backend apt-get upgrade
+
+	# https://github.com/wireapp/wire-desktop/wiki/How-to-install-Wire-for-Desktop-on-Linux
+	_getMost_backend_aptGetInstall apt-transport-https
 	
 	
 	_getMost_backend_aptGetInstall locales-all
@@ -6672,7 +6330,15 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall sockstat
 	_getMost_backend_aptGetInstall x11-xserver-utils
 	_getMost_backend_aptGetInstall arandr
-	
+
+	if _getMost_backend_fileExists "/curlftpfs_0.9.2-9+b1_amd64.deb"
+	then
+		_getMost_backend dpkg -i "/curlftpfs_0.9.2-9+b1_amd64.deb"
+		_getMost_backend rm -f "/curlftpfs_0.9.2-9+b1_amd64.deb"
+		_getMost_backend env DEBIAN_FRONTEND=noninteractive apt-get install -y -f
+	fi
+
+	_getMost_backend_aptGetInstall curlftpfs
 
 	_getMost_backend_aptGetInstall liblinear4 liblua5.3-0 lua-lpeg nmap nmap-common
 	
@@ -6691,6 +6357,8 @@ _getMost_debian11_install() {
 	#_getMost_backend_aptGetInstall synergy quicksynergy
 	
 	_getMost_backend_aptGetInstall vim
+
+	_getMost_backend_aptGetInstall man-db
 	
 	# WARNING: Rust is not yet (2023-11-12) anywhere near as editable on the fly or pervasively available as bash .
 	#  Criteria for such are far more necessarily far more stringent than might be intuitively obvious.
@@ -6913,6 +6581,8 @@ _getMost_debian11_install() {
 	
 	_getMost_backend_aptGetInstall p7zip
 	_getMost_backend_aptGetInstall p7zip-full
+	_getMost_backend_aptGetInstall unzip zip
+	_getMost_backend_aptGetInstall lbzip2
 
 	
 	_getMost_backend_aptGetInstall jp2a
@@ -6994,7 +6664,8 @@ _getMost_debian11_install() {
 	# WARNING: If VirtualBox was not installed by now (eg. due to 'if false' comment block or wrong distribution), this must be called later.
 	# https://en.wiktionary.org/wiki/poke_the_bear
 	# https://forums.virtualbox.org/viewtopic.php?t=25797
-	_getMost_backend VBoxManage setextradata global GUI/SuppressMessages "Update"
+	_getMost_backend /usr/bin/VBoxManage setextradata global GUI/SuppressMessages "Update"
+	_getMost_backend /usr/local/bin/VBoxManage setextradata global GUI/SuppressMessages "Update"
 	
 	
 	
@@ -8353,27 +8024,32 @@ _get_from_nix-user() {
 		
 		current_getMost_backend_wasSet="false"
 	fi
+
+
+	# ATTENTION: Though otherwise bad practice, some particularly both crucial and non-standard or particular version packages, such as 'geda', but also 'package_kde.tar.xz', are kept in "$HOME" . Thus,  bash -c 'cd ; ', followed by wget, etc, can be appropriate.
+
 	
 	# . "$HOME"/.nix-profile/etc/profile.d/nix.sh
 
 
 	#_nix_fetch_alternatives
-	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/20230413214011/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
-	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
-	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://github.com/soaringDistributions/ubDistBuild_bundle/raw/main/geda-gaf/geda-gaf-1.10.2.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; [[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; [[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/20230413214011/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; [[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; [[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://github.com/soaringDistributions/ubDistBuild_bundle/raw/main/geda-gaf/geda-gaf-1.10.2.tar.gz'
 
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-prefetch-url file://"$(~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh _getAbsoluteLocation ./geda-gaf-1.10.2.tar.gz)"'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-prefetch-url file://"$(~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh _getAbsoluteLocation ./geda-gaf-1.10.2.tar.gz)"'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-prefetch-url file:///home/'"$currentUser"'/geda-gaf-1.10.2.tar.gz'
 
 	#_nix_update
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-channel --list'
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-channel --update'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-channel --list'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-channel --update'
 
 	
 	# CAUTION: May correctly fail, due to marked insecure, due to CVE-2024-6775 , or similar. Do NOT force.
 	#_custom_installDeb /root/core/installations/Wire.deb
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-env -iA nixpkgs.wire-desktop'
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/wire-desktop.desktop'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-env -iA nixpkgs.wire-desktop'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/wire-desktop.desktop'
 	
 
 	_getMost_backend sudo -n -u "$currentUser" cp -a /home/"$currentUser"/.nix-profile/share/icons /home/"$currentUser"/.local/share/
@@ -8415,25 +8091,25 @@ _get_from_nix-user() {
 	
 	# ###
 	# Seems to have removed xorn, python2.7 . May not have been tested through ubdist/WSL . May be accepted for now due to some apparently successful testing expected to match this specific version.
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA geda -f https://github.com/NixOS/nixpkgs/archive/773a8314ef05364d856e46299722a9d849aacf8b.tar.gz'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA geda -f https://github.com/NixOS/nixpkgs/archive/773a8314ef05364d856e46299722a9d849aacf8b.tar.gz'
 	
 	# Seems to still have xorn, python2.7, etc . Should have the most functionality, and should match previously tested versions, both through ubdist/OS and ubdist/WSL .
-	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA geda -f https://github.com/NixOS/nixpkgs/archive/9957cd48326fe8dbd52fdc50dd2502307f188b0d.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA geda -f https://github.com/NixOS/nixpkgs/archive/9957cd48326fe8dbd52fdc50dd2502307f188b0d.tar.gz'
 	
 	# Most recent version. May freeze until there is sufficient experience with newer versions.
-	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.geda'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.geda'
 	# ###
 	
 	
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/geda-gschem.desktop'
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/geda-gattrib.desktop'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/geda-gschem.desktop'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/geda-gattrib.desktop'
 	_getMost_backend sudo -n -u "$currentUser" cp -a /home/"$currentUser"/.nix-profile/share/icons /home/"$currentUser"/.local/share/
 
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.pcb'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.pcb'
 
 	
 	# Necessary, do NOT remove. Necessary for 'gsch2pcb' , 'gnetlist' , etc, since installation as a dependency does not make the necessary binaries available to the usual predictable PATH .
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.python2'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.python2'
 
 
 	
@@ -8444,11 +8120,11 @@ _get_from_nix-user() {
 	# Workaround to make macros needed from 'pcb' package available to such programs as 'gsch2pcb' from the 'geda' package .
 	#sed 's/.*\/\(.*\)\/bin\/pcb.*/\1/')
 	local currentDerivationPath_pcb
-	currentDerivationPath_pcb=$(_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'readlink -f "$(type -p pcb)"')
+	currentDerivationPath_pcb=$(_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; readlink -f "$(type -p pcb)"')
 	currentDerivationPath_pcb=$(echo "$currentDerivationPath_pcb" | sed 's/\(.*\)\/bin\/pcb.*/\1/')
 
 	local currentDerivationPath_gsch2pcb
-	currentDerivationPath_gsch2pcb=$(_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'readlink -f "$(type -p gsch2pcb)"')
+	currentDerivationPath_gsch2pcb=$(_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; readlink -f "$(type -p gsch2pcb)"')
 	currentDerivationPath_gsch2pcb=$(echo "$currentDerivationPath_gsch2pcb" | sed 's/\(.*\)\/bin\/gsch2pcb.*/\1/')
 
 	_getMost_backend sudo -n cp -a "$currentDerivationPath_pcb"/share/pcb "$currentDerivationPath_gsch2pcb"/share/
@@ -8743,6 +8419,8 @@ _get_veracrypt() {
 	cd "$safeTmp"
 	
 	
+	_getDep lbzip2
+
 	_getDep libfuse.so.2
 	
 	
@@ -9958,16 +9636,25 @@ _unhook_systemd_shutdown() {
 }
 
 _stopwatch() {
+	local currentExitStatus_bin
+	local currentExitStatus_self
+	
 	local measureDateA
 	local measureDateB
 	
 	measureDateA=$(date +%s%N | cut -b1-13)
 
 	"$@"
+	currentExitStatus_bin="$?"
 
 	measureDateB=$(date +%s%N | cut -b1-13)
 
 	bc <<< "$measureDateB - $measureDateA"
+	currentExitStatus_self="$?"
+
+	[[ "$currentExitStatus_bin" != "0" ]] && return "$currentExitStatus_bin"
+	[[ "$currentExitStatus_self" != "0" ]] && return "$currentExitStatus_self"
+	return 0
 }
 
 
@@ -10510,6 +10197,94 @@ _github_removeActionsHTTPS() {
 
 }
 
+
+
+
+
+
+
+# "$1" == build-${{ github.run_id }}-${{ github.run_attempt }}
+#shift
+# "$@" == ./_local/package_image_beforeBoot.tar.flx.part*
+_gh_release_upload_parts-multiple() {
+    "$scriptAbsoluteLocation" _gh_release_upload_parts-multiple_sequence "$@"
+}
+_gh_release_upload_parts-multiple_sequence() {
+    _messageNormal '_gh_release_upload_parts: '"$@"
+    local currentTag="$1"
+    shift
+
+    local currentStream_max=12
+
+    local currentStreamNum=0
+
+    for currentFile in "$@"
+    do
+        let currentStreamNum++
+
+        "$scriptAbsoluteLocation" _gh_release_upload_part-single_sequence "$currentTag" "$currentFile" &
+        eval local currentStream_${currentStreamNum}_PID="$!"
+        _messagePlain_probe_var currentStream_${currentStreamNum}_PID
+        
+        while [[ $(jobs | wc -l) -ge "$currentStream_max" ]]
+        do
+            echo
+            jobs
+            echo
+            sleep 2
+            true
+        done
+    done
+
+    local currentStreamPause
+    for currentStreamPause in $(seq "1" "$currentStreamNum")
+	do
+        _messagePlain_probe currentStream_${currentStreamPause}_PID= $(eval "echo \$currentStream_${currentStreamPause}_PID")
+		if eval "[[ \$currentStream_${currentStreamPause}_PID != '' ]]"
+        then
+           _messagePlain_probe _pauseForProcess $(eval "echo \$currentStream_${currentStreamPause}_PID")
+           _pauseForProcess $(eval "echo \$currentStream_${currentStreamPause}_PID")
+        fi
+	done
+
+    while [[ $(jobs | wc -l) -ge 1 ]]
+    do
+        echo
+        jobs
+        echo
+        sleep 2
+        true
+    done
+    
+    wait
+}
+_gh_release_upload_part-single_sequence() {
+    _messagePlain_nominal '_gh_release_upload: '"$1"' '"$2"
+    local currentTag="$1"
+    local currentFile="$2"
+
+    #local currentPID
+    #"$scriptAbsoluteLocation" _stopwatch gh release upload "$currentTag" "$currentFile" &
+    #currentPID="$!"
+
+    #_pauseForProcess "$currentPID"
+    #wait
+
+    #while ! "$scriptAbsoluteLocation" _stopwatch _timeout 10 dd if="$currentFile" bs=1M status=progress > /dev/null
+    #do
+        #sleep 7
+    #done
+    #return 0
+
+    # Maximum file size is 2GigaBytes .
+    local currentIteration=0
+    while ! "$scriptAbsoluteLocation" _stopwatch _timeout 600 gh release upload --clobber "$currentTag" "$currentFile" && [[ "$currentIteration" -lt 30 ]]
+    do
+        sleep 7
+        let currentIteration++
+    done
+    return 0
+}
 
 
 
@@ -12257,8 +12032,10 @@ _wget_githubRelease_join() {
 
 
 
-
 _wget_githubRelease_join-stdout() {
+	"$scriptAbsoluteLocation" _wget_githubRelease_join_sequence-stdout "$@"
+}
+_wget_githubRelease_join_sequence-stdout() {
 	( _messagePlain_nominal '\/\/\/\/\/ \/\/\/\/\/ init: _wget_githubRelease_join-stdout' >&2 ) > /dev/null
 	( _messagePlain_probe_safe _wget_githubRelease_join-stdout "$@" >&2 ) > /dev/null
 
@@ -12425,19 +12202,23 @@ _wget_githubRelease_join-stdout() {
 	done
 
 	export currentSkipPart="$currentPart"
+	[[ "$currentStream_max" -gt "$currentSkipPart" ]] && currentStream_max=$(( "$currentSkipPart" + 1 ))
 
 	"$scriptAbsoluteLocation" _wget_githubRelease_join_sequence-parallel "$currentAbsoluteRepo" "$currentReleaseLabel" "$currentFile" &
 
 
 	# Prebuffer .
 	( _messagePlain_nominal '\/\/\/\/\/ \/\/\/\/  preBUFFER: WAIT  ...  currentPart='"$currentPart" >&2 ) > /dev/null
-	#( _messagePlain_probe 'prebuffer: currentPart= '"$currentPart" >&2 ) > /dev/null
-	if [[ "$currentPart" -ge "2" ]] && [[ "$currentStream_max" -ge "2" ]]
+	if [[ "$currentPart" -ge "01" ]] && [[ "$currentStream_max" -ge "2" ]]
 	then
-		currentStream="2"
-		while ( ! [[ -e "$scriptAbsoluteFolder"/$(_axelTmp).PASS ]] && ! [[ -e "$scriptAbsoluteFolder"/$(_axelTmp).FAIL ]] )
+		#currentStream="2"
+		for currentStream in $(seq "$currentStream_min" "$currentStream_max" | sort -r)
 		do
-			sleep 3
+			( _messagePlain_probe 'prebuffer: currentStream= '"$currentStream" >&2 ) > /dev/null
+			while ( ! [[ -e "$scriptAbsoluteFolder"/$(_axelTmp).PASS ]] && ! [[ -e "$scriptAbsoluteFolder"/$(_axelTmp).FAIL ]] )
+			do
+				sleep 3
+			done
 		done
 	fi
 	currentStream="$currentStream_min"
@@ -12515,6 +12296,7 @@ _wget_githubRelease_join_sequence-parallel() {
 	local currentStream_min=1
 	local currentStream_max=3
 	[[ "$FORCE_PARALLEL" != "" ]] && currentStream_max="$FORCE_PARALLEL"
+	[[ "$currentStream_max" -gt "$currentSkipPart" ]] && currentStream_max=$(( "$currentSkipPart" + 1 ))
 	
 	currentStream="$currentStream_min"
 	for currentPart in $(seq -f "%02g" 0 "$currentSkipPart" | sort -r)
@@ -20470,7 +20252,9 @@ _variableLocalTest_sequence() {
 	unset doubleLocalDefinitionA
 	[[ "$doubleLocalDefinitionA" != "" ]] && _messageFAIL && _stop 1
 	
-	
+
+	variableLocalTest_evalTest() { local currentVariableNum=1 ; eval local currentVariable_${currentVariableNum}_currentData=PASS ; ( eval "[[ \$currentVariable_${currentVariableNum}_currentData == PASS ]]" && eval "[[ \$currentVariable_${currentVariableNum}_currentData != '' ]]" && eval "echo \$currentVariable_${currentVariableNum}_currentData" ) ;} ; variableLocalTest_evalTest > /dev/null ; [[ $(variableLocalTest_evalTest) != "PASS" ]] && _messageFAIL && _stop 1
+
 	_stop
 }
 
@@ -21485,6 +21269,16 @@ _test() {
 			echo -e '\E[0;36m Timing: _test_timeoutRead \E[0m'
 			! _test_timeoutRead && echo '_test_timeoutRead broken' && _stop 1
 		fi
+
+		echo -e '\E[0;36m Timing: true/false \E[0m'
+		! _timeout 10 true && echo '! _timeout 10 true  broken' && _stop 1
+		_timeout 10 false && echo '_timeout 10 false  broken' && _stop 1
+		if type _stopwatch > /dev/null 2>&1
+		then
+    		! _stopwatch _timeout 10 true > /dev/null 2>&1 && echo '! _stopwatch _timeout 10 true  broken' && _stop 1
+    		_stopwatch _timeout 10 false > /dev/null 2>&1 && echo '_stopwatch _timeout 10 false  broken' && _stop 1
+		fi
+		
 		
 		echo -e '\E[0;36m Timing: _timetest \E[0m'
 		! _timetest && echo '_timetest broken' && _stop 1
@@ -22336,11 +22130,11 @@ _ubDistFetch() {
 	
 	_messageNormal '########## installations: 'Debian Packages
 	cd "$scriptLib"/core/installations
-	if ! [[ -e "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
+	if ! [[ -e "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb" ]]
 	then
-		mkdir -p "$HOME"/core/installations/curlftpfs
-		curl -L 'https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
-		#yes | sudo -n dpkg -i "$HOME"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		mkdir -p "$scriptLib"/core/installations/curlftpfs
+		curl -L 'https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/c/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb' -o "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
+		##yes | sudo -n dpkg -i "$scriptLib"/"core/installations/curlftpfs/curlftpfs_0.9.2-9+b1_amd64.deb"
 	fi
 	cd "$scriptLib"/core/installations
 
