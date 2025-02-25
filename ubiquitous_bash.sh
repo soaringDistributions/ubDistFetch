@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2867090018'
+export ub_setScriptChecksum_contents='1642635659'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -6097,8 +6097,8 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bullseye contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 		
 		## https://fasttrack.debian.net/
 		#if ! grep 'fasttrack' /etc/apt/sources.list
@@ -6116,9 +6116,9 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable"
 	elif [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '22.04' > /dev/null 2>&1
 	then
 		true
@@ -6127,12 +6127,12 @@ _getMost_debian11_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian jammy contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable"
 	fi
 	
-	curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+	curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 }
@@ -6161,7 +6161,7 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bookworm contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] https://download.docker.com/linux/debian bookworm stable' | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
 		
 		## https://fasttrack.debian.net/
@@ -6184,9 +6184,9 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian focal contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable"
 	fi
 	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '22.04' > /dev/null 2>&1
 	then
@@ -6196,9 +6196,9 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian jammy contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable"
 	fi
 	if [[ -e /etc/issue ]] && cat /etc/issue | grep 'Ubuntu' | grep '24.04' > /dev/null 2>&1
 	then
@@ -6208,12 +6208,12 @@ _getMost_debian12_aptSources() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 		echo 'deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian noble contrib' | _getMost_backend tee /etc/apt/sources.list.d/ub_vbox.list > /dev/null 2>&1
 		
-		curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
-		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable"
-		echo "deb [arch=amd64] https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"') $(_chroot bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+		echo "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable" | _getMost_backend tee /etc/apt/sources.list.d/ub_docker.list > /dev/null 2>&1
+		_getMost_backend add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"') $(_getMost_backend bash -c 'lsb_release -cs') stable"
 	fi
 	
-	curl -fsSL https://download.docker.com/linux/$(_chroot bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
+	curl -fsSL https://download.docker.com/linux/$(_getMost_backend bash -c '. /etc/os-release; echo "$ID"')/gpg | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | _getMost_backend apt-key add -
 	_getMost_backend wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | _getMost_backend apt-key add -
 }
@@ -13933,6 +13933,19 @@ _kernelConfig_require-convenience() {
 	true
 }
 
+_kernelConfig_require-embedded() {
+	_messagePlain_nominal 'kernelConfig: embedded'
+	export kernelConfig_file="$1"
+
+	# Inspired by discussion with Chris Lombardi .
+	#  https://github.com/clearchris
+	# https://github.com/torvalds/linux/commit/24bc41b4558347672a3db61009c339b1f5692169
+	_kernelConfig_warn-y_m CAN_GS_USB
+	_kernelConfig_warn-y__ CAN_RX_OFFLOAD
+
+	true
+}
+
 _kernelConfig_require-special() {
 	_messagePlain_nominal 'kernelConfig: special'
 	export kernelConfig_file="$1"
@@ -14001,6 +14014,7 @@ _kernelConfig_require-special() {
 	_kernelConfig__bad-n__ MMC_MVSDIO # Disabled by default apparently.
 	#
 	#_kernelConfig__bad-n__ MT7663_USB_SDIO_COMMON
+	#_kernelConfig__bad-n__ MT7663U
 	#
 	_kernelConfig__bad-n__ MT76_SDIO
 	_kernelConfig__bad-n__ MWIFIEX_SDIO
@@ -14017,6 +14031,8 @@ _kernelConfig_require-special() {
 	_kernelConfig__bad-n__ WILC1000_SDIO
 	_kernelConfig__bad-n__ WL1251_SDIO
 	_kernelConfig__bad-n__ WLCORE_SDIO
+	#
+	_kernelConfig__bad-n__ MMC_USHC
 	
 	_kernelConfig__bad-n__ RTW88_8822BS
 	_kernelConfig__bad-n__ RTW88_8822CS
@@ -14126,6 +14142,8 @@ _kernelConfig_panel() {
 	_kernelConfig_require-investigation "$@"
 	
 	_kernelConfig_require-convenience "$@"
+
+	_kernelConfig_require-embedded "$@"
 	
 	_kernelConfig_require-special "$@"
 	
@@ -14166,6 +14184,8 @@ _kernelConfig_mobile() {
 	_kernelConfig_require-investigation "$@"
 	
 	_kernelConfig_require-convenience "$@"
+
+	_kernelConfig_require-embedded "$@"
 	
 	_kernelConfig_require-special "$@"
 	
@@ -14207,6 +14227,8 @@ _kernelConfig_desktop() {
 	_kernelConfig_require-investigation "$@"
 	
 	_kernelConfig_require-convenience "$@"
+
+	_kernelConfig_require-embedded "$@"
 	
 	_kernelConfig_require-special "$@"
 	
