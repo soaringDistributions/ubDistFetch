@@ -742,6 +742,8 @@ _ubDistFetch() {
 	#mkdir -p "$scriptLib"/core/info
 	cd "$scriptLib"/core/info
 	
+	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/info aa_DAMAGE_CONTROL
+	
 	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/info issues
 
 

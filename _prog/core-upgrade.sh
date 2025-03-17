@@ -368,6 +368,8 @@ _upgrade_sequence() {
 
     _upgrade_repository /home/user/core/variant/ubdist_puddleJumper
 
+    _upgrade_repository /home/user/core/info/aa_DAMAGE_CONTROL
+
     _upgrade_repository /home/user/core/info/issues
 
 
