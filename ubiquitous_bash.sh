@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='1642635659'
+export ub_setScriptChecksum_contents='2647321569'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -822,7 +822,16 @@ then
 	#alias l='_wsl'
 	alias u='_wsl'
 fi
-
+	
+_sudo_cygwin-if_parameter-skip2() {
+	[[ "$1" == "-u" ]] && return 0
+	return 1
+}
+_sudo_cygwin-if_parameter-skip1() {
+	[[ "$1" == "-n" ]] && return 0
+	[[ "$1" == "--preserve-env"* ]] && return 0
+	return 1
+}
 
 # CAUTION: Fragile, at best.
 # DANGER: MSW apparently does not necessarily allow 'Administrator' access to all network 'drives'. Workaround copying of obvious files is limited.
@@ -843,12 +852,46 @@ _sudo_cygwin_sequence() {
 	# 'cygstart/runas doesn't handle arguments with spaces correctly so create'
 	# 'a script that will do so properly.'
 	echo "#!/bin/bash" >> "$safeTmp"/cygwin_sudo_temp.sh
+
+	echo "cd \"$PWD"\" >> "$safeTmp"/cygwin_sudo_temp.sh
+
 	echo "export PATH=\"$PATH\"" >> "$safeTmp"/cygwin_sudo_temp.sh
-	
-	
+
+	# No production use.
+	echo "export GH_TOKEN=\"$GH_TOKEN\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo "export INPUT_GITHUB_TOKEN=\"$INPUT_GITHUB_TOKEN\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo "export TOKEN=\"$TOKEN\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+
+	# No production use.
+	echo "export nonet=\"$nonet\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo "export devfast=\"$devfast\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo "export skimfast=\"$skimfast\"" >> "$safeTmp"/cygwin_sudo_temp.sh
+
+	local currentParam1
+	while _sudo_cygwin-if_parameter-skip2 "$@" || _sudo_cygwin-if_parameter-skip1 "$@"
+	do
+		currentParam1="$1"
+
+		if _sudo_cygwin-if_parameter-skip2 "$currentParam1"
+		then
+			! shift && _messageFAIL
+			! shift && _messageFAIL
+			currentParam1=""
+		fi
+
+		if _sudo_cygwin-if_parameter-skip1 "$currentParam1"
+		then
+			! shift && _messageFAIL
+			currentParam1=""
+		fi
+	done
+
+	#echo 'local currentExitStatus' >> "$safeTmp"/cygwin_sudo_temp.sh
 	_safeEcho_newline "$safeTmp"/_bin.bat "$@" >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo 'currentExitStatus=$?' >> "$safeTmp"/cygwin_sudo_temp.sh
 	echo 'echo > "'"$safeTmp"'"/sequenceDone_'"$ubiquitousBashID" >> "$safeTmp"/cygwin_sudo_temp.sh
 	echo 'sleep 3' >> "$safeTmp"/cygwin_sudo_temp.sh
+	echo 'exit $currentExitStatus' >> "$safeTmp"/cygwin_sudo_temp.sh
 	chmod u+x "$safeTmp"/cygwin_sudo_temp.sh
 	
 	
@@ -859,6 +902,7 @@ _sudo_cygwin_sequence() {
 	chmod u+x "$safeTmp"/"$currentScriptBasename"
 	
 	cp "$scriptLib"/ubiquitous_bash/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
+	#cp /home/root/.ubcore/ubiquitous_bash/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
 	cp -f "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
 	chmod u+x "$safeTmp"/_bin.bat
 
@@ -904,22 +948,22 @@ _sudo_cygwin() {
 if _if_cygwin && type cygstart > /dev/null 2>&1
 then
 	sudo_cygwin() {
-		[[ "$1" == "-n" ]] && shift
+		#[[ "$1" == "-n" ]] && shift
 		if type cygstart > /dev/null 2>&1
 		then
 			_sudo_cygwin "$@"
 			#cygstart --action=runas "$@"
 			#"$@"
 			return
-		else
-			"$@"
-			return
 		fi
+		
+		"$@"
+		return
 		
 		return 1
 	}
 	sudoc() {
-		[[ "$1" == "-n" ]] && return 1
+		#[[ "$1" == "-n" ]] && return 1
 		sudo_cygwin "$@"
 	}
 	alias sudo=sudoc
@@ -1630,7 +1674,7 @@ _mitigate-ubcp_rewrite_procedure() {
 			fi
 		fi
 		
-		
+		[[ -e "$processedLinkDirective" ]] && rm -f "$currentLinkFolder"/"$currentLinkFile"
 		
 		ln -sf "$processedLinkDirective" "$currentLinkFolder"/"$currentLinkFile"
 		
@@ -1842,10 +1886,10 @@ _mitigate-ubcp_directory() {
 _mitigate-ubcp() {
 	export mitigate_ubcp_modifySymlink='true'
 	export mitigate_ubcp_replaceSymlink='false'
-	_mitigate-ubcp_directory "$@"
+	"$scriptAbsoluteLocation" _mitigate-ubcp_directory "$@"
 	
 	export mitigate_ubcp_replaceSymlink='true'
-	_mitigate-ubcp_directory "$@"
+	"$scriptAbsoluteLocation" _mitigate-ubcp_directory "$@"
 }
 
 
@@ -3900,6 +3944,7 @@ _messageFAIL() {
 	_messageError "FAIL"
 	#echo " FAIL "
 	_stop 1
+	exit 1
 	return 0
 }
 
@@ -6254,6 +6299,9 @@ _getMost_debian12_install() {
 
 	#_getMost_backend_aptGetInstall virtualbox-7.0
 	_getMost_backend_aptGetInstall virtualbox-7.1
+
+
+	_getMost_backend_aptGetInstall git-filter-repo
 }
 
 _getMost_debian11_install() {
@@ -10435,6 +10483,49 @@ _gitUp() {
 
 
 
+# DANGER: Intended for use ONLY by dist/OS build scripts and similar within ChRoot, ephemeral containers, or other at least mostly replaceable root filesystems.
+# The dangerous function is not defined by default and only becomes available after running gitFresh_enable
+#
+# ATTRIBUTION-AI: DeepSeek-R1-Distill-Llama-70B  2025-03-15
+# Define the enable function
+_gitFresh_enable() {
+    if [[ "$ub_dryRun" == "true" ]]
+    then
+        _stop
+        exit
+        return
+    fi
+	
+	# Define the dangerous function here
+	#_gitFresh() {
+		#[[ "$PWD" == "/" ]] && return 1
+		#[[ "$PWD" == "-"* ]] && return 1
+
+		#[[ "$PWD" == "/home" ]] && return 1
+		#[[ "$PWD" == "/home/" ]] && return 1
+		#[[ "$PWD" == "/home/$USER" ]] && return 1
+		#[[ "$PWD" == "/home/$USER/" ]] && return 1
+		#[[ "$PWD" == "/$USER" ]] && return 1
+		#[[ "$PWD" == "/$USER/" ]] && return 1
+		
+		#[[ "$PWD" == "/tmp" ]] && return 1
+		#[[ "$PWD" == "/tmp/" ]] && return 1
+		
+		#[[ "$PWD" == "$HOME" ]] && return 1
+		#[[ "$PWD" == "$HOME/" ]] && return 1
+		
+		#find . -not -path '\.\/\.git*' -delete
+	#}
+	# ATTRIBUTION-AI: DeepSeek-R1-Distill-Llama-8B  2025-03-15
+	#  Do NOT take that as an endorsement of a chain-of-reasoning 8B model, way too few parameters for that. This was one result of very many.
+	source <(echo "_gitFresh() { [[ "$PWD" == "/" ]] && return 1 ; [[ "$PWD" == "-"* ]] && return 1 ; [[ "$PWD" == "/home" ]] && return 1 ; [[ "$PWD" == "/home/" ]] && return 1 ; [[ "$PWD" == "/home/$USER" ]] && return 1 ; [[ "$PWD" == "/home/$USER/" ]] && return 1 ; [[ "$PWD" == "/$USER" ]] && return 1 ; [[ "$PWD" == "/$USER/" ]] && return 1 ; [[ "$PWD" == "/tmp" ]] && return 1 ; [[ "$PWD" == "/tmp/" ]] && return 1 ; [[ "$PWD" == "$HOME" ]] && return 1 ; [[ "$PWD" == "$HOME/" ]] && return 1 ; find . -not -path '\.\/\.git*' -delete ; }")
+
+	# Export the function to make it available
+	export -f _gitFresh
+}
+
+
+
 
 
 
@@ -12483,6 +12574,281 @@ build-1001-1" ]] || ( _messagePlain_bad 'fail: bad: _wget_githubRelease_procedur
 
 
 
+
+
+
+
+
+
+
+# ### NOTICE ###
+# gitCompendium
+# custom/upgrade functions for git repositories and for all git repositories owned by an organization
+# Mostly used by ubDistBuild and derivatives to custom/upgrade Operating Systems for organizations with both the tools and development resources to backup (ie. to optical disc), create workstations, create replacement repository servers, etc. Continuous Integration (CI) can keep such a backup/workstation/replacement dist/OS always recent enough to rely on, and small enough to frequently, conveniently, distribute on the coldest of cold storage to vaults, as well as data preservation facilities.
+#
+# Also sometimes useful to somewhat automatically upgrade an organization's existing workstation, server, etc.
+
+
+
+# EXAMPLE
+#_ubdistChRoot_backend_begin
+#_backend_override _compendium_git-custom-repo installations,infrastructure,c/Corporation_ABBREVIATION GitHub_ORGANIZATION,USER repositoryName --depth 1
+#_ubdistChRoot_backend_end
+
+# EXAMPLE
+#_repo-GitHub_ORGANIZATION() { _backend_override _compendium_git-custom-repo installations,infrastructure,c/Corporation_ABBREVIATION GitHub_ORGANIZATION,USER repositoryName --depth 1 ; }
+#_ubdistChRoot_backend _repo-GitHub_ORGANIZATION
+
+
+
+# DANGER: Only use within ephemeral CI, ChRoot, etc.
+#_compendium_gitFresh
+# |___ _compendium_gitFresh_sequence
+
+
+#_compendium_git-upgrade-repo
+# |___ _compendium_git-custom-repo
+#
+#     |___ _compendium_git_sequence-custom-repo
+
+
+#_compendium_git-upgrade-repo-org
+# |___ _compendium_git-custom-repo-org
+#
+#     |___ _compendium_git_sequence_sequence-custom-repo-org *
+#         |___ _compendium_git_sequence-custom-repo-org
+#
+#             |___ _compendium_git-custom-repo
+
+
+#_compendium_git-upgrade-repo-user
+# |___ _compendium_git-custom-repo-user
+#
+#     |___ _compendium_git_sequence_sequence-custom-repo-user *
+#         |___ _compendium_git_sequence-custom-repo-org
+#
+#             |___ _compendium_git-custom-repo
+
+
+
+
+#_ubdistChRoot _compendium_git-custom-repo installations,infrastructure,c/Corporation_ABBREVIATION GitHub_ORGANIZATION,USER repositoryName --depth 1
+_compendium_git_sequence-custom-repo() {
+    _messageNormal '\/ \/ \/ _compendium_git-custom-repo: '"$@"
+
+    _start
+    local functionEntryPWD
+    functionEntryPWD="$PWD"
+
+    local current_coreSubDir="$1"
+    local current_GitHubORGANIZATION="$2"
+    local current_repositoryName="$3"
+
+    shift ; shift ; shift
+
+    [[ "$GH_TOKEN" == "" ]] && _messagePlain_warn 'warn: missing: GH_TOKEN'
+
+    export INPUT_GITHUB_TOKEN="$GH_TOKEN"
+
+    if [[ -e /home/user/core/"$current_coreSubDir"/"$current_repositoryName" ]]
+    then
+        [[ "$ub_dryRun" != "true" ]] && mkdir -p /home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+        [[ "$ub_dryRun" != "true" ]] && cd /home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+
+        _messagePlain_probe git checkout "HEAD"
+        [[ "$ub_dryRun" != "true" ]] && ! git checkout "HEAD" && _messageFAIL
+        _messagePlain_probe _gitBest pull
+        [[ "$ub_dryRun" != "true" ]] && ! "$scriptAbsoluteLocation" _gitBest pull && _messageFAIL
+        _messagePlain_probe _gitBest submodule update --init "$@" --recursive
+        [[ "$ub_dryRun" != "true" ]] && ! "$scriptAbsoluteLocation" _gitBest submodule update --init "$@" --recursive && _messageFAIL
+    fi
+
+    #else
+    if ! [[ -e /home/user/core/"$current_coreSubDir"/"$current_repositoryName" ]]
+    then
+        [[ "$ub_dryRun" != "true" ]] && mkdir -p /home/user/core/"$current_coreSubDir"
+        [[ "$ub_dryRun" != "true" ]] && cd /home/user/core/"$current_coreSubDir"
+        
+        _messagePlain_probe _gitBest clone --recursive "$@" 'git@github.com:'"$current_GitHubORGANIZATION"'/'"$current_repositoryName"'.git'
+        [[ "$ub_dryRun" != "true" ]] && ! "$scriptAbsoluteLocation" _gitBest clone --recursive "$@" 'git@github.com:'"$current_GitHubORGANIZATION"'/'"$current_repositoryName"'.git' && _messageFAIL
+    fi
+    
+    
+    [[ "$ub_dryRun" != "true" ]] && ! ls /home/user/core/"$current_coreSubDir"/"$current_repositoryName" && _messageFAIL
+
+    cd "$functionEntryPWD"
+    _stop
+}
+_compendium_git-custom-repo() {
+    "$scriptAbsoluteLocation" _compendium_git_sequence-custom-repo "$@"
+}
+_compendium_git-upgrade-repo() {
+    _compendium_git-custom-repo "$@"
+}
+
+
+
+#_ubdistChRoot _compendium_git-custom-repo-org c/Corporation_ABBREVIATION GitHub_ORGANIZATION --depth 1
+_compendium_git_sequence-custom-repo-org() {
+    _messageNormal '\/ _compendium_git_sequence-custom-repo-org: '"$@"
+
+    _start
+    local functionEntryPWD
+    functionEntryPWD="$PWD"
+
+    local current_coreSubDir="$1"
+    local current_GitHubORGANIZATION="$2"
+
+    shift ; shift
+
+
+    export INPUT_GITHUB_TOKEN="$GH_TOKEN"
+
+    [[ "$ub_dryRun" != "true" ]] && mkdir -p /home/user/core/"$current_coreSubDir"
+    [[ "$ub_dryRun" != "true" ]] && cd /home/user/core/"$current_coreSubDir"
+
+    local currentPage
+    local currentRepository
+    local currentRepositoryNumber
+
+    if [[ "$ub_dryRun" == "true" ]]
+    then
+        currentPage=1
+        currentRepository="doNotMatch"
+        currentRepositoryNumber=1
+        local repositoryCount="99"
+        #&& [[ "$repositoryCount" -gt "0" ]]
+        while [[ "$currentPage" -le "10" ]] && [[ "$repositoryCount" -gt "0" ]]
+        do
+            _messagePlain_probe 'repository counts...'
+            # get list of repository urls
+            repositoryCount=$(curl --no-fail --retry 5 --retry-delay 90 --connect-timeout 45 --max-time 600 -s -H 'Authorization: token '"$GH_TOKEN" 'https://api.github.com/'"$current_API"'/'"$current_GitHubORGANIZATION"'/repos?per_page=30&page='"$currentPage" | grep  "^    \"git_url\"" | awk -F': "' '{print $2}' | sed -e 's/",//g' | wc -w)
+            
+            echo "$repositoryCount"
+
+            let currentPage="$currentPage"+1
+
+            sleep 1
+        done
+    fi
+
+    currentPage=1
+    currentRepository="doNotMatch"
+    currentRepositoryNumber=1
+    while [[ "$currentPage" -le "10" ]] && [[ "$currentRepository" != "" ]]
+    do
+        currentRepository=""
+        
+        # ATTRIBUTION-AI: ChatGPT ...
+        # https://platform.openai.com/playground/p/6it5h1B901jvAblUhdbsPHEN?model=text-davinci-003
+        #curl -s https://api.github.com/"$current_API"/$current_GitHubORGANIZATION/repos?per_page=30 | jq -r '.[].git_url'
+        #for currentRepository in $(curl -s -H 'Authorization: token '"$GH_TOKEN" 'https://api.github.com/'"$current_API"'/'"$current_GitHubORGANIZATION"'/repos?per_page=30&page='"$currentPage" | grep  "^    \"git_url\"" | awk -F': "' '{print $2}' | sed -e 's/",//g' | sed 's/git:\/\/github.com\/'"$current_GitHubORGANIZATION"'\//git@github.com:'"$current_GitHubORGANIZATION"'\//g')
+        # ATTRIBUTION-AI: claude-37.-sonnet:thinking
+        for currentRepository in $(curl --no-fail --retry 5 --retry-delay 90 --connect-timeout 45 --max-time 600 -s -H "Authorization: token $GH_TOKEN" 'https://api.github.com/'"$current_API"'/'"$current_GitHubORGANIZATION"'/repos?per_page=30&page='"$currentPage" | jq -r '.[].name' | tr -dc 'a-zA-Z0-9\-_.:\n')
+        do
+            sleep 1
+            
+            _messageNormal '\/ \/' _compendium_git-custom-repo "$current_coreSubDir" "$current_GitHubORGANIZATION" "$currentRepository" "$@"
+            #_messagePlain_probe _compendium_git-custom-repo "$current_coreSubDir" "$current_GitHubORGANIZATION" "$currentRepository" "$@"
+            _messagePlain_probe_var currentRepositoryNumber
+            if ! _compendium_git-custom-repo "$current_coreSubDir" "$current_GitHubORGANIZATION" "$currentRepository" "$@"
+            then
+                _messageFAIL
+            fi
+
+            sleep 1
+            let currentRepositoryNumber="$currentRepositoryNumber"+1
+        done
+
+        #[[ "$currentRepository" == "doNotMatch" ]] && currentRepository=""
+
+        let currentPage="$currentPage"+1
+    done
+
+    cd "$functionEntryPWD"
+    _stop
+}
+_compendium_git_sequence_sequence-custom-repo-user() {
+    export current_API="users"
+    "$scriptAbsoluteLocation" _compendium_git_sequence-custom-repo-org "$@"
+}
+_compendium_git-custom-repo-user() {
+    "$scriptAbsoluteLocation" _compendium_git_sequence_sequence-custom-repo-user "$@"
+}
+_compendium_git-upgrade-repo-user() {
+    _compendium_git-custom-repo-user "$@"
+}
+_compendium_git_sequence_sequence-custom-repo-org() {
+    export current_API="orgs"
+    "$scriptAbsoluteLocation" _compendium_git_sequence-custom-repo-org "$@"
+}
+_compendium_git-custom-repo-org() {
+    "$scriptAbsoluteLocation" _compendium_git_sequence_sequence-custom-repo-org "$@"
+}
+_compendium_git-upgrade-repo-org() {
+    _compendium_git-custom-repo-org "$@"
+}
+
+
+
+
+
+
+
+# DANGER: Only use within ephemeral CI, ChRoot, etc.
+#_ubdistChRoot _compendium_gitFresh installations,infrastructure,c/Corporation_ABBREVIATION repositoryName --depth 1
+_compendium_gitFresh() {
+    if [[ "$ub_dryRun" == "true" ]]
+    then
+        _stop
+        exit
+        return
+    fi
+
+    local current_coreSubDir="$1"
+    local current_repositoryName="$2"
+
+    mkdir -p /home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+    
+    if ! cd /home/user/core/"$current_coreSubDir"/"$current_repositoryName" || ! [[ -e /home/user/core/"$current_coreSubDir"/"$current_repositoryName" ]]
+    then 
+        _messageError 'bad: FAIL: cd '/home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+        _messageFAIL
+        exit 1
+    fi
+
+    "$scriptAbsoluteLocation" _compendium_gitFresh_sequence "$current_coreSubDir" "$current_repositoryName"
+}
+_compendium_gitFresh_sequence() {
+    if [[ "$ub_dryRun" == "true" ]]
+    then
+        _stop
+        exit
+        return
+    fi
+
+    _start
+
+    local current_coreSubDir="$1"
+    local current_repositoryName="$2"
+
+    mkdir -p /home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+    
+    if ! cd /home/user/core/"$current_coreSubDir"/"$current_repositoryName" || ! [[ -e /home/user/core/"$current_coreSubDir"/"$current_repositoryName" ]]
+    then 
+        _messageError 'bad: FAIL: cd '/home/user/core/"$current_coreSubDir"/"$current_repositoryName"
+        _messageFAIL
+        exit 1
+    fi
+
+    # DANGER: Only use within ephemeral CI, ChRoot, etc.
+    [[ "$ub_dryRun" != "true" ]] && _gitFresh_enable
+    [[ "$ub_dryRun" != "true" ]] && _gitFresh
+    unset _gitFresh > /dev/null 2>&1
+    unset -f _gitFresh > /dev/null 2>&1
+
+    _stop
+}
 
 
 
@@ -15194,8 +15560,11 @@ _setupUbiquitous() {
 	fi
 	
 	mkdir -p "$ubHome"/bin/
+	rm -f "$ubHome"/bin/ubiquitous_bash.sh
 	ln -sf "$ubcoreUBfile" "$ubHome"/bin/ubiquitous_bash.sh
+	rm -f "$ubHome"/bin/_winehere
 	ln -sf "$ubcoreUBfile" "$ubHome"/bin/_winehere
+	rm -f "$ubHome"/bin/_winecfghere
 	ln -sf "$ubcoreUBfile" "$ubHome"/bin/_winecfghere
 	
 	echo '#!/bin/bash
@@ -15380,6 +15749,7 @@ _refresh_anchors_user_single_procedure() {
 	# Limited to specifically named anchor symlinks, defined in "_associate_anchors_request", typically overloaded with 'core.sh' or similar.
 	# Usually requested 'manually' through "_setup" or "_anchor", even if called through a multi-installation request.
 	# Incorrectly calling a moved, uninstalled, or otherwise incorrect previous version, of linked software, is anticipated to be a more commonly impose greater risk.
+	rm -f "$HOME"/bin/"$1""$ub_anchor_suffix"
 	#ln -s "$scriptAbsoluteFolder"/"$1""$ub_anchor_suffix" "$HOME"/bin/ > /dev/null 2>&1
 	ln -sf "$scriptAbsoluteFolder"/"$1""$ub_anchor_suffix" "$HOME"/bin/
 	
@@ -22757,6 +23127,8 @@ _ubDistFetch() {
 	#mkdir -p "$scriptLib"/core/info
 	cd "$scriptLib"/core/info
 	
+	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/info aa_DAMAGE_CONTROL
+	
 	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/info issues
 
 
@@ -23212,6 +23584,8 @@ _upgrade_sequence() {
     _upgrade_repository /home/user/core/variant/ubdist_dummy
 
     _upgrade_repository /home/user/core/variant/ubdist_puddleJumper
+
+    _upgrade_repository /home/user/core/info/aa_DAMAGE_CONTROL
 
     _upgrade_repository /home/user/core/info/issues
 
@@ -24020,6 +24394,33 @@ then
 	fi
 fi
 
+
+# ATTENTION: May be redundantly redefined (ie. overloaded) if appropriate (eg. for use outside a 'ubiquitous_bash' environment).
+_backend_override() {
+	! type -f _backend > /dev/null 2>&1 && _backend() { "$@" ; unset -f _backend ; }
+	_backend "$@"
+}
+## ...
+## EXAMPLE
+#! _openChRoot && _messageFAIL
+## ...
+#_backend() { _ubdistChRoot "$@" ; }
+#_backend_override echo test
+#unset -f _backend
+## ...
+#! _closeChRoot && _messageFAIL
+## ...
+## EXAMPLE
+#_ubdistChRoot_backend_begin
+#_backend_override echo test
+#_ubdistChRoot_backend_end
+## ...
+## EXAMPLE
+#_experiment() { _backend_override echo test ; }
+#_ubdistChRoot_backend _experiment
+
+
+
 #wsl '~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh' '_wrap' kwrite './gpl-3.0.txt'
 #wsl '~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh' '_wrap' ldesk
 _wrap() {
@@ -24135,7 +24536,18 @@ _python() {
 _sudo() {
 	_safe_declare_uid
 	
-	sudo -n "$scriptAbsoluteLocation" _bin "$@"
+	if ! _if_cygwin
+	then
+		sudo -n "$scriptAbsoluteLocation" _bin "$@"
+		return
+	fi
+	if _if_cygwin
+	then
+		_sudo_cygwin "$@"
+		return
+	fi
+	
+	return 1
 }
 
 _true() {
