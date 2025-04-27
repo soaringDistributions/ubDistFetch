@@ -243,6 +243,9 @@ _upgrade_sequence() {
     _upgrade_repository /home/user/core/installations/ChannelScanKit
 
     _upgrade_repository /home/user/core/installations/mouserTools
+    
+
+    _upgrade_repository /home/user/core/installations/huggingface_cli
 
 
     _upgrade_repository /home/user/core/infrastructure/ubDistBuild

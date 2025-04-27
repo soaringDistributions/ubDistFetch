@@ -393,6 +393,9 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations C_CMake_Template
 
 
+	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations huggingface_cli
+
+
 
 	
 
