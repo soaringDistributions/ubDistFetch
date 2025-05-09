@@ -266,6 +266,9 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations getHardware-CoralTPU
 
 
+	_ubDistFetch_gitBestFetch_github_distllc "$scriptLib"/core/installations libcudadev_stub
+
+
 	_ubDistFetch_gitBestFetch_github_mirage335 "$scriptLib"/core/installations freecad-converter
 	
 	
