@@ -531,6 +531,7 @@ _ubDistFetch() {
 
 	
 	cd "$scriptLib"/core/infrastructure
+	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ollama
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure virtuousCritter
 
