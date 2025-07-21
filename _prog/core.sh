@@ -114,11 +114,13 @@ _ubDistFetch() {
 	_safeRMR "$scriptLib"/core/installations
 	_safeRMR "$scriptLib"/core/variant
 	_safeRMR "$scriptLib"/core/info
+	_safeRMR "$scriptLib"/core/cognition
 	
 	mkdir -p "$scriptLib"/core/infrastructure
 	mkdir -p "$scriptLib"/core/installations
 	mkdir -p "$scriptLib"/core/variant
 	mkdir -p "$scriptLib"/core/info
+	mkdir -p "$scriptLib"/core/cognition
 	
 	rm -f "$scriptLib"/FAIL > /dev/null 2>&1
 	
@@ -532,8 +534,6 @@ _ubDistFetch() {
 	
 	cd "$scriptLib"/core/infrastructure
 	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure ollama
-	
-	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure virtuousCritter
 
 
 
@@ -752,6 +752,18 @@ _ubDistFetch() {
 	_ubDistFetch_gitBestFetch_github_mirage335-gizmos "$scriptLib"/core/info aa_DAMAGE_CONTROL
 	
 	_ubDistFetch_gitBestFetch_github_mirage335-special "$scriptLib"/core/info issues
+
+
+	mkdir -p "$scriptLib"/core
+	cd "$scriptLib"/core
+
+	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core cognition
+
+
+	#mkdir -p "$scriptLib"/infrastructure
+	#cd "$scriptLib"/core/infrastructure
+	
+	#_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core/infrastructure virtuousCritter
 
 
 	cd "$scriptLib"
