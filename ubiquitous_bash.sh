@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+if [[ "$ubDEBUG" == "true" ]] ; then set +x ; set +E ; set +o functrace ; set +o errtrace ; export -n SHELLOPTS 2>/dev/null || true ; trap '' RETURN ; trap - RETURN ; fi
+
 [[ "$PATH" != *"/usr/local/bin"* ]] && [[ -e "/usr/local/bin" ]] && export PATH=/usr/local/bin:"$PATH"
 [[ "$PATH" != *"/usr/bin"* ]] && [[ -e "/usr/bin" ]] && export PATH=/usr/bin:"$PATH"
 [[ "$PATH" != *"/bin:"* ]] && [[ -e "/bin" ]] && export PATH=/bin:"$PATH"
@@ -33,10 +35,11 @@ _ub_cksum_special_derivativeScripts_contents() {
 }
 ##### CHECKSUM BOUNDARY - 30 lines
 
+[[ "$ubDEBUG" == "true" ]] && export ub_setScriptChecksum_disable='true'
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
-export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='2019291414'
+export ub_setScriptChecksum_header='3620520443'
+export ub_setScriptChecksum_contents='1518893782'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -677,13 +680,14 @@ fi
 # ATTENTION: Workaround - Cygwin Portable - append MSW PATH if reasonable.
 # NOTICE: Also see '_test-shell-cygwin' .
 # MSWEXTPATH lengths up to 33, 38, are known reasonable values.
+# As of 2025-05-20 , a development system, VSCode PowerShell terminal, has been known to impose 45 such lines on MSWEXTPATH , other PowerShell terminal imposed 41 such lines. Limit of 44 lines at the time was exceeded.
 if [[ "$MSWEXTPATH" != "" ]] && ( [[ "$PATH" == *"/cygdrive"* ]] || [[ "$PATH" == "/cygdrive"* ]] ) && [[ "$convertedMSWEXTPATH" == "" ]] && _if_cygwin
 then
-	if [[ $(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9') -le 44 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 44 ]]
-	then
-		export convertedMSWEXTPATH=$(cygpath -p "$MSWEXTPATH")
-		export PATH=/usr/bin:"$convertedMSWEXTPATH":"$PATH"
-	fi
+        if [[ $(echo "$MSWEXTPATH" | grep -o ';' | wc -l | tr -dc '0-9') -le 99 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 99 ]]
+        then
+                export convertedMSWEXTPATH=$(cygpath -p "$MSWEXTPATH")
+                export PATH=/usr/bin:"$convertedMSWEXTPATH":"$PATH"
+        fi
 fi
 
 
@@ -1025,6 +1029,18 @@ then
 	#}
 	#alias l='_wsl'
 	alias u='_wsl'
+	
+	# MSWindows native 'PowerSession' apparently does not support 'asciinema cat'.
+	#alias asciinema='PowerSession'
+
+	# Optional. Other than recording, and some issues with 'asciinema cat', pip installed 'asciinema' seems usable .
+	# Use _asciinema_record to record .
+	alias asciinema='wsl -d ubdist asciinema'
+
+	#alias codex='wsl -d ubdist codex'
+	alias codex='wsl -d ubdist "~/.ubcore/ubiquitous_bash/ubcore.sh" _codexBin-usr_bin_node'
+
+	alias codexNative=$(type -P codex 2>/dev/null)
 fi
 	
 _sudo_cygwin-if_parameter-skip2() {
@@ -1205,13 +1221,26 @@ _userMSW() {
 	"${processedArgs[@]}"
 }
 
-
-_powershell() {
-    local currentPowershellBinary
+_discover_powershell() {
+	local currentPowershellBinary
     currentPowershellBinary=$(find /cygdrive/c/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
     [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/d/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
     [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/e/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
     [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/f/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+	
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /mnt/c/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /mnt/d/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /mnt/e/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /mnt/f/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+
+	_safeEcho "$currentPowershellBinary"
+	[[ "$currentPowershellBinary" != "" ]] && return 0
+	return 1
+}
+
+_powershell() {
+    local currentPowershellBinary
+    currentPowershellBinary=$(_discover_powershell)
 
 	#_userMSW "$currentPowershellBinary" "$@"
     "$currentPowershellBinary" "$@"
@@ -1498,6 +1527,31 @@ then
 		kate -n "$@"
 	}
 
+	code() {
+		local current_workdir
+		#current_workdir=$(_getAbsoluteFolder "$1")
+		current_workdir=$(_searchBaseDir "$@")
+		current_workdir=$(cygpath -w "$current_workdir")
+
+
+		local currentArg
+		local currentResult
+		processedArgs=()
+		for currentArg in "$@"
+		do
+			if [[ -e "$currentArg" ]] || [[ "$currentArg" == "/cygdrive/"* ]] || [[ "$currentArg" == "/home/"* ]] || [[ "$currentArg" == "/root/"* ]]
+			then
+				currentResult=$(cygpath -w "$currentArg")
+			else
+				currentResult="$currentArg"
+			fi
+			
+			processedArgs+=("$currentResult")
+		done
+
+		"$(type -P code)" --new-window "${processedArgs[@]}" --new-window "$current_workdir"
+	}
+
 	_aria2c_cygwin_overide() {
 		if _safeEcho_newline "$@" | grep '\--async-dns' > /dev/null
 		then
@@ -1564,6 +1618,7 @@ _setup_ubiquitousBash_cygwin_procedure_root() {
 }
 
 _setup_ubiquitousBash_cygwin_procedure() {
+	#/cygdrive/c/q/p/zCore/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _setupUbiquitous
 	[[ "$scriptAbsoluteFolder" != '/cygdrive'* ]] && _stop 1
 	
 	_messagePlain_nominal 'init: _setup_ubiquitousBash_cygwin'
@@ -1677,6 +1732,14 @@ _setup_ubiquitousBash_cygwin_procedure() {
 	# ATTENTION: NOTICE: Any installer for developers which relies on unpacking directories to '/core/infrastructure' must also add this to '/' .
 	# Having '_bash.bat' at '/' normally allows developers to get a bash prompt from both 'CMD' and 'PowerShell' terminal windows by '/_bash' command.
 	cp "$scriptAbsoluteFolder"/_bash.bat "$currentCygdriveC_equivalent"/
+
+
+	# ATTENTION: Bad idea. UNIX style line endings have been tested compatible with: cmd/MSWindows, Cygwin/MSW (bash), ubdist/WSL2. Presumably also compatible with UNIX/Linux .
+	#unix2dos "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/*.bat
+	#unix2dos "$currentCygdriveC_equivalent"/_bash.bat
+
+	#unix2dos "$cygwinMSWmenuDir"/ubiquitous_bash/_bash.bat
+	#unix2dos "$cygwinMSWdesktopDir"/_bash.bat
 	
 	
 	_messagePlain_good 'done: _setup_ubiquitousBash_cygwin: lean'
@@ -1996,7 +2059,7 @@ _mitigate-ubcp_rewrite_sequence() {
 	# https://serverfault.com/questions/193319/a-better-unix-find-with-parallel-processing
 	# https://stackoverflow.com/questions/11003418/calling-shell-functions-with-xargs
 	export -f "_mitigate-ubcp_rewrite_parallel"
-	find "$2" -type l -print0 | xargs -0 -x -s 4096 -L 6 -P $(nproc) bash -c '_mitigate-ubcp_rewrite_parallel "$@"' _
+	find "$2" -type l -print0 | xargs -0 -x -s 3072 -L 6 -P $(nproc) bash -c '_mitigate-ubcp_rewrite_parallel "$@"' _
 	#find "$2" -type l -print0 | xargs -0 -n 1 -P 4 -I {} bash -c '_mitigate-ubcp_rewrite_parallel "$@"' _ {}
 	#find "$2" -type l -print0 | xargs -0 -n 1 -P 4 -I {} bash -c '_mitigate-ubcp_rewrite_procedure "$@"' _ {}
 	
@@ -2188,6 +2251,18 @@ _package-cygwin() {
 _if_wsl() {
     uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1
 }
+
+if [[ "$WSL_DISTRO_NAME" != "" ]] && _if_wsl
+then
+    
+    # WARNING: CAUTION: Adding some native MSWindows programs from MSWindows path (eg. python) may cause conflicts with native WSL/Linux equivalent programs, etc.
+    
+    # NOTICE: Native ubdist/OS, WSL/Linux, etc, equivalent, is 'xdg-open', etc .
+    #! type explorer > /dev/null 2>&1 && [[ -e /mnt/c/Windows/System32/explorer.exe ]] && explorer() { /mnt/c/Windows/System32/explorer.exe "$@"; }
+    ! type explorer > /dev/null 2>&1 && [[ -e /mnt/c/Windows/explorer.exe ]] && explorer() { /mnt/c/Windows/explorer.exe "$@"; }
+    #! type explorer > /dev/null 2>&1 && [[ -e /mnt/d/Windows/System32/explorer.exe ]] && explorer() { /mnt/d/Windows/System32/explorer.exe "$@"; }
+    ! type explorer > /dev/null 2>&1 && [[ -e /mnt/d/Windows/explorer.exe ]] && explorer() { /mnt/d/Windows/explorer.exe "$@"; }
+fi
 
 
 
@@ -2582,20 +2657,21 @@ _cygwin_translation_rootFileParameter() {
 
 #Critical prerequsites.
 _getAbsolute_criticalDep() {
-	#  ! type realpath > /dev/null 2>&1 && return 1
-	! type readlink > /dev/null 2>&1 && return 1
-	! type dirname > /dev/null 2>&1 && return 1
-	! type basename > /dev/null 2>&1 && return 1
+	#  ! type realpath > /dev/null 2>&1 && exit 1
+	! type readlink > /dev/null 2>&1 && exit 1
+	! type dirname > /dev/null 2>&1 && exit 1
+	! type basename > /dev/null 2>&1 && exit 1
 	
 	#Known to succeed under BusyBox (OpenWRT), NetBSD, and common Linux variants. No known failure modes. Extra precaution.
-	! readlink -f . > /dev/null 2>&1 && return 1
+	! readlink -f . > /dev/null 2>&1 && exit 1
 	
-	! echo 'qwerty123.git' | grep '\.git$' > /dev/null 2>&1 && return 1
-	echo 'qwerty1234git' | grep '\.git$' > /dev/null 2>&1 && return 1
+	! echo 'qwerty123.git' | grep '\.git$' > /dev/null 2>&1 && exit 1
+	echo 'qwerty1234git' | grep '\.git$' > /dev/null 2>&1 && exit 1
 	
 	return 0
 }
-! _getAbsolute_criticalDep && exit 1
+#! _getAbsolute_criticalDep && exit 1
+_getAbsolute_criticalDep
 
 #Retrieves absolute path of current script, while maintaining symlinks, even when "./" would translate with "readlink -f" into something disregarding symlinked components in $PWD.
 #However, will dereference symlinks IF the script location itself is a symlink. This is to allow symlinking to scripts to function normally.
@@ -3231,9 +3307,9 @@ _terminateAll_procedure() {
 	while read -r currentPID
 	do
 		pkill -P "$currentPID"
-		sudo -n pkill -P "$currentPID"
+		! _if_cygwin && sudo -n pkill -P "$currentPID"
 		kill "$currentPID"
-		sudo -n kill "$currentPID"
+		! _if_cygwin && sudo -n kill "$currentPID"
 	done < "$processListFile"
 	
 	if [[ "$ub_kill" == "true" ]]
@@ -3242,9 +3318,9 @@ _terminateAll_procedure() {
 		while read -r currentPID
 		do
 			pkill -KILL -P "$currentPID"
-			sudo -n pkill -KILL -P "$currentPID"
+			! _if_cygwin && sudo -n pkill -KILL -P "$currentPID"
 			kill -KILL "$currentPID"
-			sudo -n kill -KILL "$currentPID"
+			! _if_cygwin && sudo -n kill -KILL "$currentPID"
 		done < "$processListFile"
 	fi
 	
@@ -3401,11 +3477,15 @@ _permissions_ubiquitous_repo() {
 	return 0
 }
 
-_test_permissions_ubiquitous-cygwin() {
+_test_permissions_ubiquitous-exception() {
+	_if_cygwin && echo 'warn: accepted: cygwin: permissions' && return 0
+
+	# Possible shared filesystem mount without correct permissions from the host .
+	[[ -e /.dockerenv ]] && echo 'warn: accepted: docker: permissions' && return 0
+
+
 	! _if_cygwin && _stop 1
 	#  ! _if_cygwin && _stop "$1"
-	
-	_if_cygwin && echo 'warn: accepted: cygwin: permissions' && return 0
 }
 
 #Checks whether currently set "$scriptBin" and similar locations are actually safe.
@@ -3413,10 +3493,10 @@ _test_permissions_ubiquitous-cygwin() {
 _test_permissions_ubiquitous() {
 	[[ ! -e "$scriptAbsoluteFolder" ]] && _stop 1
 	
-	! _permissions_directory_checkForPath "$scriptAbsoluteFolder" && _test_permissions_ubiquitous-cygwin 1
+	! _permissions_directory_checkForPath "$scriptAbsoluteFolder" && _test_permissions_ubiquitous-exception 1
 	
-	[[ -e "$scriptBin" ]] && ! _permissions_directory_checkForPath "$scriptBin" && _test_permissions_ubiquitous-cygwin 1
-	[[ -e "$scriptBundle" ]] && ! _permissions_directory_checkForPath "$scriptBundle" && _test_permissions_ubiquitous-cygwin 1
+	[[ -e "$scriptBin" ]] && ! _permissions_directory_checkForPath "$scriptBin" && _test_permissions_ubiquitous-exception 1
+	[[ -e "$scriptBundle" ]] && ! _permissions_directory_checkForPath "$scriptBundle" && _test_permissions_ubiquitous-exception 1
 	
 	return 0
 }
@@ -6628,6 +6708,7 @@ _getMost_debian11_install() {
 
 	_getMost_backend_aptGetInstall bup
 	
+	# ATTENTION: WSL2 distribution instances may also need 'socat' for internal network port forwarding.
 	_getMost_backend_aptGetInstall bc autossh nmap socat sockstat rsync net-tools
 	_getMost_backend_aptGetInstall bc nmap autossh socat sshfs tor
 	_getMost_backend_aptGetInstall sockstat
@@ -6660,6 +6741,8 @@ _getMost_debian11_install() {
 	#_getMost_backend_aptGetInstall synergy quicksynergy
 	
 	_getMost_backend_aptGetInstall vim
+	
+	_getMost_backend_aptGetInstall strace
 
 	_getMost_backend_aptGetInstall man-db
 	
@@ -6791,6 +6874,9 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall libncurses-dev
 	_getMost_backend_aptGetInstall autoconf
 	_getMost_backend_aptGetInstall libudev-dev
+
+	_getMost_backend_aptGetInstall imagemagick
+	_getMost_backend_aptGetInstall graphicsmagick-imagemagick-compat
 
 	_getMost_backend_aptGetInstall dwarves
 	_getMost_backend_aptGetInstall pahole
@@ -7086,6 +7172,8 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall mawk
 	_getMost_backend_aptGetInstall nano
 	_getMost_backend_aptGetInstall nilfs-tools
+
+	_getMost_backend_aptGetInstall jq
 	
 	_getMost_backend_aptGetInstall build-essential
 	_getMost_backend_aptGetInstall bison
@@ -7230,6 +7318,9 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall nsis
 
 	_getMost_backend_aptGetInstall dos2unix
+
+
+	_getMost_backend_aptGetInstall xxd
 	
 	
 	# Sometimes may be useful as a workaround for docker 'overlay2' 'storage-driver' .
@@ -7251,6 +7342,7 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall mksquashfs
 	_getMost_backend_aptGetInstall grub-mkstandalone
 	_getMost_backend_aptGetInstall mkfs.vfat
+	_getMost_backend_aptGetInstall dosfstools
 	_getMost_backend_aptGetInstall mkswap
 	_getMost_backend_aptGetInstall mmd
 	_getMost_backend_aptGetInstall mcopy
@@ -7288,6 +7380,22 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall aptitude
 	_getMost_backend_aptGetInstall recode
 	_getMost_backend_aptGetInstall asciidoc
+	
+	_getMost_backend_aptGetInstall pandoc
+	_getMost_backend_aptGetInstall texlive-xetex
+	_getMost_backend_aptGetInstall texlive-latex-recommended
+	_getMost_backend_aptGetInstall texlive-latex-extra
+	_getMost_backend_aptGetInstall fonts-texgyre
+	_getMost_backend_aptGetInstall fonts-texgyre-math
+	_getMost_backend_aptGetInstall tex-gyre
+	_getMost_backend_aptGetInstall texlive-fonts-recommended
+	
+	_getMost_backend_aptGetInstall asciinema
+	_getMost_backend_aptGetInstall gifsicle imagemagick apngasm ffmpeg
+	_getMost_backend_aptGetInstall webp
+
+	_getMost_backend_aptGetInstall ansifilter
+	_getMost_backend_aptGetInstall ansifilter-gui
 	
 	
 	
@@ -7405,6 +7513,13 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall python3-torchaudio
 	_getMost_backend_aptGetInstall python3-torchtext
 	_getMost_backend_aptGetInstall python3-torchvision
+
+
+
+
+
+	_getMost_backend_aptGetInstall dialog
+	_getMost_backend_aptGetInstall whiptail
 	
 	
 	
@@ -7897,6 +8012,8 @@ _getMinimal_cloud() {
 	
 	_getMost_backend_aptGetInstall linux-image-amd64
 	
+	_getMost_backend_aptGetInstall strace
+	
 	# WARNING: Rust is not yet (2023-11-12) anywhere near as editable on the fly or pervasively available as bash .
 	#  Criteria for such are far more necessarily far more stringent than might be intuitively obvious.
 	#  Rust is expected to remain non-competitive with bash for purposes of 'ubiquitous_bash', even for reference implementations, for at least 6years .
@@ -8285,6 +8402,124 @@ _getMinimal_cloud() {
 }
 
 
+# Minimizes runtime (to avoid timeouts) and conflicts with installed software. Usually used by specialized Docker containers (eg. 'ghcr.io/openai/codex-universal' , 'openai-heavy' , etc) , within environments unable (unlike a usual VPS) to directly use a custom dist/OS (eg. OpenAI ChatGPT Codex WebUI , RunPod , etc).
+_getMinimal_special() {
+	echo 'APT::AutoRemove::RecommendsImportant "true";
+APT::AutoRemove::SuggestsImportant "true";' | tee /etc/apt/apt.conf.d/99autoremove-recommends > /dev/null
+
+
+	
+	unset _aptGetInstall
+	unalias _aptGetInstall 2>/dev/null
+	_aptGetInstall() {
+		env XZ_OPT="-T0" DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -q --install-recommends -y "$@"
+	}
+
+	# ubiquitous_bash  fast alternative
+	#procps strace sudo wget gpg curl pigz pixz bash aria2 git git-lfs bc nmap socat sockstat rsync net-tools uuid-runtime netcat-openbsd axel util-linux gawk libncurses-dev gh crudini bsdutils findutils p7zip p7zip-full unzip zip lbzip2 dnsutils bind9-dnsutils lz4 mawk patch tar gzip bzip2 sed pv expect wipe iputils-ping zstd zlib1g coreutils openssl xz-utils libreadline8 libreadline-dev mkisofs genisoimage dos2unix lsof aptitude jq xxd sloccount dosfstools apt-utils git-filter-repo qalc apt-transport-https tcl tk
+
+	# ubiquitous_bash  basic alternative
+	#procps strace sudo wget gpg curl pigz pixz bash aria2 git git-lfs bc nmap socat sockstat rsync net-tools uuid-runtime netcat-openbsd axel unionfs-fuse util-linux screen gawk libelf-dev libncurses-dev gh crudini bsdutils findutils p7zip p7zip-full unzip zip lbzip2 jp2a dnsutils bind9-dnsutils lz4 mawk libelf-dev elfutils patch tar gzip bzip2 librecode0 udftools sed cpio pv expect wipe iputils-ping btrfs-progs btrfs-compsize zstd zlib1g coreutils openssl growisofs e2fsprogs xz-utils libreadline8 libreadline-dev mkisofs genisoimage wodim dos2unix fuse-overlayfs xorriso squashfs-tools mtools lsof aptitude jq xxd sloccount dosfstools apt-utils git-filter-repo qalc apt-transport-https tcl tk
+
+	_aptGetInstall procps strace sudo wget gpg curl pigz pixz bash aria2 git git-lfs bc nmap socat sockstat rsync net-tools uuid-runtime iperf3 vim man-db gnulib libtool libtool-bin intltool libgts-dev netcat-openbsd iperf axel unionfs-fuse debootstrap util-linux screen gawk build-essential flex libelf-dev libncurses-dev autoconf libudev-dev dwarves pahole cmake gh libusb-dev libusb-1.0 setserial libffi-dev libusb-1.0-0 libusb-1.0-0-dev libusb-1.0-doc pkg-config crudini bsdutils findutils v4l-utils libevent-dev libjpeg-dev libbsd-dev libusb-1.0 gdb libbabeltrace1 libc6-dbg libsource-highlight-common libsource-highlight4v5 initramfs-tools dmidecode p7zip p7zip-full unzip zip lbzip2 jp2a dnsutils bind9-dnsutils live-boot mktorrent gdisk lz4 mawk nano bison libelf-dev elfutils patch tar gzip bzip2 librecode0 sed texinfo udftools wondershaper sysbench libssl-dev cpio pv expect libfuse2 wipe iputils-ping btrfs-progs btrfs-compsize zstd zlib1g nilfs-tools coreutils sg3-utils kpartx openssl growisofs udev cryptsetup parted e2fsprogs xz-utils libreadline8 libreadline-dev mkisofs genisoimage wodim eject hdparm sdparm php cifs-utils debhelper nsis dos2unix fuse-overlayfs xorriso squashfs-tools grub-pc-bin grub-efi-amd64-bin mtools squashfs-tools squashfs-tools-ng fdisk lsof usbutils aptitude recode libpotrace0 libwmf-bin w3m par2 yubikey-manager qrencode tasksel jq xxd sloccount dosfstools apt-utils git-filter-repo qalc apt-transport-https tcl tk libgdl-3-5 libgdl-3-common > /quicklog.tmp 2>&1
+	tail /quicklog.tmp
+	rm -f /quicklog.tmp
+
+	#tcl tk libgdl-3-5 libgdl-3-common
+
+	#avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi
+
+	#mingw-w64 g++-mingw-w64-x86-64-win32 binutils-mingw-w64 mingw-w64-tools gdb-mingw-w64
+
+	#pkg-haskell-tools alex cabal-install happy hscolour ghc
+
+	#kicad electric lepton-eda pcb-rnd gerbv electronics-pcb pstoedit pdftk
+
+	#wkhtmltopdf asciidoc
+
+	#vainfo ffmpeg
+
+	#samba qemu-system-x86 qemu-system-arm qemu-efi-arm qemu-efi-aarch64 qemu-user-static qemu-utils dosbox
+
+	#wireless-tools rfkill cloud-guest-utils
+
+	#recoll
+
+	#zbar-tools
+
+
+
+	#rustc cargo
+
+	#openjdk-17-jdk openjdk-17-jre
+
+	#psk31lx
+
+	#emacs
+
+	#python3-serial
+
+
+
+	#locales-all
+
+	# ddd
+
+	
+
+	apt-get remove --autoremove -y
+	apt-get -y clean
+
+
+
+	"$scriptAbsoluteLocation" _here_opensslConfig_legacy | tee /etc/ssl/openssl_legacy.cnf > /dev/null 2>&1
+	echo '
+
+	.include = /etc/ssl/openssl_legacy.cnf
+
+	' | cat /etc/ssl/openssl.cnf.orig - 2>/dev/null | tee /etc/ssl/openssl.cnf > /dev/null 2>&1
+
+
+}
+
+
+
+
+# ATTENTION
+# NOTICE
+# May be able to automatically respond to nix package manager file conflicts.
+# WARNING: May be untested.
+# ATTRIBUTION-AI: Suggested by CLI Codex (ie. _codexAuto) 2025-07-20 .
+#
+#_nixInstallRetry() {
+	#local -a cmd=( "$@" ) out status file
+	#if out=$( "${cmd[@]}" 2>&1 ); then
+		#printf '%s\n' "$out"
+		#return 0
+	#else
+		#status=$?
+		#if printf '%s\n' "$out" | grep -q "file conflict over '"; then
+			#file=$(printf '%s\n' "$out" | sed -n "s/.*file conflict over '\([^']*\)'.*/\1/p")
+			#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'rm -f "$HOME/.nix-profile/'"$file"'"'
+			#"${cmd[@]}"
+			#return $?
+		#else
+			#printf '%s\n' "$out" >&2
+			#return $status
+		#fi
+	#fi
+#}
+#export -f _nixInstallRetry
+#
+#_nixInstallRetry _getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA pcb -f https://github.com/NixOS/nixpkgs/archive/00a3a62a70f6c2ca919befeda4b8a7319ce8be2b.tar.gz'
+
+
+
+
+
+
+
+
 
 
 # NOTICE
@@ -8381,8 +8616,8 @@ _get_from_nix-user() {
 	#  export LANG=C
 	#  https://bbs.archlinux.org/viewtopic.php?id=23505
 
-	#nix-env --uninstall geda
-	#nix-env --uninstall pcb
+	nix-env --uninstall 'geda.*' || true
+	nix-env --uninstall 'pcb.*'  || true
 	
 	
 	
@@ -8395,6 +8630,9 @@ _get_from_nix-user() {
 	#  CAUTION: Be wary if this file has changed recently.
 	
 	# ###
+	# Remove previous geda and pcb to prevent overlapping file conflicts (e.g. gnet-pcbfwd.scm).
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-env --uninstall geda.* || true'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; nix-env --uninstall pcb.*  || true'
 	# Seems to have removed xorn, python2.7 . May not have been tested through ubdist/WSL . May be accepted for now due to some apparently successful testing expected to match this specific version.
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA geda -f https://github.com/NixOS/nixpkgs/archive/773a8314ef05364d856e46299722a9d849aacf8b.tar.gz'
 	
@@ -8410,11 +8648,16 @@ _get_from_nix-user() {
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; xdg-desktop-menu install "$HOME"/.nix-profile/share/applications/geda-gattrib.desktop'
 	_getMost_backend sudo -n -u "$currentUser" cp -a /home/"$currentUser"/.nix-profile/share/icons /home/"$currentUser"/.local/share/
 
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.pcb'
+	# nixpkgs.pcb
+	# Remove conflicting shared scheme file before installing pcb
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd; rm -f "$HOME"/.nix-profile/share/gEDA/gnet-pcbfwd.scm'
+
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA pcb -f https://github.com/NixOS/nixpkgs/archive/00a3a62a70f6c2ca919befeda4b8a7319ce8be2b.tar.gz'
 
 	
 	# Necessary, do NOT remove. Necessary for 'gsch2pcb' , 'gnetlist' , etc, since installation as a dependency does not make the necessary binaries available to the usual predictable PATH .
-	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA nixpkgs.python2'
+	#nixpkgs.python2
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'cd ; export NIXPKGS_ALLOW_INSECURE=1 ; nix-env -iA python2 -f https://github.com/NixOS/nixpkgs/archive/00a3a62a70f6c2ca919befeda4b8a7319ce8be2b.tar.gz'
 
 
 	
@@ -8703,6 +8946,42 @@ _get_workarounds() {
 
 
 
+# https://github.com/nodesource/distributions?tab=readme-ov-file#debian-versions
+#codex
+#claude
+_get_npm() {
+    _mustGetSudo
+
+    if _if_cygwin
+    then
+        ! type npm > /dev/null 2>&1 && echo 'request: https://github.com/coreybutler/nvm-windows/releases' && exit 1
+
+        type npm > /dev/null 2>&1
+        return
+    fi
+
+    ##sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y curl
+    _getDep curl
+
+    #sudo -n curl -fsSL https://deb.nodesource.com/setup_23.x -o /nodesource_setup.sh
+    #sudo -n bash /nodesource_setup.sh
+    sudo -n curl -fsSL https://deb.nodesource.com/setup_23.x -o - | sudo -n bash
+
+    sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+
+
+    #sudo -n npm install -g @openai/codex
+    ##npm install -g @anthropic-ai/claude-code
+    #sudo -n npm install -g @anthropic-ai/claude-code
+
+    ! type npm > /dev/null 2>&1 && exit 1
+    return 0
+}
+
+
+
+
+
 _get_veracrypt() {
 	_messagePlain_nominal 'init: _get_veracrypt'
 	if type veracrypt > /dev/null 2>&1
@@ -8836,11 +9115,20 @@ _test_nix-env_sequence() {
 	cd "$safeTmp"
 	
 	# https://ariya.io/2016/06/isolated-development-environment-using-nix
+	#cat << 'CZXWXcRMTo8EmM8i4d' > ./default.nix
+#with import <nixpkgs> {};
+#stdenv.mkDerivation rec {
+  #name = "env";
+  #env = buildEnv { name = name; paths = buildInputs; };
+  #buildInputs = [
+    #hello
+  #];
+#}
+#CZXWXcRMTo8EmM8i4d
+
 	cat << 'CZXWXcRMTo8EmM8i4d' > ./default.nix
 with import <nixpkgs> {};
-stdenv.mkDerivation rec {
-  name = "env";
-  env = buildEnv { name = name; paths = buildInputs; };
+mkShell {
   buildInputs = [
     hello
   ];
@@ -9819,6 +10107,9 @@ _custom_ubcp_prog() {
 }
 _custom_ubcp_sequence() {
 	_cygwin_workaround_dev_stderr
+
+    local functionEntryPWD
+    functionEntryPWD="$PWD"
     
     _messageNormal '_custom_ubcp: apt-cyg --quiet'
 	_messagePlain_probe apt-cyg --quiet install ImageMagick
@@ -9828,6 +10119,74 @@ _custom_ubcp_sequence() {
 	_messageNormal '_custom_ubcp: pip3'
 	_messagePlain_probe pip3 install piexif
     pip3 install piexif 2>&1
+
+
+
+    _messageNormal '_custom_ubcp: runpodctl'
+
+    #wget -qO- 'https://cli.runpod.net' | sed 's/\[ "\$EUID" -ne 0 \]/false/' | bash
+
+    mkdir -p "$HOME"/core/installations
+    cd "$HOME"/core/installations
+    _gitBest clone --recursive --depth 1 git@github.com:runpod/runpodctl.git
+    
+    cd "$HOME"/bin/
+    rm -f runpodctl.exe
+    #wget 'https://github.com/runpod/runpodctl/releases/download/v1.14.3/runpodctl-windows-amd64.exe' -O runpodctl.exe
+    wget 'https://github.com/runpod/runpodctl/releases/download/v1.14.4/runpodctl-windows-amd64.exe' -O runpodctl.exe
+    chmod ugoa+rx runpodctl.exe
+
+    cd "$functionEntryPWD"
+
+
+
+    # https://github.com/asciinema/asciinema/issues/467
+    # wsl asciinema rec -c cmd.exe
+    # https://github.com/Watfaq/PowerSession-rs
+    _messageNormal '_custom_ubcp: PowerSession - asciinema alternative for MSWindows'
+
+    mkdir -p "$HOME"/core/installations
+    cd "$HOME"/core/installations
+    _gitBest clone --recursive --depth 1 git@github.com:Watfaq/PowerSession-rs.git
+    
+    cd "$HOME"/bin/
+    rm -f PowerSession.exe
+    wget 'https://github.com/Watfaq/PowerSession-rs/releases/latest/download/PowerSession.exe' -O PowerSession.exe
+    chmod ugoa+rx PowerSession.exe
+
+
+    cd "$functionEntryPWD"
+
+
+
+    # https://gitlab.com/saalen/ansifilter/-/releases
+    # http://andre-simon.de/zip/ansifilter-2.21-x64.zip
+    # https://web.archive.org/web/20250618063648/http://andre-simon.de/zip/ansifilter-2.21-x64.zip
+    _messageNormal '_custom_ubcp: ansifilter'
+
+    mkdir -p "$HOME"/core/installations
+    cd "$HOME"/core/installations
+    wget 'https://web.archive.org/web/20250618063648/http://andre-simon.de/zip/ansifilter-2.21-x64.zip'
+    if [[ $(sha256sum ansifilter-2.21-x64.zip | cut -f1 -d' ' | tr -dc 'a-fA-F0-9') != '57624ae40be4c9173937d15c97f68413daa271a0ec2248ec83394f220b88adb9' ]]
+    then
+        rm -f ansifilter-2.21-x64.zip
+    else
+        unzip -o ansifilter-2.21-x64.zip
+        rm -f ansifilter-2.21-x64.zip
+        cd ansifilter-2.21-x64
+        chmod ugoa+rx ansifilter.exe
+        chmod ugoa+rx ansifilter-gui.exe
+        #cp -a ansifilter.exe "$HOME"/bin/ansifilter.exe
+        #cp -a ansifilter-gui.exe "$HOME"/bin/ansifilter-gui.exe
+        mv -f ansifilter.exe "$HOME"/bin/ansifilter.exe
+        mv -f ansifilter-gui.exe "$HOME"/bin/ansifilter-gui.exe
+    fi
+
+    cd "$functionEntryPWD"
+
+
+
+    cd "$functionEntryPWD"
 
     _cygwin_workaround_dev_stderr
 	_custom_ubcp_prog "$@"
@@ -10028,10 +10387,353 @@ _write_wslconfig() {
     ! _if_cygwin && _messagePlain_bad 'fail: Cygwin/MSW only' && return 1
     if _if_cygwin
     then
+        [[ -e /cygdrive/c/Windows/System32 ]] && _here_wsl_config "$1" > /cygdrive/c/Windows/System32/config/systemprofile/.wslconfig
+        [[ -e /cygdrive/c/Windows/ServiceProfiles/LocalService ]] && _here_wsl_config "$1" > /cygdrive/c/Windows/ServiceProfiles/LocalService/.wslconfig
         _here_wsl_config "$1" > "$USERPROFILE"/.wslconfig
         return
     fi
 }
+
+
+
+
+if false
+then
+
+# Experiment - boot .
+
+netsh interface portproxy delete v4tov4 listenport=11434 listenaddress=$(wsl -d ubdist cat /net-hostip)
+netsh interface portproxy delete v4tov4 listenport=11434 listenaddress=0.0.0.0
+netsh interface portproxy show v4tov4
+
+wsl -d "ubdist" sudo -n systemctl disable hostport-proxy.service
+wsl -d "ubdist" sudo -n systemctl disable ollama.service
+
+
+
+
+
+# Experiment - run .
+
+wsl -d ubdist wget --timeout=1 --tries=3 'http://127.0.0.1:11434' -q -O -
+netsh interface portproxy show v4tov4
+
+netsh interface portproxy delete v4tov4 listenport=11434 listenaddress=$(wsl -d ubdist cat /net-hostip)
+netsh interface portproxy delete v4tov4 listenport=11434 listenaddress=0.0.0.0
+netsh interface portproxy show v4tov4
+
+wsl -d ubdist wget --timeout=1 --tries=3 'http://127.0.0.1:11434' -q -O -
+
+cd /cygdrive/c/q/p/zCore/infrastructure/ubiquitous_bash
+./ubiquitous_bash.sh _setup_wsl2_procedure-fw
+./ubiquitous_bash.sh _setup_wsl2_procedure-portproxy
+./ubiquitous_bash.sh _setup_wsl2_guest-portForward
+
+netsh interface portproxy add v4tov4 listenport=11434 listenaddress=0.0.0.0 connectport=11434 connectaddress=127.0.0.1
+netsh interface portproxy show v4tov4
+
+sc.exe query iphlpsvc
+netstat -ano | findstr :11434
+wget --timeout=1 --tries=3 'http://127.0.0.1:11434' -q -O -
+
+wsl -d ubdist wget --timeout=1 --tries=3 'http://127.0.0.1:11434' -q -O -
+wsl -d ubdist cat /net-hostip ; wsl -d ubdist wget --timeout=1 --tries=3 'http://'$(wsl -d ubdist cat /net-hostip)':11434' -q -O -
+
+
+
+# Scrap
+
+wsl -d "ubdist" sudo -n systemctl daemon-reload
+#wsl -d "ubdist" sudo -n systemctl enable --now hostport-proxy.service
+
+wsl -d "ubdist" sudo -n systemctl disable hostport-proxy.service
+
+wsl -d "ubdist" sudo -n systemctl restart hostport-proxy.service
+
+
+
+
+
+#_setup_wsl2
+
+
+fi
+
+
+
+_setup_wsl2_guest-portForward() {
+    _messagePlain_nominal 'setup: guest: portForward'
+
+    local current_wsldist
+    current_wsldist="$1"
+    [[ "$current_wsldist" == "" ]] && current_wsldist="ubdist"
+
+    echo "$current_wsldist"
+
+    local current_wsl_scriptAbsoluteLocation
+    current_wsl_scriptAbsoluteLocation=$(cygpath -m "$scriptAbsoluteLocation")
+    current_wsl_scriptAbsoluteLocation=$(wsl -d "$current_wsldist" wslpath "$current_wsl_scriptAbsoluteLocation")
+
+    _messagePlain_probe '_getDep socat'
+    wsl -d "$current_wsldist" "$current_wsl_scriptAbsoluteLocation" _getDep socat
+
+    # ATTRIBUTION-AI: ChatGPT o3  2025-06-01  (partially)
+
+
+    _messagePlain_probe 'write: /usr/local/bin/hostport-proxy.sh'
+    cat << 'CZXWXcRMTo8EmM8i4d' | wsl -d "$current_wsldist" sudo -n tee /usr/local/bin/hostport-proxy.sh > /dev/null
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT=${PORT:-11434}               # default; override in the service if you like
+HOST_IP_FILE="/net-hostip"
+
+while true; do
+  # Bail out quickly if the helper file doesn't exist (yet)
+  [[ -r "$HOST_IP_FILE" ]] || { sleep 2; continue; }
+
+  HOST_IP=$(<"$HOST_IP_FILE")
+  [[ -n "$HOST_IP" ]] || { sleep 2; continue; }
+
+  wget --timeout=1 --tries=3 http://"$HOST_IP":11434 -q -O - > /dev/null 2>&1 || { sleep 2; continue; }
+
+  echo "$(date '+%F %T') 127.0.0.1:$PORT → $HOST_IP:$PORT"
+  # --fork lets a single socat instance serve many clients in parallel
+  socat TCP-LISTEN:"$PORT",fork,reuseaddr TCP4:"$HOST_IP":"$PORT" || true
+  # If socat exits (network flap, etc.) loop and start again
+  sleep 1
+done
+CZXWXcRMTo8EmM8i4d
+    wsl -d "$current_wsldist" sudo -n chmod +x /usr/local/bin/hostport-proxy.sh
+    #wsl -d "$current_wsldist" sudo -n cat /usr/local/bin/hostport-proxy.sh
+
+
+    #_messagePlain_probe 'write: /etc/wsl.conf'
+    # "$current_wsldist" /etc/wsl.conf already enables systemd by default
+    #_here_wsl_conf
+    #printf "[boot]\nsystemd=true\n" | sudo tee /etc/wsl.conf
+    ## then from Windows:
+    #wsl --shutdown <your-distro>
+
+
+    _messagePlain_probe 'write: /etc/systemd/system/hostport-proxy.service'
+    cat << 'CZXWXcRMTo8EmM8i4d' | wsl -d "$current_wsldist" sudo -n tee /etc/systemd/system/hostport-proxy.service > /dev/null
+[Unit]
+Description=Forward 127.0.0.1:11434 to Windows host (WSL2)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=PORT=11434      # edit or duplicate the unit to forward more ports
+ExecStart=/usr/local/bin/hostport-proxy.sh
+Restart=always
+RestartSec=1
+
+# Hardening (optional but nice)
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+CZXWXcRMTo8EmM8i4d
+    #wsl -d "$current_wsldist" sudo -n cat /etc/systemd/system/hostport-proxy.service
+
+    _messagePlain_probe 'systemctl'
+    wsl -d "$current_wsldist" sudo -n systemctl daemon-reload
+    #wsl -d "$current_wsldist" sudo -n systemctl enable --now hostport-proxy.service
+
+    wsl -d "$current_wsldist" sudo -n systemctl disable hostport-proxy.service
+
+    wsl -d "$current_wsldist" sudo -n systemctl restart hostport-proxy.service
+
+}
+
+
+
+
+
+
+
+
+
+
+
+_setup_wsl2_procedure-fw() {
+    _messagePlain_nominal 'setup: write: fw'
+
+    #_powershell
+    #powershell
+    #powershell.exe
+    
+    # ATTRIBUTION-AI: ChatGPT o3 Deep Research  2025-06-01
+    cat << 'CZXWXcRMTo8EmM8i4d' > /dev/null 2>&1
+New-NetFirewallRule -Name "AllowWSL2-11434" -DisplayName "Allow WSL2 Port 11434 (TCP)" `
+    -Description "Allows inbound TCP port 11434 from WSL2 virtual network only (for NAT port proxy)" `
+    -Protocol TCP -Direction Inbound -Action Allow -LocalPort 11434 `
+    -InterfaceAlias "vEthernet (WSL)"
+CZXWXcRMTo8EmM8i4d
+
+    # ATTRIBUTION-AI: ChatGPT o4-mini  2025-06-01
+    # ATTRIBUTION-AI: Llama 3.1 Nemotron Ultra 253b v1  2025-06-01  (translation to one-liner)
+    powershell -Command "Remove-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (WSL (Hyper-V firewall))'; Remove-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (Default Switch)'; Remove-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (WSL)'"
+    powershell -Command "Get-NetFirewallRule -Name 'AllowWSL2-11434*' | Remove-NetFirewallRule"
+    #
+    # DUBIOUS
+    #netsh advfirewall firewall delete rule name="AllowWSL2-11434 - vEthernet (WSL (Hyper-V firewall))"
+    #netsh advfirewall firewall delete rule name="AllowWSL2-11434 - vEthernet (Default Switch)"
+    #netsh advfirewall firewall delete rule name="AllowWSL2-11434 - vEthernet (WSL)"
+
+    # ATTRIBUTION-AI: Llama 3.1 Nemotron Ultra 253b v1  2025-06-01  (translation from PowerShell interactive terminal to powershell command call under Cygwin/MSW bash shell)
+    # ATTENTION: Not all of these named interfaces usually exist. Cosmetic errors usually occur.
+    powershell -Command "New-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (WSL (Hyper-V firewall))' -DisplayName 'Allow WSL2 Port 11434 (TCP) - vEthernet (WSL (Hyper-V firewall))' -Description 'Allows inbound TCP port 11434 from WSL2 virtual network only (for NAT port proxy)' -Protocol TCP -Direction Inbound -Action Allow -LocalPort 11434 -InterfaceAlias 'vEthernet (WSL (Hyper-V firewall))'"
+    powershell -Command "New-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (Default Switch)' -DisplayName 'Allow WSL2 Port 11434 (TCP) - vEthernet (Default Switch)' -Description 'Allows inbound TCP port 11434 from WSL2 virtual network only (for NAT port proxy)' -Protocol TCP -Direction Inbound -Action Allow -LocalPort 11434 -InterfaceAlias 'vEthernet (Default Switch)'"
+    powershell -Command "New-NetFirewallRule -Name 'AllowWSL2-11434 - vEthernet (WSL)' -DisplayName 'Allow WSL2 Port 11434 (TCP) - vEthernet (WSL)' -Description 'Allows inbound TCP port 11434 from WSL2 virtual network only (for NAT port proxy)' -Protocol TCP -Direction Inbound -Action Allow -LocalPort 11434 -InterfaceAlias 'vEthernet (WSL)'"
+
+    powershell -Command "New-NetFirewallRule -Name 'AllowWSL2-11434 - InterfaceType' -InterfaceType HyperV -Direction Inbound -LocalPort 11434 -Protocol TCP -Action Allow"
+    
+}
+
+# ATTENTION: NOTICE: Add to 'startup' of MSWindows host, etc, if necessary.
+_setup_wsl2_procedure-portproxy() {
+    _messagePlain_nominal 'setup: write: portproxy'
+
+    local current_wsldist
+    current_wsldist="$1"
+    [[ "$current_wsldist" == "" ]] && current_wsldist="ubdist"
+
+    echo "$current_wsldist"
+
+    wsl -d "$current_wsldist" -u root -- sh -c "rm -f /net-hostip"
+
+    # ATTRIBUTION-AI: Llama 3.1 Nemotron Ultra 253b v1  2025-06-01
+    powershell.exe -Command - <<CZXWXcRMTo8EmM8i4d
+    # ATTRIBUTION-AI: ChatGPT o3 Deep Research  2025-06-01  (partially)
+    # Ensure running as Admin for registry and netsh access if needed.
+    # Step 1: Try reading WSL NAT info from registry (requires recent WSL).
+    \$wslKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Lxss'
+    try {
+        \$reg = Get-ItemProperty -Path \$wslKey -ErrorAction Stop
+        \$HostIP = \$reg.NatGatewayIpAddress
+    } catch {
+        \$HostIP = \$null
+    }
+
+    # Step 2: If not found in registry, use WSL to query the default gateway.
+    if (-not \$HostIP) {
+        try {
+            \$routeInfo = wsl -e sh -c "ip route show default 2>/dev/null || route -n"
+        } catch {
+            \$routeInfo = ""
+        }
+        if (\$routeInfo) {
+            if (\$routeInfo -match 'default via\s+([0-9\.]+)') {
+                \$HostIP = \$Matches[1]
+            } elseif (\$routeInfo -match '0\.0\.0\.0\s+0\.0\.0\.0\s+([0-9\.]+)') {
+                \$HostIP = \$Matches[1]
+            }
+        }
+    }
+
+    # Step 3: If still not found, fall back to scanning network adapters.
+    if (-not \$HostIP) {
+        \$allIPs = Get-NetIPAddress -AddressFamily IPv4 | Where-Object { 
+            \$_.IPAddress -notlike '127.*' -and \$_.IPAddress -notlike '169.254*' 
+        }
+        \$wslAdapterIP = \$allIPs | Where-Object { \$_.InterfaceAlias -match 'WSL' } | Select-Object -First 1
+        if (\$wslAdapterIP) {
+            \$HostIP = \$wslAdapterIP.IPAddress
+        } else {
+            \$defSwitchIP = \$allIPs | Where-Object { \$_.InterfaceAlias -match 'Default Switch' } | Select-Object -First 1
+            if (\$defSwitchIP) {
+                \$HostIP = \$defSwitchIP.IPAddress
+            } else {
+                \$hvAdapters = Get-NetAdapter | Where-Object { 
+                    \$_.InterfaceDescription -like '*Hyper-V Virtual Ethernet*' -and \$_.Status -eq 'Up' 
+                }
+                foreach (\$adapter in \$hvAdapters) {
+                    \$ip = \$allIPs | Where-Object { 
+                        \$_.InterfaceIndex -eq \$adapter.InterfaceIndex -and 
+                        \$_.IPAddress -match '^(10\.|172\.(1[6-9]|2\d|3[0-1])\.|192\.168\.)' 
+                    }
+                    if (\$ip) {
+                        \$HostIP = \$ip.IPAddress
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    # Step 4: Output result or error.
+    if (\$HostIP) {
+        Write-Output \$HostIP
+    } else {
+        Write-Error "WSL2 host IP could not be determined. Ensure WSL2 is installed and running (NAT mode)."
+    }
+
+    
+    #netsh interface portproxy delete v4tov4 listenport=11434
+    #netsh interface portproxy delete v4tov4 listenport=11434 listenaddress=\$HostIP
+    #netsh interface portproxy add v4tov4 listenaddress=\$HostIP listenport=11434 connectaddress=127.0.0.1 connectport=11434
+    #sc query iphlpsvc
+    #sc start iphlpsvc
+    #netsh interface portproxy show v4tov4
+
+
+    # ATTRIBUTION-AI: ChatGPT o3  2025-06-01
+    # --- Native tools -------------------------------------------------
+    \$netsh = "\$env:SystemRoot\System32\netsh.exe"   # avoids “nets” typo
+    \$sc    = "\$env:SystemRoot\System32\sc.exe"      # avoids Set-Content alias
+
+    # make sure the helper service is running
+    & \$sc   query iphlpsvc
+    & \$sc   start iphlpsvc
+
+    \$delArgs = @(
+    'interface','portproxy','delete','v4tov4',
+    "listenaddress=\$HostIP",
+    'listenport=11434'
+    )
+    & \$netsh  @delArgs  2>\$null   # suppress harmless “not found”
+
+    # (re-)create the port-proxy rule
+    \$addArgs = @(
+    'interface','portproxy','add','v4tov4',
+    "listenaddress=\$HostIP",
+    'listenport=11434',
+    'connectaddress=127.0.0.1',
+    'connectport=11434'
+    )
+    & \$netsh  @addArgs          # ← “@” splats the array as arguments
+
+    # show the table so you can verify
+    & \$netsh  interface portproxy show v4tov4
+
+
+
+    # ATTRIBUTION-AI: Llama 3.1 Nemotron Ultra 253b v1  2025-06-01
+    # Step 5: Output result or error.
+    if (\$HostIP) {
+        #Write-Output \$HostIP
+        # Write \$HostIP to /net-hostip in WSL
+        wsl -d "$current_wsldist" -u root -- sh -c "echo '\$(\$HostIP)' > /net-hostip"
+    } else {
+        wsl -d "$current_wsldist" -u root -- sh -c "echo '...' > /net-hostip"
+    }
+
+CZXWXcRMTo8EmM8i4d
+
+    sleep 3
+}
+
+
+
+
+
 
 
 
@@ -10093,6 +10795,10 @@ _setup_wsl2_procedure() {
     
     sleep 5
     wsl --set-default-version 2
+
+    #sleep 5
+    #_setup_wsl2_procedure-fw
+    #_setup_wsl2_procedure-portproxy
 }
 _setup_wsl2() {
     "$scriptAbsoluteLocation" _setup_wsl2_procedure "$@"
@@ -10110,9 +10816,14 @@ _setup_wsl() {
 
 
 _here_wsl_config() {
+# ATTENTION: If nested virtualization configuration is necessary (ie. the apparently now default 'nestedVirtualization=true' directive is somehow not already in effect), this may be a better place for that directive (normally writing a '.wslconfig' file).
+#[wsl2]
+#nestedVirtualization=true
     cat << 'CZXWXcRMTo8EmM8i4d'
 [wsl2]
 memory=999GB
+kernelCommandLine = "sysctl.net.core.bpf_jit_harden=1"
+
 CZXWXcRMTo8EmM8i4d
 
     if [[ -e /cygdrive/c/core/infrastructure/ubdist-kernel/ubdist-kernel ]] && [[ "$1" != "ub_ignore_kernel_wsl" ]]
@@ -10125,6 +10836,14 @@ CZXWXcRMTo8EmM8i4d
 
 
 _here_wsl_conf() {
+# ATTENTION: Directive for nested virtualization may have moved to being more appropriate for a host '.wslconfig' file than a guest '/etc/wsl.conf' file .
+#[wsl2]
+#nestedVirtualization=true
+#
+# ATTENTION: Disabling 'appendWindowsPath' is expected very appropriate for 'ubdist/OS' , as this distribution is already very general purpose, and usual 'ubiquitous_bash' scripting already provides overrides for and calls cmd, powershell, explorer, as very rarely appropriate or needed.
+#[interop]
+#appendWindowsPath = false   # keep Linux-only PATH
+#enabled = false           # uncomment to disable Windows interop entirely
     cat << 'CZXWXcRMTo8EmM8i4d'
 
 [boot]
@@ -10134,11 +10853,11 @@ command = /bin/bash -c 'systemctl stop sddm ; rm -f /root/_rootGrab.sh ; usermod
 [user]
 default = user
 
-[wsl2]
-nestedVirtualization=true
-
 [automount]
 options = "metadata"
+
+[interop]
+appendWindowsPath = false
 
 CZXWXcRMTo8EmM8i4d
 }
@@ -10265,10 +10984,12 @@ _visualPrompt_promptCommand() {
 	if [[ "$PS1_lineNumber" == '1' ]]
 	then
 		# https://unix.stackexchange.com/questions/266921/is-it-possible-to-use-ansi-color-escape-codes-in-bash-here-documents
-		PS1_lineNumberText=$(echo -e -n '\E[1;36m'1)
 		#PS1_lineNumberText=$(echo -e -n '\E[1;36m'1)
-		#PS1_lineNumberText=$(echo -e -n '\[\033[01;36m\]'1)
-		#PS1_lineNumberText=$(echo -e -n '\033[01;36m'1)
+		##PS1_lineNumberText=$(echo -e -n '\E[1;36m'1)
+		##PS1_lineNumberText=$(echo -e -n '\[\033[01;36m\]'1)
+		##PS1_lineNumberText=$(echo -e -n '\033[01;36m'1)
+
+		PS1_lineNumberText=$(echo -e -n '\E[1;36;109m'1)
 	fi
 }
 
@@ -10277,6 +10998,27 @@ _visualPrompt() {
 	currentHostname="$HOSTNAME"
 	
 	[[ -e /etc/hostname ]] && export currentHostname=$(cat /etc/hostname)
+
+	local currentHostname_concatenate
+
+	[[ "$RUNPOD_POD_ID" != "" ]] && currentHostname_concatenate='runpod--'
+
+	if [[ -e /info_factoryName.txt ]]
+	then
+		currentHostname_concatenate=$(cat /info_factoryName.txt)
+		currentHostname_concatenate="$currentHostname_concatenate"'--'
+	fi
+
+	[[ "$RUNPOD_POD_ID" != "" ]] && currentHostname_concatenate="$currentHostname_concatenate""$RUNPOD_POD_ID"'--'
+
+	[[ "$RUNPOD_PUBLIC_IP" != "" ]] && currentHostname_concatenate="$currentHostname_concatenate""$RUNPOD_PUBLIC_IP"'--'
+	#if [[ "$RUNPOD_PUBLIC_IP" != "" ]]
+	#then
+		#export currentHostname_concatenate="$currentHostname_concatenate"$(wget -qO- https://icanhazip.com/ | tr -dc '0-9a-fA-F:.')'--'
+	#fi
+	
+	export currentHostname="$currentHostname_concatenate""$currentHostname"
+	
 	
 	
 	export currentChroot=
@@ -10311,11 +11053,67 @@ _visualPrompt() {
 	#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u\[\033[01;32m\]@\h\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$PS1_lineNumberText\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
 	
 	
+	export prompt_specialInfo=""
+
+	# ATTRIBUTION-AI: ChatGPT o3 (high)  2025-05-06
+	#We want to see 'RTX 2000 Ada 16GB' and 'RTX 4090 16GB' , not just 'RTX 2000 16GB' . Please revise.
+	#
+	# RTX 2000 Ada 16GB
+	# RTX 2000 16GB
+	#
+	_filter_nvidia_smi_gpuInfo() {
+		# write the capacities any way you like:
+		#             ↓ commas, spaces or a mixture ↓
+		local sizes='2,3,4,6,8,10,11,12,16,20,24,32,40,48,56,64,80,94,96,128,141,180,192,256,320,384,512,640,768,896,1024,1280,1536,1792,2048'
+
+		awk -F', *' -v sizes="$sizes" '
+			BEGIN {
+				# accept both commas and blanks as separators
+				n = split(sizes, S, /[ ,]+/)
+			}
+			{
+				# ----- tidy up the model name -----
+				name = $1
+				gsub(/NVIDIA |GeForce |Laptop GPU|[[:space:]]+Generation/, "", name)
+				gsub(/  +/, " ", name)
+				sub(/^ +| +$/, "", name)
+
+				# ----- MiB -> decimal GB -----
+				mib   = $2 + 0
+				bytes = mib * 1048576
+				decGB = bytes / 1e9     # decimal gigabytes
+
+				# pick the nearest marketing size
+				best = S[1]
+				diff = (decGB > S[1] ? decGB - S[1] : S[1] - decGB)
+
+				for (i = 2; i <= n; i++) {
+					d = (decGB > S[i] ? decGB - S[i] : S[i] - decGB)
+					if (d < diff) { diff = d; best = S[i] }
+				}
+
+				printf "%s %dGB\n", name, best
+			}'
+	}
+
+
+	if type nvidia-smi > /dev/null 2>&1
+	then
+		export prompt_specialInfo=$(
+			nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits | _filter_nvidia_smi_gpuInfo
+		)
+	fi
+
+	if _if_wsl && [[ -e "/mnt/c/Windows/System32/cmd.exe" ]] && /mnt/c/Windows/System32/cmd.exe /C where nvidia-smi > /dev/null 2>&1
+	then
+		export prompt_specialInfo=$(
+			( cd /mnt/c ; /mnt/c/Windows/System32/cmd.exe /C nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>/dev/null | _filter_nvidia_smi_gpuInfo )
+		)
+	fi
+
 	if [[ "$SHELL" == *"/nix/store/"*"/bin/bash"* ]]
 	then
-		export prompt_nixShell="nixShell"
-	else
-		export prompt_nixShell=""
+		export prompt_specialInfo="nixShell"
 	fi
 	
 	#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u\[\033[01;32m\]@\h\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
@@ -10332,17 +11130,48 @@ _visualPrompt() {
 		#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '	
 	#fi
 	
+
+
+	# NOTICE: ATTENTION: Bright colors. More compatible with older terminals (in theory).
+	#
+	# https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+	# Slightly darker yellow will be more printable on white background (ie. Pandoc rendering from HTML from asciinema cat ).
+	#01;33m
+	#38;5;214m
+	#
+	#\[\033[01;33m\]
+	#'\[\e[01;33m\e[38;5;214m\]'
+	#'\[\033[01;33m\033[38;5;214m\]'
+	#if _if_cygwin
+	#then
+		#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;214m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	#elif ( uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1 )
+	#then
+		#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;214m\]\u\[\033[01;32m\]@'"$currentHostname"-wsl2'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+	#else
+		#export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;214m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '	
+	#fi
+
+	# ATTRIBUTION-AI: ChatGPT o4-mini-high  2025-06-29 .
+	#echo -e "\033[01;40m\033[01;36m\033[01;34m|\033[01;31m0:(exampleChroot)\033[01;33m\033[38;5;214muser\033[01;32m@exampleHost\033[01;36m\033[01;34m)\033[01;36m\033[01;34m-cloudNet(\033[01;35mvenv\033[01;34m)\033[01;36m|\033[00mINFO\n\033[01;40m\033[01;36m\033[01;34m\033[37m/home/user\033[00m\n\033[01;36m\033[01;34m|1\033[01;34m \033[36m> \033[00m"
+
+
+
+	# NOTICE: ATTENTION: Color saturation reduced. Similar benefits, delineating separate information strings and command prompts between commands.
+	# Less distracting.
+	
 	if _if_cygwin
 	then
-		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|\[\033[01;31m\]\[\033[38;5;138m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;179m\]\u\[\033[01;32m\033[38;5;108m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\033[38;5;96m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]\[\033[37m\033[38;5;253m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]\[\033[38;5;109m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\033[38;5;103m\]) \[\033[36m\]\[\033[38;5;109m\]'""'>\[\033[00m\] '
 	elif ( uname -a | grep -i 'microsoft' > /dev/null 2>&1 || uname -a | grep -i 'WSL2' > /dev/null 2>&1 )
 	then
-		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"-wsl2'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]\[\033[37m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|\[\033[01;31m\]\[\033[38;5;138m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;179m\]\u\[\033[01;32m\033[38;5;108m\]@'"$currentHostname"-wsl2'\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\033[38;5;96m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]\[\033[37m\033[38;5;253m\]\w\[\033[00m\]\n\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]\[\033[38;5;109m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\033[38;5;103m\]) \[\033[36m\]\[\033[38;5;109m\]'""'>\[\033[00m\] '
 	else
-		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[01;31m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\]\u\[\033[01;32m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[01;34m\])\[\033[01;36m\]\[\033[01;34m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\])\[\033[01;36m\]|\[\033[00m\]'"$prompt_nixShell"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[01;34m\]|\[\033[37m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[01;34m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\]) \[\033[36m\]'""'>\[\033[00m\] '	
+		export PS1='\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|\[\033[01;31m\]\[\033[38;5;138m\]${?}:${currentChroot:+($currentChroot)}\[\033[01;33m\033[38;5;179m\]\u\[\033[01;32m\033[38;5;108m\]@'"$currentHostname"'\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]-'"$prompt_cloudNetName"'(\[\033[01;35m\033[38;5;96m\]$(([[ "$VIRTUAL_ENV_PROMPT" != "" ]] && echo -n "$VIRTUAL_ENV_PROMPT") || date +%H:%M:%S\.%d)\[\033[01;34m\033[38;5;103m\])\[\033[01;36m\]\[\033[38;5;109m\]|\[\033[00m\]'"$prompt_specialInfo"'\n\[\033[01;40m\]\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|\[\033[37m\033[38;5;253m\][\w]\[\033[00m\]\n\[\033[01;36m\]\[\033[38;5;109m\]\[\033[01;34m\033[38;5;103m\]|$([[ "$PS1_lineNumber" == "1" ]] && echo -e -n '"'"'\[\033[01;36m\]\[\033[38;5;109m\]'"'"'$PS1_lineNumber || echo -e -n $PS1_lineNumber)\[\033[01;34m\033[38;5;103m\]) \[\033[36m\]\[\033[38;5;109m\]'""'>\[\033[00m\] '	
 	fi
+
 	
-	#export PS1="$prompt_nixShell""$PS1"
+	#export PS1="$prompt_specialInfo""$PS1"
 }
 
 
@@ -11342,7 +12171,7 @@ _test_gitBest() {
 #! _wget_githubRelease "owner/repo" "" "file.ext"
 
 
-#_wget_githubRelease_join "soaringDistributions/Llama-augment_bundle" "" "llama-3.1-8b-instruct-abliterated.Q4_K_M.gguf"
+#_wget_githubRelease_join "soaringDistributions/Llama-3-augment_bundle" "" "llama-3.1-8b-instruct-abliterated.Q4_K_M.gguf"
 
 
 
@@ -17214,6 +18043,27 @@ CZXWXcRMTo8EmM8i4d
 
 
 
+_setupUbiquitous_accessories_here-vimrc() {
+	cat << CZXWXcRMTo8EmM8i4d
+
+
+
+" ubcore
+
+" https://stackoverflow.com/questions/27871937/markdown-syntax-coloring-for-less-pager
+" https://www.benpickles.com/articles/88-vim-syntax-highlight-markdown-code-blocks
+" https://github.com/tpope/vim-markdown
+let g:markdown_fenced_languages = ['html', 'js=javascript', 'ruby', 'python', 'bash=sh']
+let g:markdown_minlines = 1750
+
+
+CZXWXcRMTo8EmM8i4d
+}
+
+
+
+
+
 # ATTENTION: Override with 'ops.sh' , 'core.sh' , or similar.
 _setupUbiquitous_accessories_here-gnuoctave() {
 	cat << CZXWXcRMTo8EmM8i4d
@@ -17589,6 +18439,20 @@ CZXWXcRMTo8EmM8i4d
 
 
 
+_setupUbiquitous_accessories_here-convenience() {
+		cat << CZXWXcRMTo8EmM8i4d
+
+# Equivalence to Dockerfile .
+#alias RUN=_bin
+alias RUN=""
+#  #RUN ( echo test )
+
+CZXWXcRMTo8EmM8i4d
+
+}
+
+
+
 
 
 _setupUbiquitous_accessories_here-user_bashrc() {
@@ -17603,6 +18467,49 @@ if [[ -e "$HOME"/_bashrc ]]
 then
 	. "$HOME"/_bashrc
 fi
+
+CZXWXcRMTo8EmM8i4d
+
+}
+
+
+_setupUbiquitous_accessories_here-container_environment() {
+	
+	cat << CZXWXcRMTo8EmM8i4d
+
+# Coordinator/Worker, SSH Authorized
+if [[ "\$SSH_pub_Coordinator_01" != "" ]] || [[ "\$PUBLIC_KEY" != "" ]]
+then
+	_ubcore_add_authorized_SSH() {
+		[[ "\$1" == "" ]] && return 0
+
+		mkdir -p "$HOME"/.ssh
+		chmod 700 "$HOME"/.ssh 2> /dev/null
+		
+		local currentString=\$(printf '%s' "\$1" | awk '{print \$2}' | tr -dc 'a-zA-Z0-9')
+
+		[[ ! -e "$HOME"/.ssh/authorized_keys ]] && echo -n > "$HOME"/.ssh/authorized_keys && chmod 600 "$HOME"/.ssh/authorized_keys
+		if cat "$HOME"/.ssh/authorized_keys | tr -dc 'a-zA-Z0-9' | grep "\$currentString" > /dev/null 2>&1
+		then
+			return 0
+		else
+			echo "\$1" >> "$HOME"/.ssh/authorized_keys
+			chmod 600 "$HOME"/.ssh/authorized_keys
+			return 0
+		fi
+		return 1
+	}
+
+	_ubcore_add_authorized_SSH "\$PUBLIC_KEY"
+	
+	_ubcore_add_authorized_SSH "\$SSH_pub_Coordinator_01"
+	_ubcore_add_authorized_SSH "\$SSH_pub_Coordinator_02"
+	_ubcore_add_authorized_SSH "\$SSH_pub_Coordinator_03"
+
+	unset _ubcore_add_authorized_SSH
+fi
+
+[[ -e /.dockerenv ]] && git config --global --add safe.directory '*' > /dev/null 2>&1
 
 CZXWXcRMTo8EmM8i4d
 
@@ -17633,6 +18540,17 @@ _setupUbiquitous_accessories-plasma() {
 	chmod u+x "$HOME"/.config/plasma-workspace/env/profile.sh
 	
 	
+	return 0
+}
+
+_setupUbiquitous_accessories-vim() {
+	_messagePlain_nominal 'init: _setupUbiquitous_accessories-gnuoctave'
+	
+	if ! grep ubcore "$ubHome"/.vimrc > /dev/null 2>&1 && _messagePlain_probe 'vimrc'
+	then
+		_setupUbiquitous_accessories_here-vimrc >> "$ubHome"/.vimrc
+	fi
+
 	return 0
 }
 
@@ -17721,6 +18639,9 @@ _setupUbiquitous_accessories() {
 
 	_setupUbiquitous_accessories-plasma "$@"
 
+
+	_setupUbiquitous_accessories-vim "$@"
+
 	
 	_setupUbiquitous_accessories-gnuoctave "$@"
 	
@@ -17742,13 +18663,19 @@ _setupUbiquitous_accessories_bashrc() {
 	
 	
 	_setupUbiquitous_accessories_here-coreoracle_bashrc "$@"
+
+
+	_setupUbiquitous_accessories_here-convenience "$@"
 	
 	
-	# WARNING: Python must remain last. Failure to hook python is a failure that must show as an error exit status from the users profile (a red "1" on the first line of first visual prompt command prompt).
+	# WARNING: Python should remain last if possible. Failure to hook python is a failure that must show as an error exit status from the users profile (a red "1" on the first line of first visual prompt command prompt).
+	#  WARNING: Do NOT use 'currentExitStatus_python_bashrc' or similar varaibles unless this exit status is really necessary. Performance cost will be significant. Do not attempt to use a 'return' statement, rather if attempting to implement this, instead run 'true' or 'false' at the end of the 'ubcorerc' script depending on the exit status. Discouraged.
 	_setupUbiquitous_accessories_here-python_bashrc "$@"
 	
 	
 	_setupUbiquitous_accessories_here-user_bashrc "$@"
+
+	_setupUbiquitous_accessories_here-container_environment "$@"
 	
 	#echo true
 }
@@ -17835,13 +18762,23 @@ PS1_lineNumber=""
 
 # WARNING: Importing complete 'ubiquitous_bash.sh' may cause other scripts to call functions inappropriate for their needs during "_test" and "_setup" .
 # This may be acceptable if the user has already run "_setup" from the imported script .
+ubDEBUG_current="\$ubDEBUG"
+export ubDEBUG="false"
 #export profileScriptLocation="$ubcoreUBdir"/ubiquitous_bash.sh
 export profileScriptLocation="$ubcoreUBdir"/ubcore.sh
 #export profileScriptLocation="$ubcoreUBdir"/lean.sh
 export profileScriptFolder="$ubcoreUBdir"
-[[ "\$scriptAbsoluteLocation" != "" ]] && . "\$scriptAbsoluteLocation" --parent _importShortcuts
-[[ "\$scriptAbsoluteLocation" == "" ]] && . "\$profileScriptLocation" --profile _importShortcuts
+if [[ "\$force_profileScriptLocation" == "" ]]
+then
+	[[ "\$scriptAbsoluteLocation" != "" ]] && . "\$scriptAbsoluteLocation" --parent _importShortcuts
+	[[ "\$scriptAbsoluteLocation" == "" ]] && . "\$profileScriptLocation" --profile _importShortcuts
+else
+	export profileScriptLocation="\$force_profileScriptLocation"
+	export profileScriptFolder="\$force_profileScriptFolder"
+	[[ "\$force_profileScriptLocation" != "" ]] && . "\$force_profileScriptLocation" --profile _importShortcuts
+fi
 [[ "\$ub_setScriptChecksum_disable" == 'true' ]] && export ub_setScriptChecksum_disable="" && unset ub_setScriptChecksum_disable
+export ubDEBUG="\$ubDEBUG_current"
 
 # Returns priority to normal.
 # Greater or equal, '_priority_app_pid_root' .
@@ -17899,6 +18836,23 @@ true
 
 CZXWXcRMTo8EmM8i4d
 
+
+	cat << CZXWXcRMTo8EmM8i4d
+
+if [[ "\$runDelete" != "" ]] && [[ "\$runDelete" == '/workspace/project'* ]]
+then
+	#/workspace/project/._run-factory_openai
+	rm -f "\$runDelete"
+	unset runDelete
+fi
+
+[[ -e /info_factoryMOTD.txt ]] && cat /info_factoryMOTD.txt
+#[[ -e /info_factoryMOTD.sh ]] && . /info_factoryMOTD.sh
+
+true
+
+CZXWXcRMTo8EmM8i4d
+
 }
 
 
@@ -17927,8 +18881,9 @@ _setupUbiquitous_resize() {
 
 _install_certs() {
     _messageNormal 'install: certs'
-    if _if_cygwin
+    if [[ $(id -u 2> /dev/null) == "0" ]] || [[ "$USER" == "root" ]] || _if_cygwin
     then
+    
         # Editing the Cygwin root filesystem itself, root permissions granted within Cygwin environment itself are effective.
         sudo() {
             [[ "$1" == "-n" ]] && shift
@@ -17984,6 +18939,12 @@ _install_certs() {
 
     _install_certs_write
 
+    # Setup scripts in constrained repetitive environments (ie. OpenAI Codex setup script) may multi-thread concurrent _setupUbiquitous with apt-get . This detects that, and prevents dpkg collision.
+    while pgrep '^dpkg$' > /dev/null 2>&1
+    do
+        sleep 1
+    done
+
     local currentExitStatus="1"
     ! _if_cygwin && sudo -n update-ca-certificates
     [[ "$?" == "0" ]] && currentExitStatus="0"
@@ -18029,13 +18990,19 @@ _gitPull_ubiquitous() {
 }
 
 _gitClone_ubiquitous() {
+	local functionEntryPWD="$PWD"
+
 	local currentExitStatus_gitBest_clone="0"
 	local currentExitStatus_gitBest_submodule_update="0"
 	#git clone --depth 1 git@github.com:mirage335/ubiquitous_bash.git
 	_gitBest clone --recursive --depth 1 git@github.com:mirage335/ubiquitous_bash.git
 	currentExitStatus_gitBest_clone="$?"
+
+	! cd ubiquitous_bash && _messagePlain_bad 'bad: cd ubiquitous_bash' && return 1
 	_gitBest submodule update --recursive
 	currentExitStatus_gitBest_submodule_update="$?"
+	! cd "$functionEntryPWD" && _messagePlain_bad 'bad: cd '"$functionEntryPWD" && return 1
+
 	[[ "$currentExitStatus_gitBest_clone" != "0" ]] && return "$currentExitStatus_gitBest_clone"
 	[[ "$currentExitStatus_gitBest_submodule_update" != "0" ]] && return "$currentExitStatus_gitBest_submodule_update"
 	return 0
@@ -18056,7 +19023,7 @@ _selfCloneUbiquitous() {
 	cp -a "$scriptAbsoluteFolder"/lean.py "$ubcoreUBdir"/lean.py > /dev/null 2>&1
 	[[ "$?" != "0" ]] && currentExitStatus="1"
 
-	mkdir "$ubcoreUBdir"/_lib/kit/app/researchEngine/kit/certs
+	mkdir -p "$ubcoreUBdir"/_lib/kit/app/researchEngine/kit/certs
 	if [[ -e "$scriptAbsoluteFolder"/_lib/kit/app/researchEngine/kit/certs ]]
 	then
 		cp -a "$scriptAbsoluteFolder"/_lib/kit/app/researchEngine/kit/certs/* "$ubcoreUBdir"/_lib/kit/app/researchEngine/kit/certs/
@@ -18968,7 +19935,7 @@ then
 	#then
 		_write_configure_git_safe_directory_if_admin_owned "$scriptAbsoluteFolder"
 	#fi
-elif uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1
+elif ( uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1 ) || [[ -e /.dockerenv ]]
 then
 	if [[ "$tmpSelf" == "" ]]
 	then
@@ -19273,6 +20240,73 @@ _set_msw_ghToken() {
     return 0
 }
 
+_set_msw_apiToken() {
+    if [[ "$WSLENV" != "OPENAI_API_KEY" ]] && [[ "$WSLENV" != "OPENAI_API_KEY"* ]] && [[ "$WSLENV" != *"OPENAI_API_KEY" ]] && [[ "$WSLENV" != *"OPENAI_API_KEY"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="OPENAI_API_KEY"
+        else
+            export WSLENV="$WSLENV:OPENAI_API_KEY"
+        fi
+    fi
+    if [[ "$WSLENV" != "OPENROUTER_API_KEY" ]] && [[ "$WSLENV" != "OPENROUTER_API_KEY"* ]] && [[ "$WSLENV" != *"OPENROUTER_API_KEY" ]] && [[ "$WSLENV" != *"OPENROUTER_API_KEY"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="OPENROUTER_API_KEY"
+        else
+            export WSLENV="$WSLENV:OPENROUTER_API_KEY"
+        fi
+    fi
+    if [[ "$WSLENV" != "HF_AKI_KEY" ]] && [[ "$WSLENV" != "HF_AKI_KEY"* ]] && [[ "$WSLENV" != *"HF_AKI_KEY" ]] && [[ "$WSLENV" != *"HF_AKI_KEY"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="HF_AKI_KEY"
+        else
+            export WSLENV="$WSLENV:HF_AKI_KEY"
+        fi
+    fi
+    if [[ "$WSLENV" != "HF_TOKEN" ]] && [[ "$WSLENV" != "HF_TOKEN"* ]] && [[ "$WSLENV" != *"HF_TOKEN" ]] && [[ "$WSLENV" != *"HF_TOKEN"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="HF_TOKEN"
+        else
+            export WSLENV="$WSLENV:HF_TOKEN"
+        fi
+    fi
+    if [[ "$WSLENV" != "PUBLIC_KEY" ]] && [[ "$WSLENV" != "PUBLIC_KEY"* ]] && [[ "$WSLENV" != *"PUBLIC_KEY" ]] && [[ "$WSLENV" != *"PUBLIC_KEY"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="PUBLIC_KEY"
+        else
+            export WSLENV="$WSLENV:PUBLIC_KEY"
+        fi
+    fi
+    if [[ "$WSLENV" != "JUPYTER_PASSWORD" ]] && [[ "$WSLENV" != "JUPYTER_PASSWORD"* ]] && [[ "$WSLENV" != *"JUPYTER_PASSWORD" ]] && [[ "$WSLENV" != *"JUPYTER_PASSWORD"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="JUPYTER_PASSWORD"
+        else
+            export WSLENV="$WSLENV:JUPYTER_PASSWORD"
+        fi
+    fi
+    if [[ "$WSLENV" != "ai_safety" ]] && [[ "$WSLENV" != "ai_safety"* ]] && [[ "$WSLENV" != *"ai_safety" ]] && [[ "$WSLENV" != *"ai_safety"* ]]
+    then
+        if [[ "$WSLENV" == "" ]]
+        then
+            export WSLENV="ai_safety"
+        else
+            export WSLENV="$WSLENV:ai_safety"
+        fi
+    fi
+    return 0
+}
+
 
 _set_msw_wsl() {
     ! _if_cygwin && return 1
@@ -19281,6 +20315,7 @@ _set_msw_wsl() {
     _set_msw_qt5ct
 
     _set_msw_ghToken
+    _set_msw_apiToken
 
     return 0
 }
@@ -22251,10 +23286,14 @@ _stop_stty_echo() {
 	#stty echo --file=/dev/tty > /dev/null 2>&1
 	
 	[[ "$ubFoundEchoStatus" != "" ]] && stty --file=/dev/tty "$ubFoundEchoStatus" 2> /dev/null
+
+	return 0
 }
 
 # DANGER: Use of "_stop" must NOT require successful "_start". Do NOT include actions which would not be safe if "_start" was not used or unsuccessful.
 _stop() {
+	if [[ "$ubDEBUG" == "true" ]] ; then set +x ; set +E ; set +o functrace ; set +o errtrace ; export -n SHELLOPTS 2>/dev/null || true ; trap '' RETURN ; trap - RETURN ; fi
+	
 	_stop_stty_echo
 	
 	_tryExec "_stop_prog"
@@ -22307,6 +23346,7 @@ _stop() {
 	
 	_safeRMR "$shortTmp"
 	_safeRMR "$safeTmp"
+	[[ "$fastTmp" != "" ]] && _safeRMR "$fastTmp"
 	
 	[[ -e "$safeTmp" ]] && sleep 0.1 && _safeRMR "$safeTmp"
 	[[ -e "$safeTmp" ]] && sleep 0.3 && _safeRMR "$safeTmp"
@@ -22493,8 +23533,8 @@ _readLocked() {
 
 #Using _readLocked before any _createLocked operation is strongly recommended to remove any lock from prior UNIX session (ie. before latest reboot).
 _createLocked() {
-	[[ "$uDEBUG" == true ]] && caller 0 >> "$scriptLocal"/lock.log
-	[[ "$uDEBUG" == true ]] && echo -e '\t'"$sessionid"'\t'"$1" >> "$scriptLocal"/lock.log
+	[[ "$ubDEBUG" == true ]] && caller 0 >> "$scriptLocal"/lock.log
+	[[ "$ubDEBUG" == true ]] && echo -e '\t'"$sessionid"'\t'"$1" >> "$scriptLocal"/lock.log
 	
 	mkdir -p "$bootTmp"
 	
@@ -22509,7 +23549,7 @@ _createLocked() {
 	
 	if [[ -e "$lock_quicktmp"_"$lockUID" ]]
 	then
-		[[ "$uDEBUG" == true ]] && echo -e '\t'FAIL >> "$scriptLocal"/lock.log
+		[[ "$ubDEBUG" == true ]] && echo -e '\t'FAIL >> "$scriptLocal"/lock.log
 		rm -f "$lock_quicktmp"_"$lockUID" > /dev/null 2>&1
 		return 1
 	fi
@@ -23328,6 +24368,11 @@ _variableLocalTest_sequence() {
 	
 
 	variableLocalTest_evalTest() { local currentVariableNum=1 ; eval local currentVariable_${currentVariableNum}_currentData=PASS ; ( eval "[[ \$currentVariable_${currentVariableNum}_currentData == PASS ]]" && eval "[[ \$currentVariable_${currentVariableNum}_currentData != '' ]]" && eval "echo \$currentVariable_${currentVariableNum}_currentData" ) ;} ; variableLocalTest_evalTest > /dev/null ; [[ $(variableLocalTest_evalTest) != "PASS" ]] && _messageFAIL && _stop 1
+
+
+	! [[ $(currentVariable=currentValue /bin/bash --norc -c 'echoVariableTest() { echo $currentVariable ; } ; echoVariableTest') == "currentValue" ]] && _messageFAIL && _stop 1
+	! [[ $(currentVariable=currentValue currentVariable=currentValue /bin/bash --norc -c 'echoVariableTest() { echo $currentVariable ; } ; echoVariableTest') == "currentValue" ]] && _messageFAIL && _stop 1
+	! [[ $(currentVariable=currentValueA currentVariable=currentValueB /bin/bash --norc -c 'echoVariableTest() { echo $currentVariable ; } ; echoVariableTest') == "currentValueB" ]] && _messageFAIL && _stop 1
 
 	_stop
 }
@@ -24182,61 +25227,83 @@ _test-shell-cygwin() {
 	
 	local currentPathCount
 	currentPathCount=$(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9')
-	if [[ "$currentPathCount" -gt 50 ]]
+	#if [[ "$currentPathCount" -gt 50 ]]
+	#if [[ "$currentPathCount" -gt 66 ]]
+	if [[ "$currentPathCount" -gt 99 ]]
 	then
 		echo 'fail: count: PATH: '"$currentPathCount"
 		_messageFAIL
 	fi
-	if [[ "$currentPathCount" -gt 44 ]]
+	#if [[ "$currentPathCount" -gt 66 ]]
+	if [[ "$currentPathCount" -gt 80 ]]
+	then
+		echo 'warn: count: PATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH may be ignored'
+		_messagePlain_request 'request: reduce the length of PATH variable'
+	fi
+	#if [[ "$currentPathCount" -gt 44 ]]
+	if [[ "$currentPathCount" -gt 60 ]]
 	then
 		echo 'warn: count: PATH: '"$currentPathCount"
 		echo 'warn: MSWEXTPATH may be ignored'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
 	
-	if [[ "$currentPathCount" -gt 32 ]]
+	if [[ "$currentPathCount" -gt 48 ]]
 	then
 		echo 'warn: count: PATH: '"$currentPathCount"
-		echo 'warn: MSWEXTPATH exceeds preferred 32'
+		echo 'warn: MSWEXTPATH exceeds preferred 48'
 		_messagePlain_request 'request: reduce the length of PATH variable'
-	fi
-	if [[ "$currentPathCount" -gt 34 ]]
-	then
-		echo 'warn: count: PATH: '"$currentPathCount"
-		echo 'warn: MSWEXTPATH exceeds preferred 34'
-		_messagePlain_request 'request: reduce the length of PATH variable'
-	fi
-	
-	
-	
-	local currentPathCount
-	currentPathCount=$(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9')
-	if [[ "$currentPathCount" -gt 50 ]] && [[ "$CI" == "" ]]
-	then
-		echo 'fail: count: MSWEXTPATH: '"$currentPathCount"
-		_messageFAIL
 	fi
 	if [[ "$currentPathCount" -gt 44 ]]
 	then
-		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
-		echo 'warn: MSWEXTPATH may be ignored by default'
+		echo 'warn: count: PATH: '"$currentPathCount"
+		echo 'warn: MSWEXTPATH exceeds preferred 44'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
-	
-	
 	if [[ "$currentPathCount" -gt 32 ]]
 	then
-		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
+		echo 'warn: count: PATH: '"$currentPathCount"
 		echo 'warn: MSWEXTPATH exceeds preferred 32'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
 	if [[ "$currentPathCount" -gt 34 ]]
 	then
-		echo 'warn: count: MSWEXTPATH: '"$currentPathCount"
+		echo 'warn: count: PATH: '"$currentPathCount"
 		echo 'warn: MSWEXTPATH exceeds preferred 34'
 		_messagePlain_request 'request: reduce the length of PATH variable'
 	fi
 	
+
+
+	# Discouraged. NOT guaranteed, may be removed if unmaintainable.
+	# Inheritance of variables as a means of communicating or passing parameters is not the point. Inheritance is tested to ensure an entirely different 'ubcp' environment, script, '$safeTmp', etc, is NOT used.
+	export ub_sanity_special="mustInherit"
+	if _if_cygwin
+	then
+		local currentResult
+		currentResult=""
+
+		local current_bin_bash
+		current_bin_bash=$(cygpath -w /bin/bash)
+
+		currentResult=$(cmd /C "$current_bin_bash" '-c' 'echo $ub_sanity_special')
+		[[ "$currentResult" != "mustInherit" ]] && echo 'fail: cmd /bin/bash: mustInherit' && _messageFAIL && return 1
+
+		currentResult=$(cmd /C "$current_bin_bash" '-c' 'echo "$safeTmp"')
+		[[ "$currentResult" != "$safeTmp" ]] && echo 'fail: cmd /bin/bash: inherit: safeTmp' && _messageFAIL && return 1
+
+
+		current_bin_bash=$(cygpath -w /bin/bash | sed 's/\\/\\\\/g')
+
+		currentResult=$(_powershell -Command "$current_bin_bash"" -c 'echo "'"$ub_sanity_special"'"'")
+		[[ "$currentResult" != "mustInherit" ]] && echo 'fail: powershell /bin/bash: mustInherit' && _messageFAIL && return 1
+
+		currentResult=$(_powershell -Command "$current_bin_bash"" -c 'echo "'"$safeTmp"'"'")
+		[[ "$currentResult" != "$safeTmp" ]] && echo 'fail: powershell /bin/bash: inherit: safeTmp' && _messageFAIL && return 1
+	fi
+	unset ub_sanity_special
+
 	
 	
 	# Although use case specific (eg. flight sim with usual desktop applications installed) test cases may be necessary for MSW, to avoid ambiguity in expectations that every test includes an explicit PASS statement, a call to '_messagePASS' is still given.
@@ -24291,6 +25358,7 @@ _test() {
 	then
 		if _typeDep 'apt-get'
 		then
+			apt-get -y update
 			apt-get -y install sudo
 		fi
 	fi
@@ -24300,6 +25368,7 @@ _test() {
 	then
 		if _typeDep 'apt-get'
 		then
+			sudo -n apt-get -y update
 			sudo -n apt-get -y install bc
 		fi
 	fi
@@ -24377,6 +25446,9 @@ _test() {
 	_getDep cksum
 	
 	_getDep wget
+	_getDep curl
+	_wantGetDep aria2c
+	_wantGetDep axel
 	_getDep grep
 	_getDep fgrep
 	_getDep sed
@@ -27153,6 +28225,8 @@ then
 		stty echo --file=/dev/tty > /dev/null 2>&1
 		
 		#[[ "$ubFoundEchoStatus" != "" ]] && stty --file=/dev/tty "$ubFoundEchoStatus" 2> /dev/null
+
+		return 0
 	}
 	_stop() {
 		_stop_stty_echo
@@ -27354,6 +28428,22 @@ _bash() {
 	[[ "$ub_scope_name" != "" ]] && _scopePrompt
 	
 	_safe_declare_uid
+
+
+	## CAUTION: Usually STUPID AND DANGEROUS . No production use. Exclusively for 'ubiquitous_bash' itself development.
+	## Proper use of embedded scripts, '--embed', etc, is provided by the '_scope' functions, etc, intended for such purposes in almost all cases.
+	##
+	## WARNING: May be untested. May break 'python', 'bash', 'octave', etc. May break any '.bashrc', '.ubcorerc', python hooks, other hooks, etc. May break '_setupUbiquitous'.
+	## Bad idea. Very specialized. Broken inheritance.
+	##
+	## No known use.
+	## Functions, etc, are NOT inherited by bash terminal from script.
+	##
+	#if [[ "$1" == "--norc" ]] && [[ "$2" == "-i" ]] && [[ "$scriptAbsoluteLocation" == *"ubcore.sh" ]]
+	#then
+		#bash "$@"
+		#return
+	#fi
 	
 	
 	[[ "$1" == '-i' ]] && shift
@@ -27470,8 +28560,42 @@ then
 	then
 		if [[ "$scriptLinkCommand" == '_'* ]]
 		then
+			if [[ "$ubDEBUG" == "true" ]]
+			then
+				# ATTRIBUTION-AI: ChatGPT o3  2025-06-06
+				exec 3>&2
+				#export BASH_XTRACEFD=3
+				set   -o functrace
+				set   -o errtrace
+				# May break _test_pipefail_sequence .
+				#export SHELLOPTS
+				trap '
+  set -E +x
+  call_line=${BASH_LINENO[0]}
+  call_file=${BASH_SOURCE[1]}
+  [[ $call_file == "$PWD/"* ]] && call_file=${call_file#"$PWD/"}
+  func_name=${FUNCNAME[0]:-MAIN}
+
+  if [[ "$call_line" != "0" ]] && [[ func_name != "MAIN()" ]]
+  then
+	# extract the source line and strip leading blanks
+	call_text=$(sed -n "${call_line}{s/^[[:space:]]*//;p}" "$call_file")
+
+	printf "<<<STEPOUT<<< RETURN %s() <- %s:%d : %s  status=%d\n" \
+			"$func_name"        "$call_file" \
+			"$call_line"        "$call_text" \
+			"$?" >&3
+  fi
+  set -E -x
+' RETURN
+				set -E -x
+				#set -x
+			fi
+			
 			"$scriptLinkCommand" "$@"
 			internalFunctionExitStatus="$?"
+
+			if [[ "$ubDEBUG" == "true" ]] ; then set +x ; set +E ; set +o functrace ; set +o errtrace ; export -n SHELLOPTS 2>/dev/null || true ; trap '' RETURN ; trap - RETURN ; fi
 			
 			#Exit if not imported into existing shell, or bypass requested, else fall through to subsequent return.
 			if [[ "$ub_import" != "true" ]] || [[ "$ub_import_param" == "--bypass" ]] || [[ "$ub_import_param" == "--compressed" ]]
@@ -27491,8 +28615,41 @@ then
 	# && [[ "$1" != "_test" ]] && [[ "$1" != "_setup" ]] && [[ "$1" != "_build" ]] && [[ "$1" != "_vector" ]] && [[ "$1" != "_setupCommand" ]] && [[ "$1" != "_setupCommand_meta" ]] && [[ "$1" != "_setupCommands" ]] && [[ "$1" != "_find_setupCommands" ]] && [[ "$1" != "_setup_anchor" ]] && [[ "$1" != "_anchor" ]] && [[ "$1" != "_package" ]] && [[ "$1" != *"_prog" ]] && [[ "$1" != "_main" ]] && [[ "$1" != "_collect" ]] && [[ "$1" != "_enter" ]] && [[ "$1" != "_launch" ]] && [[ "$1" != "_default" ]] && [[ "$1" != "_experiment" ]]
 	if [[ "$1" == '_'* ]] && type "$1" > /dev/null 2>&1 && [[ "$1" != "_test" ]] && [[ "$1" != "_setup" ]] && [[ "$1" != "_build" ]] && [[ "$1" != "_vector" ]] && [[ "$1" != "_setupCommand" ]] && [[ "$1" != "_setupCommand_meta" ]] && [[ "$1" != "_setupCommands" ]] && [[ "$1" != "_find_setupCommands" ]] && [[ "$1" != "_setup_anchor" ]] && [[ "$1" != "_anchor" ]] && [[ "$1" != "_package" ]] && [[ "$1" != *"_prog" ]] && [[ "$1" != "_main" ]] && [[ "$1" != "_collect" ]] && [[ "$1" != "_enter" ]] && [[ "$1" != "_launch" ]] && [[ "$1" != "_default" ]] && [[ "$1" != "_experiment" ]]
 	then
+		if [[ "$ubDEBUG" == "true" ]]
+		then
+			# ATTRIBUTION-AI: ChatGPT o3  2025-06-06
+			exec 3>&2
+			#export BASH_XTRACEFD=3
+			set   -o functrace
+			set   -o errtrace
+			# May break _test_pipefail_sequence .
+			#export SHELLOPTS
+			trap '
+  set -E +x
+  call_line=${BASH_LINENO[0]}
+  call_file=${BASH_SOURCE[1]}
+  [[ $call_file == "$PWD/"* ]] && call_file=${call_file#"$PWD/"}
+  func_name=${FUNCNAME[0]:-MAIN}
+
+  if [[ "$call_line" != "0" ]] && [[ func_name != "MAIN()" ]]
+  then
+    # extract the source line and strip leading blanks
+    call_text=$(sed -n "${call_line}{s/^[[:space:]]*//;p}" "$call_file")
+
+    printf "<<<STEPOUT<<< RETURN %s() <- %s:%d : %s  status=%d\n" \
+            "$func_name"        "$call_file" \
+            "$call_line"        "$call_text" \
+            "$?" >&3
+  fi
+' RETURN
+			set -E -x
+			#set -x
+		fi
+		
 		"$@"
 		internalFunctionExitStatus="$?"
+		
+		if [[ "$ubDEBUG" == "true" ]] ; then set +x ; set +E ; set +o functrace ; set +o errtrace ; export -n SHELLOPTS 2>/dev/null || true ; trap '' RETURN ; trap - RETURN ; fi
 		
 		#Exit if not imported into existing shell, or bypass requested, else fall through to subsequent return.
 		if [[ "$ub_import" != "true" ]] || [[ "$ub_import_param" == "--bypass" ]] || [[ "$ub_import_param" == "--compressed" ]]
