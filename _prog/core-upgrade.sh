@@ -251,7 +251,9 @@ _upgrade_sequence() {
     _upgrade_repository /home/user/core/infrastructure/ubDistBuild
     _upgrade_repository /home/user/core/infrastructure/ubDistFetch
 
-    _upgrade_repository /home/user/core/infrastructure/virtuousCritter
+    #_upgrade_repository /home/user/core/infrastructure/cognition
+
+    #_upgrade_repository /home/user/core/infrastructure/virtuousCritter
 
     _upgrade_repository /home/user/core/infrastructure/flightDeck
     _upgrade_repository /home/user/core/infrastructure/kinematicBase-large

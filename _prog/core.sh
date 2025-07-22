@@ -757,7 +757,7 @@ _ubDistFetch() {
 	mkdir -p "$scriptLib"/core
 	cd "$scriptLib"/core
 
-	_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core cognition
+	#_ubDistFetch_gitBestFetch_github_mirage335-colossus "$scriptLib"/core cognition
 
 
 	#mkdir -p "$scriptLib"/infrastructure
